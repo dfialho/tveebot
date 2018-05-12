@@ -20,6 +20,7 @@ apply plugin: 'kotlin-spring'
 apply plugin: 'eclipse'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
+apply plugin: 'kotlin-kapt'
 
 group = 'dfialho.tveebot'
 version = '0.1-SNAPSHOT'
@@ -53,4 +54,5 @@ dependencies {
     // Other dependencies
     compile("com.frostwire:jlibtorrent:$jlibtorrentVersion")
     compile("com.google.guava:guava:$guavaVersion")
+    kapt("org.springframework.boot:spring-boot-configuration-processor")
 }
