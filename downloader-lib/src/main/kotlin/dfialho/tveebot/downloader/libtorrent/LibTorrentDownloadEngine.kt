@@ -5,10 +5,10 @@ import com.frostwire.jlibtorrent.AddTorrentParams.parseMagnetUri
 import com.frostwire.jlibtorrent.alerts.Alert
 import com.frostwire.jlibtorrent.alerts.AlertType.TORRENT_FINISHED
 import com.frostwire.jlibtorrent.alerts.TorrentFinishedAlert
-import dfialho.tveebot.downloader.DownloadEngine
-import dfialho.tveebot.downloader.DownloadHandle
-import dfialho.tveebot.downloader.DownloadReference
-import dfialho.tveebot.downloader.EventListener
+import dfialho.tveebot.downloader.api.DownloadEngine
+import dfialho.tveebot.downloader.api.DownloadHandle
+import dfialho.tveebot.downloader.api.DownloadReference
+import dfialho.tveebot.downloader.api.EventListener
 import java.nio.file.Path
 
 /**

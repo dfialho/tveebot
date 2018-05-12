@@ -2,13 +2,16 @@ package dfialho.tveebot.downloader.libtorrent
 
 import com.frostwire.jlibtorrent.TorrentHandle
 import com.frostwire.jlibtorrent.TorrentStatus
-import dfialho.tveebot.downloader.DownloadHandle
-import dfialho.tveebot.downloader.DownloadReference
-import dfialho.tveebot.downloader.DownloadState
-import dfialho.tveebot.downloader.DownloadStatus
+import dfialho.tveebot.downloader.api.DownloadHandle
+import dfialho.tveebot.downloader.api.DownloadReference
+import dfialho.tveebot.downloader.api.DownloadState
+import dfialho.tveebot.downloader.api.DownloadStatus
 import java.util.*
 
-class LibTorrentDownloadHandle(private val engine: LibTorrentDownloadEngine, private val torrentHandle: TorrentHandle) : DownloadHandle {
+class LibTorrentDownloadHandle(
+    private val engine: LibTorrentDownloadEngine,
+    private val torrentHandle: TorrentHandle
+) : DownloadHandle {
 
     companion object {
 

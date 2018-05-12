@@ -1,4 +1,4 @@
-package dfialho.tveebot.downloader
+package dfialho.tveebot.downloader.api
 
 /**
  * Describes the state of a download.

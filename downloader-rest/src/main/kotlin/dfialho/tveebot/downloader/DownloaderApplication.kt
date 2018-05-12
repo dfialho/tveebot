@@ -1,5 +1,8 @@
 package dfialho.tveebot.downloader
 
+import dfialho.tveebot.downloader.api.DownloadManager
+import dfialho.tveebot.downloader.api.DownloadReference
+import dfialho.tveebot.downloader.api.EventListener
 import dfialho.tveebot.downloader.libtorrent.LibTorrentDownloadEngine
 import org.slf4j.LoggerFactory
 import org.springframework.boot.CommandLineRunner

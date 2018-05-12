@@ -1,4 +1,4 @@
-package dfialho.tveebot.downloader
+package dfialho.tveebot.downloader.api
 
 /**
  * A reference for a download. Downloads are identified by a reference within a [DownloadEngine].

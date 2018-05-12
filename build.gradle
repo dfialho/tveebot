@@ -16,15 +16,11 @@ buildscript {
 }
 
 apply plugin: 'kotlin'
-apply plugin: 'kotlin-spring'
-apply plugin: 'eclipse'
-apply plugin: 'org.springframework.boot'
-apply plugin: 'io.spring.dependency-management'
-apply plugin: 'kotlin-kapt'
 
 group = 'dfialho.tveebot'
 version = '0.1-SNAPSHOT'
 sourceCompatibility = 1.8
+
 compileKotlin {
     kotlinOptions {
         freeCompilerArgs = ["-Xjsr305=strict"]
@@ -44,15 +40,5 @@ repositories {
 
 
 dependencies {
-    // Spring related dependencies
-    compile('org.springframework.boot:spring-boot-starter-web')
-    compile('com.fasterxml.jackson.module:jackson-module-kotlin')
-    compile("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    compile("org.jetbrains.kotlin:kotlin-reflect")
-    testCompile('org.springframework.boot:spring-boot-starter-test')
 
-    // Other dependencies
-    compile("com.frostwire:jlibtorrent:$jlibtorrentVersion")
-    compile("com.google.guava:guava:$guavaVersion")
-    kapt("org.springframework.boot:spring-boot-configuration-processor")
 }

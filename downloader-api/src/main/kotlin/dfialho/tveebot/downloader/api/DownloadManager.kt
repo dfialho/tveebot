@@ -1,4 +1,4 @@
-package dfialho.tveebot.downloader
+package dfialho.tveebot.downloader.api
 
 import com.google.common.util.concurrent.AbstractIdleService
 

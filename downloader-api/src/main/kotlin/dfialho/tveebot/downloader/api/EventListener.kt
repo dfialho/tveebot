@@ -1,4 +1,4 @@
-package dfialho.tveebot.downloader
+package dfialho.tveebot.downloader.api
 
 /**
  * A listener for events issued by [DownloadEngine]s.

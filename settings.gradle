@@ -1,1 +1,5 @@
 rootProject.name = 'downloader'
+include 'downloader-api'
+include 'downloader-lib'
+include 'downloader-rest'
+

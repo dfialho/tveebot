@@ -1,4 +1,4 @@
-package dfialho.tveebot.downloader
+package dfialho.tveebot.downloader.api
 
 /**
  * Data class to hold information about a download.

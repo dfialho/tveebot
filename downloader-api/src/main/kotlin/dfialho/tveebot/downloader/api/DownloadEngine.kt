@@ -1,4 +1,4 @@
-package dfialho.tveebot.downloader
+package dfialho.tveebot.downloader.api
 
 import java.nio.file.Path
 import javax.annotation.concurrent.NotThreadSafe

@@ -1,4 +1,4 @@
-package dfialho.tveebot.downloader
+package dfialho.tveebot.downloader.api
 
 /**
  * Handle for a single download. It is used to perform actions for the download and to retrieve information about it.
