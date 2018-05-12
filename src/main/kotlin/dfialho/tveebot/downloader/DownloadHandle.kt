@@ -29,4 +29,20 @@ interface DownloadHandle {
      */
     fun stop()
 
+    /**
+     * Pauses the download associated with this handle. The download can be resumed with the [resume] method. If the
+     * download is not paused this method has no effect.
+     *
+     * @see resume
+     */
+    fun pause()
+
+    /**
+     * Resumes the download associated with this handle after it has been paused. If the download is not paused this
+     * method has no effect.
+     *
+     * @see pause
+     */
+    fun resume()
+
 }

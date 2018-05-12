@@ -50,4 +50,12 @@ class LibTorrentDownloadHandle(private val engine: LibTorrentDownloadEngine, pri
     override fun stop() {
         engine.remove(torrentHandle)
     }
+
+    override fun pause() {
+        torrentHandle.pause()
+    }
+
+    override fun resume() {
+        torrentHandle.resume()
+    }
 }
