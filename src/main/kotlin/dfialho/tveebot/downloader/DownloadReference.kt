@@ -3,6 +3,8 @@ package dfialho.tveebot.downloader
 /**
  * A reference for a download. Downloads are identified by a reference within a [DownloadEngine].
  *
+ * @property reference Reference represented as a string.
+ *
  * @author David Fialho (dfialho@protonmail.com)
  */
-interface DownloadReference
+data class DownloadReference(val reference: String)

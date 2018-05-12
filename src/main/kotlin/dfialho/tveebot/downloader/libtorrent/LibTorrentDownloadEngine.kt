@@ -9,6 +9,7 @@ import com.frostwire.jlibtorrent.alerts.Alert
 import com.frostwire.jlibtorrent.alerts.AlertType.TORRENT_FINISHED
 import com.frostwire.jlibtorrent.alerts.TorrentFinishedAlert
 import dfialho.tveebot.downloader.DownloadEngine
+import dfialho.tveebot.downloader.DownloadReference
 import dfialho.tveebot.downloader.EventListener
 import java.nio.file.Path
 
@@ -85,7 +86,7 @@ class LibTorrentDownloadEngine(private val savePath: Path) : DownloadEngine {
             when (alert.type()) {
                 TORRENT_FINISHED -> {
                     alert as TorrentFinishedAlert
-                    listener.onDownloadFinished(LibTorrentReference(alert.handle().infoHash()))
+                    listener.onDownloadFinished(DownloadReference(alert.handle().infoHash().toHex()))
                 }
                 else -> {
                     // Do nothing
