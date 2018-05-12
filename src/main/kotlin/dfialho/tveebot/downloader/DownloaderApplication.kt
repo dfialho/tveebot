@@ -2,20 +2,26 @@ package dfialho.tveebot.downloader
 
 import dfialho.tveebot.downloader.libtorrent.LibTorrentDownloadEngine
 import java.nio.file.Files
-import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.concurrent.thread
 import kotlin.system.exitProcess
 
+fun usage() {
+    println("Usage: ")
+    println("  downloader <save-directory> -f <torrent-file>")
+    println("  downloader <save-directory> -l <magnet-link>")
+}
+
 fun main(args: Array<String>) {
 
-    if (args.size != 2) {
-        println("Usage: downloader <save-directory> <torrent-file>")
+    if (args.size != 3) {
+        usage()
         exitProcess(1)
     }
 
-    val savePath: Path = Paths.get(args[0])
-    val torrentFile: Path = Paths.get(args[1])
+    val savePath = Paths.get(args[0])
+    val option: String = args[1]
+    val torrentReference: String = args[2]
 
     if (!Files.isDirectory(savePath)) {
         println("The download directory does not exists: $savePath")
@@ -23,7 +29,6 @@ fun main(args: Array<String>) {
     }
 
     val downloadManager = DownloadManager(LibTorrentDownloadEngine(savePath))
-
     downloadManager.start()
 
     Runtime.getRuntime().addShutdownHook(thread(start = false) {
@@ -40,7 +45,12 @@ fun main(args: Array<String>) {
     }
 
     downloadManager.engine.addListener(listener)
-    downloadManager.engine.add(torrentFile)
+
+    when (option) {
+        "-f" -> downloadManager.engine.add(torrentFile = Paths.get(torrentReference))
+        "-l" -> downloadManager.engine.add(magnetLink = torrentReference)
+        else -> { usage(); exitProcess(1) }
+    }
 
     print("Downloading...  ")
     downloadManager.awaitTerminated()

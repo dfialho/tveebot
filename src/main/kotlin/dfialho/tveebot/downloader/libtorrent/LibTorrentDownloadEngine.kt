@@ -1,7 +1,9 @@
 package dfialho.tveebot.downloader.libtorrent
 
+import com.frostwire.jlibtorrent.AddTorrentParams.parseMagnetUri
 import com.frostwire.jlibtorrent.AlertListener
 import com.frostwire.jlibtorrent.SessionManager
+import com.frostwire.jlibtorrent.Sha1Hash
 import com.frostwire.jlibtorrent.TorrentInfo
 import com.frostwire.jlibtorrent.alerts.Alert
 import com.frostwire.jlibtorrent.alerts.AlertType.TORRENT_FINISHED
@@ -41,14 +43,22 @@ class LibTorrentDownloadEngine(private val savePath: Path) : DownloadEngine {
     override fun add(torrentFile: Path) {
         val torrentInfo = TorrentInfo(torrentFile.toFile())
         session.download(torrentInfo, savePath.toFile())
+        resumeDownload(torrentInfo.infoHash())
+    }
 
-        val nullableHandler = session.find(torrentInfo.infoHash())
-        val handler = checkNotNull(nullableHandler) { "Cannot add a torrent before starting the engine" }
-        handler.resume()
+    override fun add(magnetLink: String) {
+        require(magnetLink.startsWith("magnet")) { "The magnet's scheme must be 'magnet'" }
+
+        session.download(magnetLink, savePath.toFile())
+        resumeDownload(parseMagnetUri(magnetLink).infoHash())
+    }
+
+    private fun resumeDownload(infoHash: Sha1Hash) {
+        val handle = session.find(infoHash)
+        handle.resume()
     }
 
     override fun addListener(listener: EventListener) {
-
         val internalListener = InternalListener(listener)
         session.addListener(internalListener)
         listeners[listener] = internalListener

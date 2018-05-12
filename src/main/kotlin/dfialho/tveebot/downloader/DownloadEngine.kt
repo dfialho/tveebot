@@ -26,12 +26,21 @@ interface DownloadEngine {
 
     /**
      * Adds a download to the engine based on a torrent file. The download is immediately resumed once added. This
-     * method does not wait for the download to
+     * method does not wait for the download to finish.
      *
      * If the download corresponding to the [torrentFile] was already added to the engine, then this method has no
      * effect.
      */
     fun add(torrentFile: Path)
+
+    /**
+     * Adds a download to the engine based on a magnet link. The download is immediately resumed once added. This
+     * method does not wait for the download to finish.
+     *
+     * If the download corresponding to the [magnetLink] was already added to the engine, then this method has no
+     * effect.
+     */
+    fun add(magnetLink: String)
 
     /**
      * Adds an event listener to the engine. The listener will be notified of all events while the engine is running
