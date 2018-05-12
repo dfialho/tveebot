@@ -60,8 +60,10 @@ class LibTorrentDownloadEngine(private val savePath: Path) : DownloadEngine {
 
     override fun addListener(listener: EventListener) {
         val internalListener = InternalListener(listener)
-        session.addListener(internalListener)
-        listeners[listener] = internalListener
+
+        if (listeners.putIfAbsent(listener, internalListener) == null) {
+            session.addListener(internalListener)
+        }
     }
 
     override fun removeListener(listener: EventListener) {
