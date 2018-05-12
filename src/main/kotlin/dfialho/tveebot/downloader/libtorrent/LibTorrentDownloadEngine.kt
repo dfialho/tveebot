@@ -1,10 +1,7 @@
 package dfialho.tveebot.downloader.libtorrent
 
+import com.frostwire.jlibtorrent.*
 import com.frostwire.jlibtorrent.AddTorrentParams.parseMagnetUri
-import com.frostwire.jlibtorrent.AlertListener
-import com.frostwire.jlibtorrent.SessionManager
-import com.frostwire.jlibtorrent.Sha1Hash
-import com.frostwire.jlibtorrent.TorrentInfo
 import com.frostwire.jlibtorrent.alerts.Alert
 import com.frostwire.jlibtorrent.alerts.AlertType.TORRENT_FINISHED
 import com.frostwire.jlibtorrent.alerts.TorrentFinishedAlert
@@ -60,7 +57,15 @@ class LibTorrentDownloadEngine(private val savePath: Path) : DownloadEngine {
         val torrentHandle = session.find(infoHash)
         torrentHandle.resume()
 
-        return LibTorrentDownloadHandle(torrentHandle)
+        return LibTorrentDownloadHandle(this, torrentHandle)
+    }
+
+    /**
+     * Removes a download corresponding to the [torrentHandle] from the download session. The downloaded data will be
+     * kept.
+     */
+    internal fun remove(torrentHandle: TorrentHandle) {
+        session.remove(torrentHandle)
     }
 
     override fun addListener(listener: EventListener) {

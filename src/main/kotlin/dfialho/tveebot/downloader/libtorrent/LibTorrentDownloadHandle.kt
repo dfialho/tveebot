@@ -8,10 +8,7 @@ import dfialho.tveebot.downloader.DownloadState
 import dfialho.tveebot.downloader.DownloadStatus
 import java.util.*
 
-class LibTorrentDownloadHandle(private val torrentHandle: TorrentHandle) : DownloadHandle {
-
-    override val reference: DownloadReference
-        get() = torrentHandle.infoHash().toDownloadReference()
+class LibTorrentDownloadHandle(private val engine: LibTorrentDownloadEngine, private val torrentHandle: TorrentHandle) : DownloadHandle {
 
     companion object {
 
@@ -35,6 +32,12 @@ class LibTorrentDownloadHandle(private val torrentHandle: TorrentHandle) : Downl
 
     }
 
+    override val reference: DownloadReference
+        get() = torrentHandle.infoHash().toDownloadReference()
+
+    override val isValid: Boolean
+        get() = torrentHandle.isValid
+
     override fun getStatus(): DownloadStatus = torrentHandle.status().let {
         DownloadStatus(
             torrentHandle.name(),
@@ -42,5 +45,9 @@ class LibTorrentDownloadHandle(private val torrentHandle: TorrentHandle) : Downl
             it.progress(),
             it.downloadRate()
         )
+    }
+
+    override fun stop() {
+        engine.remove(torrentHandle)
     }
 }
