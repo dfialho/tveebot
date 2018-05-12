@@ -9,6 +9,7 @@ import com.frostwire.jlibtorrent.alerts.Alert
 import com.frostwire.jlibtorrent.alerts.AlertType.TORRENT_FINISHED
 import com.frostwire.jlibtorrent.alerts.TorrentFinishedAlert
 import dfialho.tveebot.downloader.DownloadEngine
+import dfialho.tveebot.downloader.DownloadHandle
 import dfialho.tveebot.downloader.DownloadReference
 import dfialho.tveebot.downloader.EventListener
 import java.nio.file.Path
@@ -41,22 +42,25 @@ class LibTorrentDownloadEngine(private val savePath: Path) : DownloadEngine {
         session.stop()
     }
 
-    override fun add(torrentFile: Path) {
+    override fun add(torrentFile: Path): DownloadHandle {
         val torrentInfo = TorrentInfo(torrentFile.toFile())
         session.download(torrentInfo, savePath.toFile())
-        resumeDownload(torrentInfo.infoHash())
+
+        return resumeDownload(torrentInfo.infoHash())
     }
 
-    override fun add(magnetLink: String) {
+    override fun add(magnetLink: String): DownloadHandle {
         require(magnetLink.startsWith("magnet")) { "The magnet's scheme must be 'magnet'" }
 
         session.download(magnetLink, savePath.toFile())
-        resumeDownload(parseMagnetUri(magnetLink).infoHash())
+        return resumeDownload(parseMagnetUri(magnetLink).infoHash())
     }
 
-    private fun resumeDownload(infoHash: Sha1Hash) {
-        val handle = session.find(infoHash)
-        handle.resume()
+    private fun resumeDownload(infoHash: Sha1Hash): DownloadHandle {
+        val torrentHandle = session.find(infoHash)
+        torrentHandle.resume()
+
+        return LibTorrentDownloadHandle(torrentHandle)
     }
 
     override fun addListener(listener: EventListener) {
