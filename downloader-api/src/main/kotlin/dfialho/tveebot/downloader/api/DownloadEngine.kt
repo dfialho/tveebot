@@ -58,4 +58,6 @@ interface DownloadEngine {
      */
     fun removeListener(listener: EventListener)
 
+    fun getHandle(downloadReference: DownloadReference): DownloadHandle
+
 }

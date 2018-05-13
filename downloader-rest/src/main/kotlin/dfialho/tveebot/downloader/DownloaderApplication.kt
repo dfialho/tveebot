@@ -1,19 +1,17 @@
 package dfialho.tveebot.downloader
 
+import dfialho.tveebot.downloader.api.DownloadEngine
 import dfialho.tveebot.downloader.api.DownloadManager
 import dfialho.tveebot.downloader.api.DownloadReference
 import dfialho.tveebot.downloader.api.EventListener
 import dfialho.tveebot.downloader.libtorrent.LibTorrentDownloadEngine
 import org.slf4j.LoggerFactory
-import org.springframework.boot.CommandLineRunner
 import org.springframework.boot.autoconfigure.SpringBootApplication
-import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.runApplication
 import org.springframework.context.annotation.Bean
 import org.springframework.stereotype.Component
 import java.nio.file.Files
-import java.nio.file.Path
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
@@ -24,12 +22,7 @@ import kotlin.system.exitProcess
 class DownloaderApplication {
 
     @Bean
-    fun downloaderInitializer(downloader: Downloader) = CommandLineRunner {
-        downloader.download()
-    }
-
-    @Bean
-    fun downloaderManager(config: DownloaderConfig): DownloadManager {
+    fun downloadManager(config: DownloaderConfig): DownloadManager {
 
         if (!Files.isDirectory(config.savePath)) {
             throw IllegalArgumentException("The download directory does not exist: ${config.savePath}")
@@ -38,14 +31,13 @@ class DownloaderApplication {
         return DownloadManager(LibTorrentDownloadEngine(config.savePath))
     }
 
+    @Bean
+    fun downloadEngine(downloadManager: DownloadManager): DownloadEngine {
+        return downloadManager.engine
+    }
+
 }
 
-@ConfigurationProperties("downloader")
-class DownloaderConfig {
-
-    lateinit var savePath: Path
-    lateinit var magnetLink: String
-}
 @Component
 class Downloader(private val config: DownloaderConfig, private val downloadManager: DownloadManager) {
 

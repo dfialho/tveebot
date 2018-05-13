@@ -68,6 +68,11 @@ class LibTorrentDownloadEngine(private val savePath: Path) : DownloadEngine {
         session.remove(torrentHandle)
     }
 
+    override fun getHandle(downloadReference: DownloadReference): DownloadHandle {
+        val torrentHandle = session.find(downloadReference.toHash())
+        return LibTorrentDownloadHandle(this, torrentHandle)
+    }
+
     override fun addListener(listener: EventListener) {
         val internalListener = InternalListener(listener)
 
