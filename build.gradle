@@ -1,44 +1,39 @@
 buildscript {
     ext {
         kotlinVersion = '1.2.41'
-        springBootVersion = '2.0.1.RELEASE'
         jlibtorrentVersion = '1.2.0.17'
         guavaVersion = '25.0-jre'
     }
+
     repositories {
         mavenCentral()
     }
+
     dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlinVersion}")
-        classpath("org.jetbrains.kotlin:kotlin-allopen:${kotlinVersion}")
     }
 }
 
-apply plugin: 'kotlin'
+allprojects {
 
-group = 'dfialho.tveebot'
-version = '0.1-SNAPSHOT'
-sourceCompatibility = 1.8
+    apply plugin: 'kotlin'
 
-compileKotlin {
-    kotlinOptions {
-        freeCompilerArgs = ["-Xjsr305=strict"]
-        jvmTarget = "1.8"
+    repositories {
+        mavenCentral()
     }
-}
-compileTestKotlin {
-    kotlinOptions {
-        freeCompilerArgs = ["-Xjsr305=strict"]
-        jvmTarget = "1.8"
+
+    group = 'dfialho.tveebot'
+    version = '0.1-SNAPSHOT'
+    sourceCompatibility = 1.8
+
+    compileKotlin {
+        kotlinOptions {
+            jvmTarget = "1.8"
+        }
     }
-}
-
-repositories {
-    mavenCentral()
-}
-
-
-dependencies {
-
+    compileTestKotlin {
+        kotlinOptions {
+            jvmTarget = "1.8"
+        }
+    }
 }
