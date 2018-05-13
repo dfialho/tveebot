@@ -89,5 +89,5 @@ class Downloader(private val config: DownloaderConfig, private val downloadManag
 }
 
 fun main(args: Array<String>) {
-    runApplication<DownloaderApplication>()
+    runApplication<DownloaderApplication>(*args)
 }
