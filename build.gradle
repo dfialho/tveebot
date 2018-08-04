@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        kotlinVersion = '1.2.41'
+        kotlinVersion = '1.2.60'
         jlibtorrentVersion = '1.2.0.17'
         guavaVersion = '25.0-jre'
     }
