@@ -4,6 +4,8 @@ import dfialho.tveebot.downloader.api.DownloadEngine
 import dfialho.tveebot.downloader.api.DownloadReference
 import dfialho.tveebot.downloader.api.DownloadStatus
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 /**
@@ -12,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController
  * @author David Fialho (dfialho@protonmail.com)
  */
 @RestController
-class DownloaderController(private val downloadEngine: DownloadEngine) {
+class DownloaderController(private val engine: DownloadEngine) {
 
     /**
      * Adds a new download to the download engine from a [magnetLink] and returns a reference for it.
@@ -21,26 +23,26 @@ class DownloaderController(private val downloadEngine: DownloadEngine) {
      */
     @GetMapping("add")
     fun add(magnetLink: String): DownloadReference {
-        return downloadEngine.add(magnetLink).reference
+        return engine.add(magnetLink).reference
     }
 
     /**
-     * Retrieves the current [DownloadStatus] of the download referenced by [downloadReference].
+     * Retrieves the current [DownloadStatus] of the download referenced by [reference].
      *
-     * @throws NoSuchElementException If not download with [downloadReference] can be found
+     * @throws NoSuchElementException If not download with [reference] can be found
      */
-    @GetMapping("status")
-    fun status(downloadReference: DownloadReference): DownloadStatus {
-        return downloadEngine.getHandle(downloadReference).getStatus()
+    @GetMapping("status/{reference}")
+    fun status(@PathVariable reference: DownloadReference): DownloadStatus {
+        return engine.getHandle(reference).getStatus()
     }
 
     /**
-     * Removes the download referenced by [downloadReference].
+     * Removes the download referenced by [reference].
      *
-     * @throws NoSuchElementException If not download with [downloadReference] can be found
+     * @throws NoSuchElementException If not download with [reference] can be found
      */
-    @GetMapping("remove")
-    fun remove(downloadReference: DownloadReference) {
-        downloadEngine.getHandle(downloadReference).stop()
+    @GetMapping("remove/{reference}")
+    fun remove(@PathVariable reference: DownloadReference) {
+        engine.getHandle(reference).stop()
     }
 }
