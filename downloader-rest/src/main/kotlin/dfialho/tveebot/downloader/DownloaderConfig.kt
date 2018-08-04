@@ -6,5 +6,4 @@ import java.nio.file.Path
 @ConfigurationProperties("downloader")
 class DownloaderConfig {
     lateinit var savePath: Path
-    lateinit var magnetLink: String
 }
