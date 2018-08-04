@@ -43,22 +43,6 @@ interface DownloadEngine {
     fun add(magnetLink: String): DownloadHandle
 
     /**
-     * Adds an event listener to the engine. The listener will be notified of all events while the engine is running
-     * and the listener is not removed from the engine.
-     *
-     * @see EventListener for details on the kind of events that can be triggered.
-     */
-    fun addListener(listener: EventListener)
-
-    /**
-     * Removes an event listener from the engine. After this method returns the [listener] will no longer receive
-     * events from the engine.
-     *
-     * If the listener was not listening for events yet, then this method has no effect.
-     */
-    fun removeListener(listener: EventListener)
-
-    /**
      * Returns the [DownloadHandle] for the download referenced by [reference]. If no download with [reference] exists,
      * then ir returns null.
      */

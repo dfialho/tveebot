@@ -1,15 +1,15 @@
 package dfialho.tveebot.downloader.libtorrent
 
-import com.frostwire.jlibtorrent.*
 import com.frostwire.jlibtorrent.AddTorrentParams.parseMagnetUri
-import com.frostwire.jlibtorrent.alerts.Alert
-import com.frostwire.jlibtorrent.alerts.AlertType.TORRENT_FINISHED
-import com.frostwire.jlibtorrent.alerts.TorrentFinishedAlert
-import dfialho.tveebot.downloader.api.*
-import dfialho.tveebot.downloader.api.EventListener
+import com.frostwire.jlibtorrent.SessionManager
+import com.frostwire.jlibtorrent.Sha1Hash
+import com.frostwire.jlibtorrent.TorrentHandle
+import com.frostwire.jlibtorrent.TorrentInfo
+import dfialho.tveebot.downloader.api.DownloadEngine
+import dfialho.tveebot.downloader.api.DownloadHandle
+import dfialho.tveebot.downloader.api.DownloadReference
+import dfialho.tveebot.downloader.api.DownloadStatus
 import java.nio.file.Path
-import java.util.*
-import kotlin.NoSuchElementException
 
 /**
  * Implementation of a [DownloadEngine] based on the libtorrent library.
@@ -25,13 +25,10 @@ class LibTorrentDownloadEngine(private val savePath: Path) : DownloadEngine {
      */
     private val session = SessionManager()
 
-    private val references: MutableSet<DownloadReference> = mutableSetOf()
-
     /**
-     * Mapping between the event listeners and the internal alert listener. Required to be able to remove an event
-     * listener.
+     * Set containing the references for every download currently managed by this download engine.
      */
-    private val listeners: MutableMap<EventListener, AlertListener> = HashMap()
+    private val references: MutableSet<DownloadReference> = mutableSetOf()
 
     override fun start() {
         session.start()
@@ -53,18 +50,6 @@ class LibTorrentDownloadEngine(private val savePath: Path) : DownloadEngine {
 
         session.download(magnetLink, savePath.toFile())
         return resumeDownload(parseMagnetUri(magnetLink).infoHash())
-    }
-
-    override fun addListener(listener: EventListener) {
-        val internalListener = InternalListener(listener)
-
-        if (listeners.putIfAbsent(listener, internalListener) == null) {
-            session.addListener(internalListener)
-        }
-    }
-
-    override fun removeListener(listener: EventListener) {
-        listeners.remove(listener)?.also { session.removeListener(it) }
     }
 
     override fun getHandle(reference: DownloadReference): DownloadHandle? {
@@ -103,29 +88,5 @@ class LibTorrentDownloadEngine(private val savePath: Path) : DownloadEngine {
         references.add(handle.reference)
 
         return handle
-    }
-
-    /**
-     * An internal listener which wraps an [EventListener] with an [AlertListener].
-     */
-    private class InternalListener(private val listener: EventListener) : AlertListener {
-
-        override fun types(): IntArray? {
-            // Listen to all alerts
-            return null
-        }
-
-        override fun alert(alert: Alert<*>) {
-
-            when (alert.type()) {
-                TORRENT_FINISHED -> {
-                    alert as TorrentFinishedAlert
-                    listener.onDownloadFinished(DownloadReference(alert.handle().infoHash().toHex()))
-                }
-                else -> {
-                    // Do nothing
-                }
-            }
-        }
     }
 }
