@@ -21,7 +21,7 @@ import java.nio.file.Path
 class LibTorrentDownloadEngine(private val savePath: Path) : DownloadEngine {
 
     /**
-     * The internal session which manages the downloads.
+     * Iternal session which manages the downloads.
      */
     private val session = SessionManager()
 
@@ -53,21 +53,6 @@ class LibTorrentDownloadEngine(private val savePath: Path) : DownloadEngine {
         return resumeDownload(parseMagnetUri(magnetLink).infoHash())
     }
 
-    private fun resumeDownload(infoHash: Sha1Hash): DownloadHandle {
-        val torrentHandle = session.find(infoHash)
-        torrentHandle.resume()
-
-        return LibTorrentDownloadHandle(this, torrentHandle)
-    }
-
-    /**
-     * Removes a download corresponding to the [torrentHandle] from the download session. The downloaded data will be
-     * kept.
-     */
-    internal fun remove(torrentHandle: TorrentHandle) {
-        session.remove(torrentHandle)
-    }
-
     override fun getHandle(downloadReference: DownloadReference): DownloadHandle {
         val torrentHandle = session.find(downloadReference.toHash())
         return LibTorrentDownloadHandle(this, torrentHandle)
@@ -83,6 +68,24 @@ class LibTorrentDownloadEngine(private val savePath: Path) : DownloadEngine {
 
     override fun removeListener(listener: EventListener) {
         listeners.remove(listener)?.also { session.removeListener(it) }
+    }
+
+    /**
+     * Removes a download corresponding to the [torrentHandle] from the download session. The downloaded data will be
+     * kept.
+     */
+    internal fun remove(torrentHandle: TorrentHandle) {
+        session.remove(torrentHandle)
+    }
+
+    /**
+     * Resumes a download from its [infoHash].
+     */
+    private fun resumeDownload(infoHash: Sha1Hash): DownloadHandle {
+        val torrentHandle = session.find(infoHash)
+        torrentHandle.resume()
+
+        return LibTorrentDownloadHandle(this, torrentHandle)
     }
 
     /**

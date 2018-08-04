@@ -8,4 +8,7 @@ import dfialho.tveebot.downloader.api.DownloadReference
  */
 internal fun Sha1Hash.toDownloadReference(): DownloadReference = DownloadReference(this.toHex())
 
+/**
+ * Converts this [DownloadReference] to a [Sha1Hash].
+ */
 internal fun DownloadReference.toHash(): Sha1Hash = Sha1Hash(this.reference)

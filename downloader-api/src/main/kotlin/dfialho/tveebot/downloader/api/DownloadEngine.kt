@@ -58,6 +58,9 @@ interface DownloadEngine {
      */
     fun removeListener(listener: EventListener)
 
+    /**
+     * Returns the [DownloadHandle] for the download referenced by [downloadReference].
+     */
     fun getHandle(downloadReference: DownloadReference): DownloadHandle
 
 }

@@ -17,11 +17,17 @@ class DownloadManager(val engine: DownloadEngine) : AbstractIdleService() {
         engine.stop()
     }
 
+    /**
+     * Starts the [DownloadEngine]. It blocks until the [DownloadEngine] is started.
+     */
     fun start() {
         startAsync()
         awaitRunning()
     }
 
+    /**
+     * Stops then [DownloadEngine]. It blocks until the [DownloadEngine] is stopped.
+     */
     fun stop() {
         stopAsync()
         awaitTerminated()

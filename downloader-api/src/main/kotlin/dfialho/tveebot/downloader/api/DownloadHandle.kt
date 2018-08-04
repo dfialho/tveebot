@@ -25,7 +25,7 @@ interface DownloadHandle {
     fun getStatus(): DownloadStatus
 
     /**
-     * Stops the download associated with this handle. Afterwords this handle becomes invalid.
+     * Stops the download associated with this handle. After calling this method, this handle becomes invalid.
      */
     fun stop()
 

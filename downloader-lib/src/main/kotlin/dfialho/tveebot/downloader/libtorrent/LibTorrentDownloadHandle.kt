@@ -8,6 +8,16 @@ import dfialho.tveebot.downloader.api.DownloadState
 import dfialho.tveebot.downloader.api.DownloadStatus
 import java.util.*
 
+
+/**
+ * [DownloadHandle] implementation based on the libtorrent library.
+ *
+ * @property engine Internal download engine which creates this handle
+ * @property torrentHandle Handle obtained through the libtorrent library
+ *
+ * @author David Fialho (dfialho@protonmail.com)
+ * @see DownloadHandle
+ */
 class LibTorrentDownloadHandle(
     private val engine: LibTorrentDownloadEngine,
     private val torrentHandle: TorrentHandle
@@ -16,7 +26,7 @@ class LibTorrentDownloadHandle(
     companion object {
 
         /**
-         * Mapping between libtorrent states and download states
+         * Mapping between [TorrentStatus.State]libtorrent states and download states
          */
         private val stateMapper = EnumMap<TorrentStatus.State, DownloadState>(mapOf(
             TorrentStatus.State.CHECKING_FILES to DownloadState.SCANNING_FILES,
@@ -29,10 +39,12 @@ class LibTorrentDownloadHandle(
             TorrentStatus.State.UNKNOWN to DownloadState.UNKNOWN
         ))
 
+        /**
+         * Converts a [TorrentStatus.State] to a [DownloadState].
+         */
         fun TorrentStatus.State.toDownloadState(): DownloadState {
             return checkNotNull(stateMapper[this]) { "Unrecognized state ${this}" }
         }
-
     }
 
     override val reference: DownloadReference

@@ -5,6 +5,7 @@ import dfialho.tveebot.downloader.api.DownloadManager
 import dfialho.tveebot.downloader.api.DownloadReference
 import dfialho.tveebot.downloader.api.EventListener
 import dfialho.tveebot.downloader.libtorrent.LibTorrentDownloadEngine
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.context.properties.EnableConfigurationProperties
@@ -42,7 +43,7 @@ class DownloaderApplication {
 class Downloader(private val config: DownloaderConfig, private val downloadManager: DownloadManager) {
 
     companion object {
-        val logger = LoggerFactory.getLogger(Downloader::class.java)
+        val logger: Logger = LoggerFactory.getLogger(Downloader::class.java)
     }
 
     val exitLatch = CountDownLatch(1)
