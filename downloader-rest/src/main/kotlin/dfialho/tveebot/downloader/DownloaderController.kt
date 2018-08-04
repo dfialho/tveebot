@@ -16,20 +16,31 @@ class DownloaderController(private val downloadEngine: DownloadEngine) {
 
     /**
      * Adds a new download to the download engine from a [magnetLink] and returns a reference for it.
+     *
+     * If the download was already being download then this will have no effect.
      */
     @GetMapping("add")
     fun add(magnetLink: String): DownloadReference {
-        val downloadHandle = downloadEngine.add(magnetLink)
-        return downloadHandle.reference
+        return downloadEngine.add(magnetLink).reference
     }
 
     /**
      * Retrieves the current [DownloadStatus] of the download referenced by [downloadReference].
+     *
+     * @throws NoSuchElementException If not download with [downloadReference] can be found
      */
     @GetMapping("status")
     fun status(downloadReference: DownloadReference): DownloadStatus {
-        val downloadHandle = downloadEngine.getHandle(downloadReference)
-        return downloadHandle.getStatus()
+        return downloadEngine.getHandle(downloadReference).getStatus()
     }
 
+    /**
+     * Removes the download referenced by [downloadReference].
+     *
+     * @throws NoSuchElementException If not download with [downloadReference] can be found
+     */
+    @GetMapping("remove")
+    fun remove(downloadReference: DownloadReference) {
+        downloadEngine.getHandle(downloadReference).stop()
+    }
 }
