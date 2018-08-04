@@ -50,11 +50,12 @@ class Downloader(private val config: DownloaderConfig, private val downloadManag
 
     init {
         downloadManager.start()
+        logger.info("Download engine started")
 
         Runtime.getRuntime().addShutdownHook(thread(start = false) {
-            logger.info("Closing downloader")
+            logger.info("Closing download engine")
             downloadManager.stop()
-            logger.info("Downloader closed")
+            logger.info("Download engine closed")
         })
 
         val listener: EventListener = object : EventListener {

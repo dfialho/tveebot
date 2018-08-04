@@ -5,6 +5,8 @@ import com.google.common.util.concurrent.AbstractIdleService
 /**
  * The [DownloadManager] manages the lifecycle of a [DownloadEngine].
  *
+ * @property engine The download engine managed by this download manager
+ *
  * @author David Fialho (dfialho@protonmail.com)
  */
 class DownloadManager(val engine: DownloadEngine) : AbstractIdleService() {

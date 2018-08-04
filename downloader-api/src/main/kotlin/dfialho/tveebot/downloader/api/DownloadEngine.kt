@@ -60,6 +60,8 @@ interface DownloadEngine {
 
     /**
      * Returns the [DownloadHandle] for the download referenced by [downloadReference].
+     *
+     * @throws NoSuchElementException If not download with [downloadReference] can be found
      */
     fun getHandle(downloadReference: DownloadReference): DownloadHandle
 
