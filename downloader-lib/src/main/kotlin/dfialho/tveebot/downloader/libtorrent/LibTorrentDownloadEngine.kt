@@ -5,10 +5,7 @@ import com.frostwire.jlibtorrent.AddTorrentParams.parseMagnetUri
 import com.frostwire.jlibtorrent.alerts.Alert
 import com.frostwire.jlibtorrent.alerts.AlertType.TORRENT_FINISHED
 import com.frostwire.jlibtorrent.alerts.TorrentFinishedAlert
-import dfialho.tveebot.downloader.api.DownloadEngine
-import dfialho.tveebot.downloader.api.DownloadHandle
-import dfialho.tveebot.downloader.api.DownloadReference
-import dfialho.tveebot.downloader.api.EventListener
+import dfialho.tveebot.downloader.api.*
 import java.nio.file.Path
 
 /**
@@ -54,7 +51,9 @@ class LibTorrentDownloadEngine(private val savePath: Path) : DownloadEngine {
     }
 
     override fun getHandle(downloadReference: DownloadReference): DownloadHandle {
-        val torrentHandle = session.find(downloadReference.toHash())
+        val torrentHandle: TorrentHandle? = session.find(downloadReference.toHash())
+        torrentHandle ?: throw NoSuchElementException("Download with reference ${downloadReference.reference} not found")
+
         return LibTorrentDownloadHandle(this, torrentHandle)
     }
 
