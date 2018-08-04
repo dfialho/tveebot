@@ -5,7 +5,6 @@ import dfialho.tveebot.downloader.api.DownloadReference
 import dfialho.tveebot.downloader.api.DownloadStatus
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 /**
@@ -27,13 +26,21 @@ class DownloaderController(private val engine: DownloadEngine) {
     }
 
     /**
+     * Retrieves the [DownloadStatus] of all downloads currently managed by the download engine.
+     */
+    @GetMapping("status")
+    fun status(): List<DownloadStatus> {
+        return engine.getAllStatus()
+    }
+
+    /**
      * Retrieves the current [DownloadStatus] of the download referenced by [reference].
      *
      * @throws NoSuchElementException If not download with [reference] can be found
      */
     @GetMapping("status/{reference}")
     fun status(@PathVariable reference: DownloadReference): DownloadStatus {
-        return engine.getHandle(reference).getStatus()
+        return engine.getHandleOrFail(reference).getStatus()
     }
 
     /**
@@ -43,6 +50,6 @@ class DownloaderController(private val engine: DownloadEngine) {
      */
     @GetMapping("remove/{reference}")
     fun remove(@PathVariable reference: DownloadReference) {
-        engine.getHandle(reference).stop()
+        engine.getHandleOrFail(reference).stop()
     }
 }

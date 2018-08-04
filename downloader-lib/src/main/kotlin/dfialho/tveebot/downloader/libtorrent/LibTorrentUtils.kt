@@ -11,4 +11,4 @@ internal fun Sha1Hash.toDownloadReference(): DownloadReference = DownloadReferen
 /**
  * Converts this [DownloadReference] to a [Sha1Hash].
  */
-internal fun DownloadReference.toHash(): Sha1Hash = Sha1Hash(this.reference)
+internal fun DownloadReference.toHash(): Sha1Hash = Sha1Hash(this.value)

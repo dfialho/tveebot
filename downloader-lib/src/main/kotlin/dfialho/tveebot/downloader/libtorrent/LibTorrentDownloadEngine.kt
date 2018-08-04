@@ -6,7 +6,10 @@ import com.frostwire.jlibtorrent.alerts.Alert
 import com.frostwire.jlibtorrent.alerts.AlertType.TORRENT_FINISHED
 import com.frostwire.jlibtorrent.alerts.TorrentFinishedAlert
 import dfialho.tveebot.downloader.api.*
+import dfialho.tveebot.downloader.api.EventListener
 import java.nio.file.Path
+import java.util.*
+import kotlin.NoSuchElementException
 
 /**
  * Implementation of a [DownloadEngine] based on the libtorrent library.
@@ -18,9 +21,11 @@ import java.nio.file.Path
 class LibTorrentDownloadEngine(private val savePath: Path) : DownloadEngine {
 
     /**
-     * Iternal session which manages the downloads.
+     * Internal session which manages the downloads.
      */
     private val session = SessionManager()
+
+    private val references: MutableSet<DownloadReference> = mutableSetOf()
 
     /**
      * Mapping between the event listeners and the internal alert listener. Required to be able to remove an event
@@ -50,13 +55,6 @@ class LibTorrentDownloadEngine(private val savePath: Path) : DownloadEngine {
         return resumeDownload(parseMagnetUri(magnetLink).infoHash())
     }
 
-    override fun getHandle(downloadReference: DownloadReference): DownloadHandle {
-        val torrentHandle: TorrentHandle? = session.find(downloadReference.toHash())
-        torrentHandle ?: throw NoSuchElementException("Download with reference ${downloadReference.reference} not found")
-
-        return LibTorrentDownloadHandle(this, torrentHandle)
-    }
-
     override fun addListener(listener: EventListener) {
         val internalListener = InternalListener(listener)
 
@@ -67,6 +65,23 @@ class LibTorrentDownloadEngine(private val savePath: Path) : DownloadEngine {
 
     override fun removeListener(listener: EventListener) {
         listeners.remove(listener)?.also { session.removeListener(it) }
+    }
+
+    override fun getHandle(reference: DownloadReference): DownloadHandle? {
+        val torrentHandle: TorrentHandle? = session.find(reference.toHash())
+        return torrentHandle?.let { LibTorrentDownloadHandle(this, torrentHandle) }
+    }
+
+    override fun getHandleOrFail(reference: DownloadReference): DownloadHandle {
+        return getHandle(reference) ?: throw NoSuchElementException("Download with reference '$reference' not found")
+    }
+
+    override fun getAllHandles(): List<DownloadHandle> {
+        return references.mapNotNull { getHandle(it) }
+    }
+
+    override fun getAllStatus(): List<DownloadStatus> {
+        return getAllHandles().map { it.getStatus() }
     }
 
     /**
@@ -84,7 +99,10 @@ class LibTorrentDownloadEngine(private val savePath: Path) : DownloadEngine {
         val torrentHandle = session.find(infoHash)
         torrentHandle.resume()
 
-        return LibTorrentDownloadHandle(this, torrentHandle)
+        val handle = LibTorrentDownloadHandle(this, torrentHandle)
+        references.add(handle.reference)
+
+        return handle
     }
 
     /**

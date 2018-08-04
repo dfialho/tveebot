@@ -59,10 +59,26 @@ interface DownloadEngine {
     fun removeListener(listener: EventListener)
 
     /**
-     * Returns the [DownloadHandle] for the download referenced by [downloadReference].
-     *
-     * @throws NoSuchElementException If not download with [downloadReference] can be found
+     * Returns the [DownloadHandle] for the download referenced by [reference]. If no download with [reference] exists,
+     * then ir returns null.
      */
-    fun getHandle(downloadReference: DownloadReference): DownloadHandle
+    fun getHandle(reference: DownloadReference): DownloadHandle?
 
+    /**
+     * Returns the [DownloadHandle] for the download referenced by [reference], if it exists. Otherwise, it throws a
+     * [NoSuchElementException].
+     *
+     * @throws NoSuchElementException If no download with [reference] can be found
+     */
+    fun getHandleOrFail(reference: DownloadReference): DownloadHandle
+
+    /**
+     * Retrieves the [DownloadHandle] for all downloads being managed by this engine.
+     */
+    fun getAllHandles(): List<DownloadHandle>
+
+    /**
+     * Retrieves the [DownloadStatus] for all downloads being managed by this engine.
+     */
+    fun getAllStatus(): List<DownloadStatus>
 }
