@@ -9,7 +9,9 @@ import com.google.common.util.concurrent.AbstractIdleService
  *
  * @author David Fialho (dfialho@protonmail.com)
  */
-class DownloadManager(val engine: DownloadEngine) : AbstractIdleService() {
+class DownloadManager(engine: DownloadEngine) : AbstractIdleService() {
+
+    val engine = threadSafe { engine }
 
     override fun startUp() {
         engine.start()

@@ -6,8 +6,6 @@ import javax.annotation.concurrent.NotThreadSafe
 /**
  * The [DownloadEngine] is responsible for performing the actual downloads, providing an interface to manage them.
  *
- * At this point this interface does not "force" the implementors to guarantee thread safeness.
- *
  * @author David Fialho (dfialho@protonmail.com)
  * @see DownloadManager
  */
@@ -43,8 +41,24 @@ interface DownloadEngine {
     fun add(magnetLink: String): DownloadHandle
 
     /**
+     * Removes the download referenced by [reference] from this engine. If [reference] does not map to any download
+     * managed by this engine, then this method will have no effect.
+     *
+     * After calling this method, all [DownloadHandle]s for the corresponding download become invalid.
+     */
+    fun remove(reference: DownloadReference)
+
+    /**
+     * Performs the same action as [remove], but it throws a [NoSuchElementException] if no download is found with the
+     * specified [reference].
+     *
+     * @throws NoSuchElementException If no download with [reference] can be found
+     */
+    fun removeOrFail(reference: DownloadReference)
+
+    /**
      * Returns the [DownloadHandle] for the download referenced by [reference]. If no download with [reference] exists,
-     * then ir returns null.
+     * then it returns null.
      */
     fun getHandle(reference: DownloadReference): DownloadHandle?
 

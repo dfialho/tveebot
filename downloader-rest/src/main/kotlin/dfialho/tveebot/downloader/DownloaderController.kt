@@ -50,6 +50,6 @@ class DownloaderController(private val engine: DownloadEngine) {
      */
     @GetMapping("remove/{reference}")
     fun remove(@PathVariable reference: DownloadReference) {
-        engine.getHandleOrFail(reference).stop()
+        engine.removeOrFail(reference)
     }
 }

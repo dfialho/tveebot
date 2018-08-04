@@ -13,20 +13,20 @@ import java.util.*
  * [DownloadHandle] implementation based on the libtorrent library.
  *
  * @property engine Internal download engine which creates this handle
- * @property torrentHandle Handle obtained through the libtorrent library
+ * @property nativeHandle Handle obtained through the libtorrent library
  *
  * @author David Fialho (dfialho@protonmail.com)
  * @see DownloadHandle
  */
 class LibTorrentDownloadHandle(
     private val engine: LibTorrentDownloadEngine,
-    private val torrentHandle: TorrentHandle
+    private val nativeHandle: TorrentHandle
 ) : DownloadHandle {
 
     companion object {
 
         /**
-         * Mapping between [TorrentStatus.State]libtorrent states and download states
+         * Mapping between [TorrentStatus.State] libtorrent states and download states
          */
         private val stateMapper = EnumMap<TorrentStatus.State, DownloadState>(mapOf(
             TorrentStatus.State.CHECKING_FILES to DownloadState.SCANNING_FILES,
@@ -48,14 +48,14 @@ class LibTorrentDownloadHandle(
     }
 
     override val reference: DownloadReference
-        get() = torrentHandle.infoHash().toDownloadReference()
+        get() = nativeHandle.infoHash().toDownloadReference()
 
     override val isValid: Boolean
-        get() = torrentHandle.isValid
+        get() = nativeHandle.isValid
 
-    override fun getStatus(): DownloadStatus = torrentHandle.status().let {
+    override fun getStatus(): DownloadStatus = nativeHandle.status().let {
         DownloadStatus(
-            torrentHandle.name(),
+            nativeHandle.name(),
             it.state().toDownloadState(),
             it.progress(),
             it.downloadRate()
@@ -63,14 +63,14 @@ class LibTorrentDownloadHandle(
     }
 
     override fun stop() {
-        engine.remove(torrentHandle)
+        engine.remove(reference, nativeHandle)
     }
 
     override fun pause() {
-        torrentHandle.pause()
+        nativeHandle.pause()
     }
 
     override fun resume() {
-        torrentHandle.resume()
+        nativeHandle.resume()
     }
 }
