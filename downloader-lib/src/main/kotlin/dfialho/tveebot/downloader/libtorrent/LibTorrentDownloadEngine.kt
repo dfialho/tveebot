@@ -44,7 +44,7 @@ class LibTorrentDownloadEngine(private val savePath: Path) : DownloadEngine {
     }
 
     override fun add(magnetLink: String): DownloadHandle {
-        require(magnetLink.startsWith("magnet")) { "The magnet's scheme must be 'magnet'" }
+        require(magnetLink.startsWith("magnet")) { "the magnet link's scheme must be 'magnet'" }
 
         session.download(magnetLink, savePath.toFile())
         return resumeDownload(parseMagnetUri(magnetLink).infoHash())

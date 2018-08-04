@@ -23,10 +23,10 @@ class RestResponseEntityExceptionHandler : ResponseEntityExceptionHandler() {
      * @property exception The base name of the exception which caused the error
      * @property message The error messaging explaining the cause for the error
      */
-    private data class ErrorResponse(
-        val exception: String,
-        val message: String
-    )
+    private data class ErrorResponse(private val exception: Exception, private val prefix: String = "") {
+        val error: String get() = exception::class.simpleName ?: ""
+        val message: String get() = prefix + exception.message
+    }
 
     /**
      * Handles exceptions which indicate that an element was not found. It returns a response with a NOT FOUND status
@@ -34,11 +34,16 @@ class RestResponseEntityExceptionHandler : ResponseEntityExceptionHandler() {
      */
     @ExceptionHandler(value = [NoSuchElementException::class])
     protected fun handleElementsNotFound(exception: Exception, request: WebRequest): ResponseEntity<Any> {
-        val errorResponse = ErrorResponse(
-            exception::class.simpleName ?: "",
-            exception.message ?: ""
-        )
+        return handleExceptionInternal(exception, ErrorResponse(exception), HttpHeaders(), HttpStatus.NOT_FOUND, request)
+    }
 
-        return handleExceptionInternal(exception, errorResponse, HttpHeaders(), HttpStatus.NOT_FOUND, request)
+    /**
+     * Handles exceptions which indicate that the input parameters are not valid. It returns a response with a
+     * BAD REQUEST status code.
+     */
+    @ExceptionHandler(value = [IllegalArgumentException::class])
+    protected fun handleInvalidArguments(exception: Exception, request: WebRequest): ResponseEntity<Any> {
+        val errorResponse = ErrorResponse(exception, prefix = "Invalid parameter: ")
+        return handleExceptionInternal(exception, errorResponse, HttpHeaders(), HttpStatus.BAD_REQUEST, request)
     }
 }
