@@ -1,4 +1,4 @@
-package dfialho.tveebot.downloader
+package dfialho.tveebot.downloader.rest
 
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus

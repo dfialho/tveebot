@@ -1,4 +1,4 @@
-package dfialho.tveebot.downloader
+package dfialho.tveebot.downloader.rest
 
 import org.springframework.boot.context.properties.ConfigurationProperties
 import java.nio.file.Path
