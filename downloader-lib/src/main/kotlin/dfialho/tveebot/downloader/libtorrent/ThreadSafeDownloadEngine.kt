@@ -1,5 +1,9 @@
-package dfialho.tveebot.downloader.api
+package dfialho.tveebot.downloader.libtorrent
 
+import dfialho.tveebot.downloader.api.DownloadEngine
+import dfialho.tveebot.downloader.api.DownloadHandle
+import dfialho.tveebot.downloader.api.DownloadReference
+import dfialho.tveebot.downloader.api.DownloadStatus
 import java.nio.file.Path
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.read

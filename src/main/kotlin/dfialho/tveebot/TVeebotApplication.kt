@@ -3,6 +3,7 @@ package dfialho.tveebot
 import dfialho.tveebot.downloader.DownloaderConfig
 import dfialho.tveebot.downloader.api.DownloadEngine
 import dfialho.tveebot.downloader.api.DownloadManager
+import dfialho.tveebot.downloader.libtorrent.threadSafe
 import dfialho.tveebot.downloader.libtorrent.LibTorrentDownloadEngine
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -44,7 +45,7 @@ class TVeebotApplication {
 
     @Bean
     fun downloadEngine(downloadManager: DownloadManager): DownloadEngine {
-        return downloadManager.engine
+        return threadSafe { downloadManager.engine }
     }
 }
 
