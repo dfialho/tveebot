@@ -1,8 +1,6 @@
 rootProject.name = 'tveebot'
 include 'downloader-api'
 include 'downloader-lib'
-include 'downloader-rest'
 include 'tracker-api'
 include 'tracker-lib'
-include 'tracker-rest'
 include 'common-utils'

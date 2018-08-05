@@ -1,4 +1,4 @@
-package dfialho.tveebot.downloader.rest
+package dfialho.tveebot.downloader
 
 import dfialho.tveebot.downloader.api.DownloadEngine
 import dfialho.tveebot.downloader.api.DownloadReference

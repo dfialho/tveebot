@@ -1,5 +1,6 @@
-package dfialho.tveebot.downloader.rest
+package dfialho.tveebot
 
+import dfialho.tveebot.downloader.DownloaderConfig
 import dfialho.tveebot.downloader.api.DownloadEngine
 import dfialho.tveebot.downloader.api.DownloadManager
 import dfialho.tveebot.downloader.libtorrent.LibTorrentDownloadEngine
@@ -15,10 +16,10 @@ import kotlin.concurrent.thread
 
 @SpringBootApplication
 @EnableConfigurationProperties(DownloaderConfig::class)
-class DownloaderApplication {
+class TVeebotApplication {
 
     companion object {
-        private val logger: Logger = LoggerFactory.getLogger(DownloaderApplication::class.java)
+        private val logger: Logger = LoggerFactory.getLogger(TVeebotApplication::class.java)
     }
 
     @Bean
@@ -48,5 +49,5 @@ class DownloaderApplication {
 }
 
 fun main(args: Array<String>) {
-    runApplication<DownloaderApplication>(*args)
+    runApplication<TVeebotApplication>(*args)
 }
