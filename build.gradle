@@ -1,7 +1,7 @@
 buildscript {
     ext {
         kotlinVersion = '1.2.60'
-        spekVersion = '2.0.0-alpha.1'
+        spekVersion = '1.1.5'
         kluentVersion = '1.40'
     }
 
@@ -11,7 +11,7 @@ buildscript {
 
     dependencies {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlinVersion}")
-        classpath 'org.junit.platform:junit-platform-gradle-plugin:1.0.0'   // Required by Spek
+        classpath 'org.junit.platform:junit-platform-gradle-plugin:1.2.0'   // Required by Spek
     }
 }
 
@@ -23,17 +23,17 @@ allprojects {
     repositories {
         mavenCentral()
         jcenter()   // Required by Kluent
-        maven { url "https://dl.bintray.com/spekframework/spek-dev" }   // Required by Spek 2 until a stable release
+        maven { url "http://dl.bintray.com/jetbrains/spek" }   // Required by Spek 2 until a stable release
     }
 
     // Dependencies for Spek 2
     dependencies {
         implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
 
-        testImplementation ("org.spekframework.spek2:spek-dsl-jvm:$spekVersion")  {
+        testImplementation ("org.jetbrains.spek:spek-api:$spekVersion")  {
             exclude group: 'org.jetbrains.kotlin'
         }
-        testRuntimeOnly ("org.spekframework.spek2:spek-runner-junit5:$spekVersion") {
+        testRuntimeOnly ("org.jetbrains.spek:spek-junit-platform-engine:$spekVersion") {
             exclude group: 'org.junit.platform'
             exclude group: 'org.jetbrains.kotlin'
         }
@@ -63,7 +63,7 @@ allprojects {
 
     test {
         useJUnitPlatform {
-            includeEngines 'spek2'
+            includeEngines 'spek'
         }
     }
 }
