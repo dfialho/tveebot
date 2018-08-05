@@ -1,13 +1,4 @@
-buildscript {
-    ext {
-    }
-}
-
 dependencies {
     compile project(':tracker-api')
     compile project(':common-utils')
-}
-
-dependencies {
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
 }

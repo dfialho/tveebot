@@ -9,6 +9,5 @@ dependencies {
 }
 
 dependencies {
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
     compile("com.frostwire:jlibtorrent:$jlibtorrentVersion")
 }
