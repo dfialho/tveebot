@@ -2,4 +2,4 @@ rootProject.name = 'tveebot'
 include 'downloader-api'
 include 'downloader-lib'
 include 'downloader-rest'
-
+include 'common-utils'
