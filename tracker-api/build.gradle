@@ -1,0 +1,8 @@
+buildscript {
+    ext {
+    }
+}
+
+dependencies {
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
+}
