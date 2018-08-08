@@ -3,5 +3,5 @@ ext {
 }
 
 dependencies {
-    compile "rome:rome:$romeVersion"
+    implementation "rome:rome:$romeVersion"
 }

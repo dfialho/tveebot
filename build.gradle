@@ -4,6 +4,7 @@ buildscript {
         spekVersion = '1.1.5'
         kluentVersion = '1.40'
         springBootVersion = '2.0.1.RELEASE'
+        guavaVersion = '26.0-jre'
     }
 
     repositories {
@@ -11,14 +12,14 @@ buildscript {
     }
 
     dependencies {
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
         classpath 'org.junit.platform:junit-platform-gradle-plugin:1.2.0'   // Required by Spek
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:$springBootVersion")
-        classpath("org.jetbrains.kotlin:kotlin-allopen:$kotlinVersion")
+        classpath "org.springframework.boot:spring-boot-gradle-plugin:$springBootVersion"
+        classpath "org.jetbrains.kotlin:kotlin-allopen:$kotlinVersion"
     }
 }
 
-allprojects {
+subprojects {
 
     apply plugin: 'kotlin'
     apply plugin: 'org.junit.platform.gradle.plugin'
@@ -46,7 +47,7 @@ allprojects {
     }
 
     dependencies {
-        compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
+        implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
         testImplementation "org.amshove.kluent:kluent:$kluentVersion"
     }
 
