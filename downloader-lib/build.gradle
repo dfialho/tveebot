@@ -1,7 +1,9 @@
-buildscript {
-    ext {
-        jlibtorrentVersion = '1.2.0.17'
-    }
+plugins {
+    id "io.spring.dependency-management"
+}
+
+ext {
+    jlibtorrentVersion = '1.2.0.17'
 }
 
 dependencies {
@@ -10,4 +12,12 @@ dependencies {
 
 dependencies {
     compile("com.frostwire:jlibtorrent:$jlibtorrentVersion")
+    compile('org.springframework.boot:spring-boot-starter')
+    testCompile('org.springframework.boot:spring-boot-starter-test')
+}
+
+dependencyManagement {
+    imports {
+        mavenBom("org.springframework.boot:spring-boot-dependencies:$springBootVersion")
+    }
 }

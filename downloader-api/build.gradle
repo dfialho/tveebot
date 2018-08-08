@@ -1,7 +1,5 @@
-buildscript {
-    ext {
-        guavaVersion = '26.0-jre'
-    }
+ext {
+    guavaVersion = '26.0-jre'
 }
 
 dependencies {

@@ -1,0 +1,32 @@
+plugins {
+    id "io.spring.dependency-management"
+}
+
+apply plugin: 'kotlin-spring'
+apply plugin: 'eclipse'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+
+dependencies {
+    compile project(':downloader-lib')
+    compile project(':tracker-lib')
+}
+
+dependencies {
+    compile('org.springframework.boot:spring-boot-starter-web')
+    compile('com.fasterxml.jackson.module:jackson-module-kotlin')
+    compile("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    compile("org.jetbrains.kotlin:kotlin-reflect")
+    testCompile('org.springframework.boot:spring-boot-starter-test')
+}
+
+compileKotlin {
+    kotlinOptions {
+        freeCompilerArgs = ["-Xjsr305=strict"]
+    }
+}
+compileTestKotlin {
+    kotlinOptions {
+        freeCompilerArgs = ["-Xjsr305=strict"]
+    }
+}

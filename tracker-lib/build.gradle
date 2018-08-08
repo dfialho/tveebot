@@ -1,4 +1,19 @@
+plugins {
+    id "io.spring.dependency-management"
+}
+
 dependencies {
     compile project(':tracker-api')
     compile project(':common-utils')
+}
+
+dependencies {
+    compile('org.springframework.boot:spring-boot-starter')
+    testCompile('org.springframework.boot:spring-boot-starter-test')
+}
+
+dependencyManagement {
+    imports {
+        mavenBom("org.springframework.boot:spring-boot-dependencies:$springBootVersion")
+    }
 }

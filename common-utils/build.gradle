@@ -1,7 +1,5 @@
-buildscript {
-    ext {
-        romeVersion = '1.0'
-    }
+ext {
+    romeVersion = '1.0'
 }
 
 dependencies {
