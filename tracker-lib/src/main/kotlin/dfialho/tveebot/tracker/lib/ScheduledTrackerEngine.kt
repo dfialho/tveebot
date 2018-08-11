@@ -25,8 +25,12 @@ class ScheduledTrackerEngine(
         private val logger: Logger = LoggerFactory.getLogger(ScheduledTrackerEngine::class.java)
     }
 
+    /**
+     * Set holding every [TrackingListener] to be notified of new episode files.
+     */
     private val listeners: MutableSet<TrackingListener> = mutableSetOf()
 
+    // Use a scheduler which call [runOneIteration] periodically to check for new episodes
     override fun scheduler(): Scheduler = Scheduler.newFixedRateSchedule(1, 5, TimeUnit.SECONDS)
 
     override fun runOneIteration() {

@@ -17,7 +17,7 @@ import java.net.URL
 class ShowRSSProvider(private val idMapper: TVShowIDMapper) : TVShowProvider {
 
     companion object {
-        private val SHOWRSS_URL = "https://showrss.info/browse"
+        private const val SHOWRSS_URL = "https://showrss.info/browse"
     }
 
     /**
@@ -61,13 +61,23 @@ internal fun RSSFeedItem.toEpisodeVideo(): EpisodeFile {
     )
 }
 
+/**
+ * Returns a list containing only episode files from the given iterable having distinct episodes files based on
+ * its [identifier], selecting the most recent episode file.
+ *
+ * @author David Fialho (dfialho@protonmail.com)
+ */
 private fun Iterable<EpisodeFile>.distinctByMostRecent(): List<EpisodeFile> {
     val distinctEpisodes = mutableMapOf<EpisodeIdentifier, EpisodeFile>()
 
     for (episodeFile in this) {
         distinctEpisodes.merge(episodeFile.identifier, episodeFile) { oldFile, newFile ->
             // Update existing episode only if the new one is more recent
-            if (newFile.publishedDate.isAfter(oldFile.publishedDate)) { newFile } else { oldFile }
+            if (newFile.publishedDate.isAfter(oldFile.publishedDate)) {
+                newFile
+            } else {
+                oldFile
+            }
         }
     }
 
