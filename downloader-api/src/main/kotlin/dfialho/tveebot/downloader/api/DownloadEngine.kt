@@ -1,7 +1,6 @@
 package dfialho.tveebot.downloader.api
 
 import java.nio.file.Path
-import javax.annotation.concurrent.NotThreadSafe
 
 /**
  * The [DownloadEngine] is responsible for performing the actual downloads, providing an interface to manage them.
@@ -44,16 +43,10 @@ interface DownloadEngine {
      * managed by this engine, then this method will have no effect.
      *
      * After calling this method, all [DownloadHandle]s for the corresponding download become invalid.
-     */
-    fun remove(reference: DownloadReference)
-
-    /**
-     * Performs the same action as [remove], but it throws a [NoSuchElementException] if no download is found with the
-     * specified [reference].
      *
-     * @throws NoSuchElementException If no download with [reference] can be found
+     * @return true if a download is removed, or false if otherwise.
      */
-    fun removeOrFail(reference: DownloadReference)
+    fun remove(reference: DownloadReference): Boolean
 
     /**
      * Returns the [DownloadHandle] for the download referenced by [reference]. If no download with [reference] exists,
@@ -62,20 +55,7 @@ interface DownloadEngine {
     fun getHandle(reference: DownloadReference): DownloadHandle?
 
     /**
-     * Returns the [DownloadHandle] for the download referenced by [reference], if it exists. Otherwise, it throws a
-     * [NoSuchElementException].
-     *
-     * @throws NoSuchElementException If no download with [reference] can be found
-     */
-    fun getHandleOrFail(reference: DownloadReference): DownloadHandle
-
-    /**
      * Retrieves the [DownloadHandle] for all downloads being managed by this engine.
      */
     fun getAllHandles(): List<DownloadHandle>
-
-    /**
-     * Retrieves the [DownloadStatus] for all downloads being managed by this engine.
-     */
-    fun getAllStatus(): List<DownloadStatus>
 }

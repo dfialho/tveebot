@@ -9,7 +9,6 @@ import com.google.common.util.concurrent.AbstractIdleService
 import dfialho.tveebot.downloader.api.DownloadEngine
 import dfialho.tveebot.downloader.api.DownloadHandle
 import dfialho.tveebot.downloader.api.DownloadReference
-import dfialho.tveebot.downloader.api.DownloadStatus
 import java.nio.file.Path
 import javax.annotation.concurrent.NotThreadSafe
 
@@ -71,41 +70,28 @@ class LibTorrentDownloadEngine(private val savePath: Path) : AbstractIdleService
         return resumeDownload(parseMagnetUri(magnetLink).infoHash())
     }
 
-    override fun remove(reference: DownloadReference) {
+    override fun remove(reference: DownloadReference): Boolean {
         requireRunning()
 
         getNativeHandle(reference)?.let {
             remove(reference, it)
+            return true
         }
-    }
 
-    override fun removeOrFail(reference: DownloadReference) {
-        requireRunning()
-
-        val nativeHandle = getNativeHandle(reference) ?: throwNotFoundError(reference)
-        remove(reference, nativeHandle)
+        return false
     }
 
     override fun getHandle(reference: DownloadReference): DownloadHandle? {
         requireRunning()
 
         return getNativeHandle(reference)?.let {
-            LibTorrentDownloadHandle(this, it)
+            LibTorrentDownloadHandle(engine = this, nativeHandle = it)
         }
-    }
-
-    override fun getHandleOrFail(reference: DownloadReference): DownloadHandle {
-        return getHandle(reference) ?: throwNotFoundError(reference)
     }
 
     override fun getAllHandles(): List<DownloadHandle> {
         requireRunning()
         return references.mapNotNull { getHandle(it) }
-    }
-
-    override fun getAllStatus(): List<DownloadStatus> {
-        requireRunning()
-        return getAllHandles().map { it.getStatus() }
     }
 
     /**
@@ -139,10 +125,4 @@ class LibTorrentDownloadEngine(private val savePath: Path) : AbstractIdleService
         return handle
     }
 
-    /**
-     * Throws exception indicating the download corresponding to [reference] does not exist in this engine.
-     */
-    private fun throwNotFoundError(reference: DownloadReference): Nothing {
-        throw NoSuchElementException("Download with reference '$reference' not found")
-    }
 }

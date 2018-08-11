@@ -23,7 +23,7 @@ class DownloaderController(private val downloaderService: DownloaderService) {
      */
     @GetMapping("add")
     fun add(magnetLink: String): DownloadReference {
-        return downloaderService.engine.add(magnetLink).reference
+        return downloaderService.download(magnetLink)
     }
 
     /**
@@ -31,7 +31,7 @@ class DownloaderController(private val downloaderService: DownloaderService) {
      */
     @GetMapping("status")
     fun status(): List<DownloadStatus> {
-        return downloaderService.engine.getAllStatus()
+        return downloaderService.getAllStatus()
     }
 
     /**
@@ -41,7 +41,7 @@ class DownloaderController(private val downloaderService: DownloaderService) {
      */
     @GetMapping("status/{reference}")
     fun status(@PathVariable reference: DownloadReference): DownloadStatus {
-        return downloaderService.engine.getHandleOrFail(reference).getStatus()
+        return downloaderService.getStatus(reference)
     }
 
     /**
@@ -51,6 +51,6 @@ class DownloaderController(private val downloaderService: DownloaderService) {
      */
     @GetMapping("remove/{reference}")
     fun remove(@PathVariable reference: DownloadReference) {
-        downloaderService.engine.removeOrFail(reference)
+        downloaderService.removeDownload(reference)
     }
 }
