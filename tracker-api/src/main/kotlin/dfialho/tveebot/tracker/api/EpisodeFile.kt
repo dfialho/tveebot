@@ -12,7 +12,7 @@ import java.time.Instant
  *
  * @author David Fialho (dfialho@protonmail.com)
  */
-data class EpisodeVideo(
+data class EpisodeFile(
     val episode: Episode,
     val quality: VideoQuality,
     val link: String,

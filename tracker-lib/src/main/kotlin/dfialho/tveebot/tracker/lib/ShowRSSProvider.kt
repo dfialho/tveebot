@@ -1,6 +1,6 @@
 package dfialho.tveebot.tracker.lib
 
-import dfialho.tveebot.tracker.api.EpisodeVideo
+import dfialho.tveebot.tracker.api.EpisodeFile
 import dfialho.tveebot.tracker.api.TVShow
 import dfialho.tveebot.tracker.api.TVShowIDMapper
 import dfialho.tveebot.tracker.api.TVShowProvider
@@ -20,7 +20,7 @@ class ShowRSSProvider(private val idMapper: TVShowIDMapper) : TVShowProvider {
      */
     private val feedReader = RSSFeedReader()
 
-    override fun fetchEpisodes(tvShow: TVShow): List<EpisodeVideo> {
+    override fun fetchEpisodes(tvShow: TVShow): List<EpisodeFile> {
         val showID: String = idMapper[tvShow.id] ?: throw IllegalArgumentException("Not found: $tvShow")
         val showURL = URL("https://showrss.info/show/$showID.rss")
 
@@ -30,14 +30,14 @@ class ShowRSSProvider(private val idMapper: TVShowIDMapper) : TVShowProvider {
 }
 
 /**
- * Converts this [RSSFeedItem] into an [EpisodeVideo] and returns the result.
+ * Converts this [RSSFeedItem] into an [EpisodeFile] and returns the result.
  *
  * @author David Fialho (dfialho@protonmail.com)
  */
-internal fun RSSFeedItem.toEpisodeVideo(): EpisodeVideo {
+internal fun RSSFeedItem.toEpisodeVideo(): EpisodeFile {
     val (episode, quality) = parseEpisodeFilename(this.title)
 
-    return EpisodeVideo(
+    return EpisodeFile(
         episode = episode,
         quality = quality,
         link = this.link,

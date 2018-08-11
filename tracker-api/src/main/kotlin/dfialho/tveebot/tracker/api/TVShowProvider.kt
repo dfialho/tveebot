@@ -11,5 +11,5 @@ interface TVShowProvider {
      * Fetches the most recent episodes available for [tvShow]. The number of episodes returned by this method is
      * specific to each implementation.
      */
-    fun fetchEpisodes(tvShow: TVShow): List<EpisodeVideo>
+    fun fetchEpisodes(tvShow: TVShow): List<EpisodeFile>
 }
