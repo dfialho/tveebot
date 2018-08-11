@@ -37,7 +37,7 @@ class InMemoryTrackerRepository : TrackerRepository {
             .add(episodeFile)
     }
 
-    override fun findAllVideosFor(tvShow: TVShow): List<EpisodeFile> {
+    override fun findEpisodeFilesFrom(tvShow: TVShow): List<EpisodeFile> {
         return episodeFiles[tvShow.id] ?: emptyList()
     }
 }

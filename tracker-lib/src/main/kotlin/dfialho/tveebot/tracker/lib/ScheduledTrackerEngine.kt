@@ -11,6 +11,11 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.concurrent.TimeUnit
 
+/**
+ * An implementation of [TrackerEngine] which periodically checks for new episodes.
+ *
+ * @author David Fialho (dfialho@protonmail.com)
+ */
 class ScheduledTrackerEngine(
     override val provider: TVShowProvider,
     override val repository: TrackerRepository
@@ -32,7 +37,7 @@ class ScheduledTrackerEngine(
                 val episodeFiles = provider.fetchEpisodes(tvShow)
                 logger.trace("Episodes for '${tvShow.title}': $episodeFiles")
 
-                val existingEpisodeFiles = repository.findAllVideosFor(tvShow)
+                val existingEpisodeFiles = repository.findEpisodeFilesFrom(tvShow)
                     .associateBy { it.identifier }
 
                 for (episodeFile in episodeFiles) {

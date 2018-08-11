@@ -1,7 +1,11 @@
 package dfialho.tveebot.tracker.api
 
 /**
- * A TV show provider exposes methods to fetch video files for TV show episodes from a repository.
+ * A TV show provider is an entity which is able to provide information about one or more TV shows.
+ *
+ * It is sort of a database which contains data about TV shows, including information details about recent episodes
+ * corresponding to each TV show. As with any database, it does not necessarily contain information about all episodes
+ * of a TV show. Still, it is expected to be able to provide information about the most recent episodes of each TV show.
  *
  * @author David Fialho (dfialho@protonmail.com)
  */
@@ -14,7 +18,7 @@ interface TVShowProvider {
 
     /**
      * Fetches the most recent episodes available for [tvShow]. The number of episodes returned by this method is
-     * specific to each implementation.
+     * specific to each implementation, but it is expected to at least return the most recent episodes.
      */
     fun fetchEpisodes(tvShow: TVShow): List<EpisodeFile>
 }
