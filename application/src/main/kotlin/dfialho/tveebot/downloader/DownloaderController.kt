@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController
  * @author David Fialho (dfialho@protonmail.com)
  */
 @RestController
-class DownloaderController(private val engine: DownloadEngine) {
+class DownloaderController(private val downloaderService: DownloaderService) {
 
     /**
      * Adds a new download to the download engine from a [magnetLink] and returns a reference for it.
@@ -22,7 +22,7 @@ class DownloaderController(private val engine: DownloadEngine) {
      */
     @GetMapping("add")
     fun add(magnetLink: String): DownloadReference {
-        return engine.add(magnetLink).reference
+        return downloaderService.engine.add(magnetLink).reference
     }
 
     /**
@@ -30,7 +30,7 @@ class DownloaderController(private val engine: DownloadEngine) {
      */
     @GetMapping("status")
     fun status(): List<DownloadStatus> {
-        return engine.getAllStatus()
+        return downloaderService.engine.getAllStatus()
     }
 
     /**
@@ -40,7 +40,7 @@ class DownloaderController(private val engine: DownloadEngine) {
      */
     @GetMapping("status/{reference}")
     fun status(@PathVariable reference: DownloadReference): DownloadStatus {
-        return engine.getHandleOrFail(reference).getStatus()
+        return downloaderService.engine.getHandleOrFail(reference).getStatus()
     }
 
     /**
@@ -50,6 +50,6 @@ class DownloaderController(private val engine: DownloadEngine) {
      */
     @GetMapping("remove/{reference}")
     fun remove(@PathVariable reference: DownloadReference) {
-        engine.removeOrFail(reference)
+        downloaderService.engine.removeOrFail(reference)
     }
 }

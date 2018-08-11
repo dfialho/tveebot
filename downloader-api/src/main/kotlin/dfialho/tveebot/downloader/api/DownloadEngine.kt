@@ -9,7 +9,6 @@ import javax.annotation.concurrent.NotThreadSafe
  * @author David Fialho (dfialho@protonmail.com)
  * @see DownloadManager
  */
-@NotThreadSafe
 interface DownloadEngine {
 
     /**

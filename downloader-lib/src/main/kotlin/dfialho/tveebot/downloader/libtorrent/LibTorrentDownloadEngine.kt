@@ -5,6 +5,7 @@ import com.frostwire.jlibtorrent.SessionManager
 import com.frostwire.jlibtorrent.Sha1Hash
 import com.frostwire.jlibtorrent.TorrentHandle
 import com.frostwire.jlibtorrent.TorrentInfo
+import com.google.common.util.concurrent.AbstractIdleService
 import dfialho.tveebot.downloader.api.DownloadEngine
 import dfialho.tveebot.downloader.api.DownloadHandle
 import dfialho.tveebot.downloader.api.DownloadReference
@@ -15,12 +16,12 @@ import javax.annotation.concurrent.NotThreadSafe
 /**
  * Implementation of a [DownloadEngine] based on the libtorrent library. This implementation is not thread-safe.
  *
- * @property savePath The path to the directory where the downloads are saved.
+ * @param savePath The path to the directory where the downloads are saved.
  *
  * @author David Fialho (dfialho@protonmail.com)
  */
 @NotThreadSafe
-class LibTorrentDownloadEngine(private val savePath: Path) : DownloadEngine {
+class LibTorrentDownloadEngine(private val savePath: Path) : AbstractIdleService(), DownloadEngine {
 
     /**
      * Internal session which manages the downloads.
@@ -31,6 +32,14 @@ class LibTorrentDownloadEngine(private val savePath: Path) : DownloadEngine {
      * Set containing the references for every download currently managed by this download engine.
      */
     private val references: MutableSet<DownloadReference> = mutableSetOf()
+
+    override fun startUp() {
+        start()
+    }
+
+    override fun shutDown() {
+        stop()
+    }
 
     override fun start() {
         session.start()

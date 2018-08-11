@@ -1,8 +1,8 @@
 package dfialho.tveebot.tracker.api
 
-interface TrackerService {
+interface TrackerEngine {
 
-    var provider: TVShowProvider
+    val provider: TVShowProvider
 
     fun start()
 
