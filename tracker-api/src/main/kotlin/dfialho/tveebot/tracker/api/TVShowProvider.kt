@@ -8,6 +8,11 @@ package dfialho.tveebot.tracker.api
 interface TVShowProvider {
 
     /**
+     * Fetches all TV Shows from the provider.
+     */
+    fun fetchTVShows(): List<TVShow>
+
+    /**
      * Fetches the most recent episodes available for [tvShow]. The number of episodes returned by this method is
      * specific to each implementation.
      */

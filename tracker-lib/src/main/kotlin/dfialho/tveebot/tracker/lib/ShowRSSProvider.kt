@@ -4,9 +4,9 @@ import dfialho.tveebot.tracker.api.EpisodeFile
 import dfialho.tveebot.tracker.api.TVShow
 import dfialho.tveebot.tracker.api.TVShowIDMapper
 import dfialho.tveebot.tracker.api.TVShowProvider
-import dfialho.tveebot.tracker.api.VideoQuality
 import dfialho.tveebot.utils.rssfeed.RSSFeedItem
 import dfialho.tveebot.utils.rssfeed.RSSFeedReader
+import org.jsoup.Jsoup
 import java.net.URL
 
 /**
@@ -16,10 +16,23 @@ import java.net.URL
  */
 class ShowRSSProvider(private val idMapper: TVShowIDMapper) : TVShowProvider {
 
+    companion object {
+        private val SHOWRSS_URL = "https://showrss.info/browse"
+    }
+
     /**
      * Reader used to read the feed obtained from showRSS and find the episodes available.
      */
     private val feedReader = RSSFeedReader()
+
+    override fun fetchTVShows(): List<TVShow> = Jsoup.connect(SHOWRSS_URL).get()
+        .select("option")
+        .map {
+            TVShow(
+                title = it.text(),
+                id = idMapper.getUUID(providerID = it.attr("value"))
+            )
+        }
 
     override fun fetchEpisodes(tvShow: TVShow): List<EpisodeFile> {
         val showID: String = idMapper[tvShow.id] ?: throw IllegalArgumentException("Not found: $tvShow")

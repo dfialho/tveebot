@@ -7,19 +7,25 @@ import java.util.*
 
 class InMemoryTrackerRepository : TrackerRepository {
 
-    private val tvShows = mutableSetOf<TVShow>()
+    private data class TVShowEntry(val tvShow: TVShow, val tracked: Boolean)
+
+    private val tvShows = mutableSetOf<TVShowEntry>()
     private val episodeFiles = mutableMapOf<UUID, MutableList<EpisodeFile>>()
 
-    override fun put(tvShow: TVShow) {
-        tvShows += tvShow
+    override fun put(tvShow: TVShow, tracked: Boolean) {
+        tvShows += TVShowEntry(tvShow, tracked)
     }
 
-    override fun findAllTVShows(): List<TVShow> = tvShows.toList()
-
-    override fun remove(tvShow: TVShow) {
-        episodeFiles.remove(tvShow.id)
-        tvShows.remove(tvShow)
+    override fun putAll(tvShows: List<TVShow>) {
+        this.tvShows.addAll(tvShows.map { TVShowEntry(it, tracked = false) })
     }
+
+    override fun findAllTVShows(): List<TVShow> = tvShows
+        .map { it.tvShow }
+
+    override fun findTVShows(tracked: Boolean): List<TVShow> = tvShows
+        .filter { it.tracked == tracked }
+        .map { it.tvShow }
 
     override fun put(tvShow: TVShow, episodeFile: EpisodeFile) {
         episodeFiles

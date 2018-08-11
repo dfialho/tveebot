@@ -13,20 +13,20 @@ import java.util.concurrent.TimeUnit
 
 class ScheduledTrackerEngine(
     override val provider: TVShowProvider,
-    private val repository: TrackerRepository
+    override val repository: TrackerRepository
 ) : TrackerEngine, AbstractScheduledService() {
 
     companion object {
         private val logger: Logger = LoggerFactory.getLogger(ScheduledTrackerEngine::class.java)
     }
 
-    override fun scheduler(): Scheduler = Scheduler.newFixedRateSchedule(0, 5, TimeUnit.SECONDS)
+    override fun scheduler(): Scheduler = Scheduler.newFixedRateSchedule(1, 30, TimeUnit.SECONDS)
 
     override fun runOneIteration() {
         logger.info("Checking for new episodes...")
 
         try {
-            for (tvShow in repository.findAllTVShows()) {
+            for (tvShow in repository.findTVShows(tracked = true)) {
                 val episodeFiles = provider.fetchEpisodes(tvShow)
                 logger.trace("Episodes for '${tvShow.title}': $episodeFiles")
 
@@ -56,13 +56,5 @@ class ScheduledTrackerEngine(
     override fun stop() {
         stopAsync()
         awaitTerminated()
-    }
-
-    override fun add(tvShow: TVShow) {
-        repository.put(tvShow)
-    }
-
-    override fun remove(tvShow: TVShow) {
-        repository.remove(tvShow)
     }
 }

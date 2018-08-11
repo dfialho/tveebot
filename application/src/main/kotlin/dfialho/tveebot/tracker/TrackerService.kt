@@ -2,7 +2,9 @@ package dfialho.tveebot.tracker
 
 import dfialho.tveebot.tracker.api.TVShow
 import dfialho.tveebot.tracker.api.TVShowIDMapper
+import dfialho.tveebot.tracker.api.TVShowProvider
 import dfialho.tveebot.tracker.api.TrackerEngine
+import dfialho.tveebot.tracker.api.TrackerRepository
 import dfialho.tveebot.tracker.lib.InMemoryTVShowIDMapper
 import dfialho.tveebot.tracker.lib.InMemoryTrackerRepository
 import dfialho.tveebot.tracker.lib.ScheduledTrackerEngine
@@ -14,22 +16,23 @@ import org.springframework.beans.factory.InitializingBean
 import org.springframework.stereotype.Service
 
 @Service
-class TrackerService(config: TrackerConfig) : InitializingBean, DisposableBean {
+class TrackerService(
+    private val engine: TrackerEngine,
+    private val provider: TVShowProvider,
+    private val repository: TrackerRepository
+) : InitializingBean, DisposableBean {
 
     companion object {
         private val logger: Logger = LoggerFactory.getLogger(TrackerService::class.java)
     }
 
-    private val tvShow = TVShow("Castle")
-
-    private val engine: TrackerEngine = ScheduledTrackerEngine(
-        provider = ShowRSSProvider(idMapper = InMemoryTVShowIDMapper().apply { this[tvShow.id] = "48" }),
-        repository = InMemoryTrackerRepository().apply { put(tvShow) }
-    )
-
     override fun afterPropertiesSet() {
         logger.debug("Starting tracker service")
+
+        repository.putAll(provider.fetchTVShows())
+        logger.info("Repository: ${repository.findAllTVShows()}")
         engine.start()
+
         logger.info("Started tracker service successfully")
     }
 
@@ -38,4 +41,8 @@ class TrackerService(config: TrackerConfig) : InitializingBean, DisposableBean {
         engine.stop()
         logger.info("Stopped tracker service successfully")
     }
+
+    fun getTrackedTVShows(): List<TVShow> = repository.findTVShows(tracked = true)
+
+    fun getNotTrackedTVShows(): List<TVShow> = repository.findTVShows(tracked = false)
 }

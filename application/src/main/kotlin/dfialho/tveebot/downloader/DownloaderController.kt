@@ -5,6 +5,7 @@ import dfialho.tveebot.downloader.api.DownloadReference
 import dfialho.tveebot.downloader.api.DownloadStatus
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 /**
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController
  * @author David Fialho (dfialho@protonmail.com)
  */
 @RestController
+@RequestMapping("/downloader")
 class DownloaderController(private val downloaderService: DownloaderService) {
 
     /**

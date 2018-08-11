@@ -2,13 +2,11 @@ package dfialho.tveebot.tracker.api
 
 interface TrackerEngine {
 
+    val repository: TrackerRepository
+
     val provider: TVShowProvider
 
     fun start()
 
     fun stop()
-
-    fun add(tvShow: TVShow)
-
-    fun remove(tvShow: TVShow)
 }
