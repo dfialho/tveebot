@@ -1,14 +1,17 @@
 package dfialho.tveebot.tracker
 
+import dfialho.tveebot.tracker.api.TVShow
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/tracker")
+@RequestMapping("tracker")
 class TrackerController(private val trackerService: TrackerService) {
 
-//    @PutMapping("/tvshow/{uuid}")
-//    fun putTVShow(@PathVariable("uuid") tvShow: TVShow) {
-//        trackerService.repository.put()
-//    }
+    @GetMapping("tvshows")
+    fun putTVShow(@RequestParam("tracked") tracked: Boolean = true): List<TVShow> {
+        return trackerService.getTVShows(tracked)
+    }
 }

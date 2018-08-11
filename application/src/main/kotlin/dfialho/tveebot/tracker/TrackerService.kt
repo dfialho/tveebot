@@ -1,14 +1,9 @@
 package dfialho.tveebot.tracker
 
 import dfialho.tveebot.tracker.api.TVShow
-import dfialho.tveebot.tracker.api.TVShowIDMapper
 import dfialho.tveebot.tracker.api.TVShowProvider
 import dfialho.tveebot.tracker.api.TrackerEngine
 import dfialho.tveebot.tracker.api.TrackerRepository
-import dfialho.tveebot.tracker.lib.InMemoryTVShowIDMapper
-import dfialho.tveebot.tracker.lib.InMemoryTrackerRepository
-import dfialho.tveebot.tracker.lib.ScheduledTrackerEngine
-import dfialho.tveebot.tracker.lib.ShowRSSProvider
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.DisposableBean
@@ -41,6 +36,8 @@ class TrackerService(
         engine.stop()
         logger.info("Stopped tracker service successfully")
     }
+
+    fun getTVShows(tracked: Boolean): List<TVShow> = repository.findTVShows(tracked)
 
     fun getTrackedTVShows(): List<TVShow> = repository.findTVShows(tracked = true)
 
