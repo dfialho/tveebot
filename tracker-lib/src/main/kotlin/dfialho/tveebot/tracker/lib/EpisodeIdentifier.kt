@@ -4,8 +4,8 @@ import dfialho.tveebot.tracker.api.EpisodeFile
 import dfialho.tveebot.tracker.api.VideoQuality
 
 internal data class EpisodeIdentifier(
-    val season: Short,
-    val number: Short,
+    val season: Int,
+    val number: Int,
     val quality: VideoQuality
 )
 

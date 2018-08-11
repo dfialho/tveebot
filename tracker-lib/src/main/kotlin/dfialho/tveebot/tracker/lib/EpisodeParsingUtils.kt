@@ -55,8 +55,8 @@ internal fun parseEpisodeFilename(title: String): Pair<Episode, VideoQuality> {
     val seasonAndNumber: List<String> = tokens[episodeNumberTokenIndex].split('x')
 
     val episode = Episode(
-        season = seasonAndNumber.first().toShort(),
-        number = seasonAndNumber.last().toShort(),
+        season = seasonAndNumber.first().toInt(),
+        number = seasonAndNumber.last().toInt(),
 
         // The title of the episode corresponds to everything after the episode number token
         title = tokens.subList(episodeNumberTokenIndex + 1, tokens.lastIndex + 1).joinToString(" ")

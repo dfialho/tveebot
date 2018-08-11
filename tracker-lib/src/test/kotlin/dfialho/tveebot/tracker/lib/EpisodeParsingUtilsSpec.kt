@@ -14,7 +14,7 @@ import kotlin.test.assertFailsWith
  *
  * @author David Fialho (dfialho@protonmail.com)
  */
-object EpisodeParsingUtils: Spek({
+object EpisodeParsingUtilsSpec: Spek({
 
     data class Case(
         val fullTitle: String,
@@ -139,8 +139,8 @@ object EpisodeParsingUtils: Spek({
             "1080p",
             "Castle ax23 Nice Crossfire",
             "Castle 12xa Nice Crossfire",
-            "Castle 1234567x23 Nice Crossfire",
-            "Castle 12x234567 Nice Crossfire"
+            "Castle 1234567128398239891839829391x23 Nice Crossfire",
+            "Castle 12x1234567128398239891839829391 Nice Crossfire"
         ).forEach { fullTitle ->
 
             context("invalid->$fullTitle") {

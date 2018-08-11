@@ -11,6 +11,6 @@ package dfialho.tveebot.tracker.api
  */
 data class Episode(
     val title: String,
-    val season: Short,
-    val number: Short
+    val season: Int,
+    val number: Int
 )
