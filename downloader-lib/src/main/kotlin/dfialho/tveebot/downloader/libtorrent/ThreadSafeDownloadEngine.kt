@@ -3,7 +3,6 @@ package dfialho.tveebot.downloader.libtorrent
 import dfialho.tveebot.downloader.api.DownloadEngine
 import dfialho.tveebot.downloader.api.DownloadHandle
 import dfialho.tveebot.downloader.api.DownloadReference
-import dfialho.tveebot.downloader.api.DownloadStatus
 import java.nio.file.Path
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.read
@@ -41,24 +40,12 @@ private class ThreadSafeDownloadEngine(private val engine: DownloadEngine) : Dow
         engine.remove(reference)
     }
 
-    override fun removeOrFail(reference: DownloadReference) = lock.write {
-        engine.removeOrFail(reference)
-    }
-
     override fun getHandle(reference: DownloadReference): DownloadHandle? = lock.read {
         engine.getHandle(reference)
     }
 
-    override fun getHandleOrFail(reference: DownloadReference): DownloadHandle = lock.read {
-        engine.getHandleOrFail(reference)
-    }
-
     override fun getAllHandles(): List<DownloadHandle> = lock.read {
         engine.getAllHandles()
-    }
-
-    override fun getAllStatus(): List<DownloadStatus> = lock.read {
-        engine.getAllStatus()
     }
 }
 
