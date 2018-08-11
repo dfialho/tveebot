@@ -2,12 +2,15 @@ plugins {
     id "io.spring.dependency-management"
 }
 
+apply plugin: 'kotlin-spring'
+
 dependencies {
     compile project(':tracker-api')
     implementation project(':common-utils')
 }
 
 dependencies {
+    compile "com.google.guava:guava:$guavaVersion"
     implementation 'org.springframework.boot:spring-boot-starter'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }

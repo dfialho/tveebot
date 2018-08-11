@@ -6,9 +6,7 @@ interface TrackerRepository {
 
     fun findAllTVShows(): List<TVShow>
 
-    fun put(episode: Episode)
-
-    fun findAllEpisodes(): List<Episode>
+    fun put(tvShow: TVShow, episode: Episode)
 
     fun findAllEpisodesFrom(tvShow: TVShow): List<Episode>
 }

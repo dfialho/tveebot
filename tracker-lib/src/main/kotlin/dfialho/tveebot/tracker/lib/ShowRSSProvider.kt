@@ -1,6 +1,9 @@
 package dfialho.tveebot.tracker.lib
 
-import dfialho.tveebot.tracker.api.*
+import dfialho.tveebot.tracker.api.EpisodeVideo
+import dfialho.tveebot.tracker.api.TVShow
+import dfialho.tveebot.tracker.api.TVShowIDMapper
+import dfialho.tveebot.tracker.api.TVShowProvider
 import dfialho.tveebot.utils.rssfeed.RSSFeedItem
 import dfialho.tveebot.utils.rssfeed.RSSFeedReader
 import java.net.URL

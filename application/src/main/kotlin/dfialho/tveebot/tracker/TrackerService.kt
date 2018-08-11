@@ -2,9 +2,9 @@ package dfialho.tveebot.tracker
 
 import dfialho.tveebot.tracker.api.TrackerEngine
 import dfialho.tveebot.tracker.lib.InMemoryTVShowIDMapper
+import dfialho.tveebot.tracker.lib.InMemoryTrackerRepository
 import dfialho.tveebot.tracker.lib.ScheduledTrackerEngine
 import dfialho.tveebot.tracker.lib.ShowRSSProvider
-import dfialho.tveebot.tracker.lib.TrackerRepositoryImpl
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.DisposableBean
@@ -20,7 +20,7 @@ class TrackerService(config: TrackerConfig) : InitializingBean, DisposableBean {
 
     val engine: TrackerEngine = ScheduledTrackerEngine(
         provider = ShowRSSProvider(idMapper = InMemoryTVShowIDMapper()),
-        repository = TrackerRepositoryImpl()
+        repository = InMemoryTrackerRepository()
     )
 
     override fun afterPropertiesSet() {
