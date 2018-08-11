@@ -2,8 +2,8 @@ package dfialho.tveebot
 
 import dfialho.tveebot.downloader.DownloaderConfig
 import dfialho.tveebot.downloader.api.DownloadEngine
-import dfialho.tveebot.downloader.libtorrent.threadSafe
 import dfialho.tveebot.downloader.libtorrent.LibTorrentDownloadEngine
+import dfialho.tveebot.downloader.libtorrent.threadSafe
 import dfialho.tveebot.tracker.TrackerConfig
 import dfialho.tveebot.tracker.api.TVShowIDMapper
 import dfialho.tveebot.tracker.api.TVShowProvider
@@ -34,8 +34,15 @@ class TVeebotApplication {
     fun trackerRepository(): TrackerRepository = InMemoryTrackerRepository()
 
     @Bean
-    fun downloadEngine(provider: TVShowProvider, repository: TrackerRepository): TrackerEngine =
+    fun trackerEngine(provider: TVShowProvider, repository: TrackerRepository): TrackerEngine =
         ScheduledTrackerEngine(provider, repository)
+
+    @Bean
+    fun downloadEngine(config: DownloaderConfig): DownloadEngine {
+        check(Files.isDirectory(config.savePath)) { "Download directory does not exist: ${config.savePath}" }
+
+        return threadSafe { LibTorrentDownloadEngine(config.savePath) }
+    }
 }
 
 fun main(args: Array<String>) {

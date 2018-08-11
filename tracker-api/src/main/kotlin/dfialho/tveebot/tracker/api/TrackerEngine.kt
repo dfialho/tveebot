@@ -9,4 +9,8 @@ interface TrackerEngine {
     fun start()
 
     fun stop()
+
+    fun addListener(listener: TrackingListener)
+
+    fun removeListener(listener: TrackingListener)
 }
