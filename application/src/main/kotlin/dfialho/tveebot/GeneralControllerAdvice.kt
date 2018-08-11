@@ -1,4 +1,4 @@
-package dfialho.tveebot.downloader
+package dfialho.tveebot
 
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
  * @author David Fialho (dfialho@protonmail.com)
  */
 @RestControllerAdvice
-class RestResponseEntityExceptionHandler : ResponseEntityExceptionHandler() {
+class GeneralControllerAdvice : ResponseEntityExceptionHandler() {
 
     /**
      * Error response returned to the user in JSON format.
