@@ -4,6 +4,7 @@ import dfialho.tveebot.tracker.api.EpisodeFile
 import dfialho.tveebot.tracker.api.TVShow
 import dfialho.tveebot.tracker.api.TVShowIDMapper
 import dfialho.tveebot.tracker.api.TVShowProvider
+import dfialho.tveebot.tracker.api.VideoQuality
 import dfialho.tveebot.utils.rssfeed.RSSFeedItem
 import dfialho.tveebot.utils.rssfeed.RSSFeedReader
 import java.net.URL
@@ -25,7 +26,9 @@ class ShowRSSProvider(private val idMapper: TVShowIDMapper) : TVShowProvider {
         val showURL = URL("https://showrss.info/show/$showID.rss")
 
         val rssFeed = feedReader.read(showURL)
-        return rssFeed.items.map { it.toEpisodeVideo() }
+        return rssFeed.items
+            .map { it.toEpisodeVideo() }
+            .distinctByMostRecent()
     }
 }
 
@@ -45,5 +48,16 @@ internal fun RSSFeedItem.toEpisodeVideo(): EpisodeFile {
     )
 }
 
+private fun Iterable<EpisodeFile>.distinctByMostRecent(): List<EpisodeFile> {
+    val distinctEpisodes = mutableMapOf<EpisodeIdentifier, EpisodeFile>()
 
+    for (episodeFile in this) {
+        distinctEpisodes.merge(episodeFile.identifier, episodeFile) { oldFile, newFile ->
+            // Update existing episode only if the new one is more recent
+            if (newFile.publishedDate.isAfter(oldFile.publishedDate)) { newFile } else { oldFile }
+        }
+    }
+
+    return distinctEpisodes.values.toList()
+}
 

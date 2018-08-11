@@ -5,7 +5,7 @@ import java.util.*
 
 class InMemoryTVShowIDMapper : TVShowIDMapper {
 
-    private val idMap: MutableMap<UUID, String> = hashMapOf()
+    private val idMap: MutableMap<UUID, String> = mutableMapOf()
 
     override operator fun get(uuid: UUID): String? {
         return idMap[uuid]

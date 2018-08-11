@@ -19,3 +19,9 @@ data class EpisodeFile(
     val publishedDate: Instant
 )
 
+/**
+ * Returns true if this episode file is more recent than [other], or false if otherwise.
+ */
+infix fun EpisodeFile.isMoreRecentThan(other: EpisodeFile): Boolean {
+    return this.publishedDate.isAfter(other.publishedDate)
+}

@@ -11,6 +11,4 @@ interface TrackerEngine {
     fun add(tvShow: TVShow)
 
     fun remove(tvShow: TVShow)
-
-    fun removeTVShow(id: String)
 }
