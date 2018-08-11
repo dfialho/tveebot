@@ -38,8 +38,14 @@ class TrackerService(
         logger.info("Stopped tracker service successfully")
     }
 
+    /**
+     * Returns a list containing every TV show either being [tracked] or not [tracked].
+     */
     fun getTVShows(tracked: Boolean): List<TVShow> = repository.findTVShows(tracked)
 
+    /**
+     * Sets the TV show identified by [tvShowUUID] as [tracked].
+     */
     fun setTVShowTracked(tvShowUUID: UUID, tracked: Boolean) {
         repository.setTracked(tvShowUUID, tracked)
     }

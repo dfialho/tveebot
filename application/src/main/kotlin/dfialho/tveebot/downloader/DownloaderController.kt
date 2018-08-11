@@ -1,6 +1,5 @@
 package dfialho.tveebot.downloader
 
-import dfialho.tveebot.downloader.api.DownloadEngine
 import dfialho.tveebot.downloader.api.DownloadReference
 import dfialho.tveebot.downloader.api.DownloadStatus
 import org.springframework.web.bind.annotation.GetMapping
@@ -9,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 /**
- * Controller to control the [DownloadEngine].
+ * Rest controller for the [DownloaderService].
  *
  * @author David Fialho (dfialho@protonmail.com)
  */
