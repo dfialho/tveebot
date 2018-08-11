@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.DisposableBean
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.stereotype.Service
+import java.util.*
 
 @Service
 class TrackerService(
@@ -39,7 +40,7 @@ class TrackerService(
 
     fun getTVShows(tracked: Boolean): List<TVShow> = repository.findTVShows(tracked)
 
-    fun getTrackedTVShows(): List<TVShow> = repository.findTVShows(tracked = true)
-
-    fun getNotTrackedTVShows(): List<TVShow> = repository.findTVShows(tracked = false)
+    fun setTVShowTracked(tvShowUUID: UUID, tracked: Boolean) {
+        repository.setTracked(tvShowUUID, tracked)
+    }
 }

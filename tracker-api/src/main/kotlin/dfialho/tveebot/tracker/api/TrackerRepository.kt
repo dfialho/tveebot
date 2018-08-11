@@ -1,5 +1,7 @@
 package dfialho.tveebot.tracker.api
 
+import java.util.*
+
 interface TrackerRepository {
 
     fun put(tvShow: TVShow, tracked: Boolean = false)
@@ -9,6 +11,8 @@ interface TrackerRepository {
     fun findAllTVShows(): List<TVShow>
 
     fun findTVShows(tracked: Boolean): List<TVShow>
+
+    fun setTracked(tvShowUUID: UUID, tracked: Boolean = true)
 
     fun put(tvShow: TVShow, episodeFile: EpisodeFile)
 
