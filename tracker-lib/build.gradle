@@ -4,6 +4,12 @@ plugins {
 
 apply plugin: 'kotlin-spring'
 
+repositories {
+    maven {
+        url  "https://dl.bintray.com/kotlin/exposed"
+    }
+}
+
 dependencies {
     compile project(':tracker-api')
     implementation project(':common-utils')
@@ -11,7 +17,10 @@ dependencies {
 
 dependencies {
     compile "com.google.guava:guava:$guavaVersion"
+    compile "org.jetbrains.exposed:exposed:$exposedVersion"
+    compile "org.jetbrains.exposed:spring-transaction:$exposedVersion"
     implementation "org.jsoup:jsoup:1.10.3"
+
     implementation 'org.springframework.boot:spring-boot-starter'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }

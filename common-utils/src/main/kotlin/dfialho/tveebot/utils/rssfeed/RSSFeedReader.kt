@@ -5,10 +5,8 @@ import com.sun.syndication.feed.synd.SyndFeed
 import com.sun.syndication.io.SyndFeedInput
 import com.sun.syndication.io.XmlReader
 import java.io.File
-import java.io.FileInputStream
 import java.io.InputStream
 import java.net.URL
-import java.nio.file.Path
 
 /**
  *

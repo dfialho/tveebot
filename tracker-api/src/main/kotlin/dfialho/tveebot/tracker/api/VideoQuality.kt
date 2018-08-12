@@ -4,7 +4,6 @@ package dfialho.tveebot.tracker.api
  * Representation for the quality of video files.
  *
  * @property identifier An identifier specific to a video quality
- *
  * @author David Fialho (dfialho@protonmail.com)
  */
 enum class VideoQuality(val identifier: String) {
@@ -19,7 +18,16 @@ enum class VideoQuality(val identifier: String) {
 private val qualities: Map<String, VideoQuality> = VideoQuality.values().associateBy({it.identifier}, {it})
 
 /**
- * Returns the [VideoQuality] corresponding to the [identifier], or null if the [identifier] does not match with any
- * video quality.
+ * Returns the [VideoQuality] corresponding to this string identifier.
+ *
+ * @throws IllegalArgumentException if the string is not a valid identifier of a [VideoQuality]
  */
-fun videoQualityFromIdentifier(identifier: String): VideoQuality? = qualities[identifier]
+fun String.toVideoQuality(): VideoQuality =
+    qualities[this] ?: throw IllegalArgumentException("No video quality found for identifier '$this'")
+
+
+/**
+ * Returns the [VideoQuality] corresponding to this string identifier, or null if the string does not a valid
+ * identifier of a [VideoQuality].
+ */
+fun String.toVideoQualityOrNull(): VideoQuality? = qualities[this]

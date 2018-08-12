@@ -2,7 +2,7 @@ package dfialho.tveebot.tracker.lib
 
 import dfialho.tveebot.tracker.api.Episode
 import dfialho.tveebot.tracker.api.VideoQuality
-import dfialho.tveebot.tracker.api.videoQualityFromIdentifier
+import dfialho.tveebot.tracker.api.toVideoQualityOrNull
 import java.util.regex.Pattern
 
 /**
@@ -34,7 +34,7 @@ internal fun parseEpisodeFilename(title: String): Pair<Episode, VideoQuality> {
         .filter { it !in ignoredTokens }
         .map { it.trim() }
 
-    var quality: VideoQuality? = videoQualityFromIdentifier(tokensWithQuality.last())
+    var quality: VideoQuality? = tokensWithQuality.last().toVideoQualityOrNull()
 
     val tokens: List<String>
     if (quality == null) {

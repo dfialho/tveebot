@@ -3,8 +3,9 @@ buildscript {
         kotlinVersion = '1.2.60'
         spekVersion = '1.1.5'
         kluentVersion = '1.40'
-        springBootVersion = '2.0.1.RELEASE'
+        springBootVersion = '2.0.4.RELEASE'
         guavaVersion = '26.0-jre'
+        exposedVersion = '0.10.4'
     }
 
     repositories {
