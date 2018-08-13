@@ -2,6 +2,7 @@ package dfialho.tveebot.downloader.libtorrent
 
 import dfialho.tveebot.downloader.api.DownloadEngine
 import dfialho.tveebot.downloader.api.DownloadHandle
+import dfialho.tveebot.downloader.api.DownloadListener
 import dfialho.tveebot.downloader.api.DownloadReference
 import java.nio.file.Path
 import java.util.concurrent.locks.ReentrantReadWriteLock
@@ -46,6 +47,14 @@ private class ThreadSafeDownloadEngine(private val engine: DownloadEngine) : Dow
 
     override fun getAllHandles(): List<DownloadHandle> = lock.read {
         engine.getAllHandles()
+    }
+
+    override fun addListener(listener: DownloadListener) = lock.write {
+        engine.addListener(listener)
+    }
+
+    override fun removeListener(listener: DownloadListener) = lock.write {
+        engine.removeListener(listener)
     }
 }
 

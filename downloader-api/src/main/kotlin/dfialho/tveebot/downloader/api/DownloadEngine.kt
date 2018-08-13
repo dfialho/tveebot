@@ -57,4 +57,15 @@ interface DownloadEngine {
      * Retrieves the [DownloadHandle] for all downloads being managed by this engine.
      */
     fun getAllHandles(): List<DownloadHandle>
+
+    /**
+     * Adds a new [DownloadListener] to be notified when every download finishes.
+     */
+    fun addListener(listener: DownloadListener)
+
+    /**
+     * Removes a [DownloadListener]. After calling this method, [listener] will no longer be notified of download that
+     * have finished.
+     */
+    fun removeListener(listener: DownloadListener)
 }

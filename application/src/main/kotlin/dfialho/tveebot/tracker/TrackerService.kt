@@ -1,9 +1,12 @@
 package dfialho.tveebot.tracker
 
+import dfialho.tveebot.downloader.DownloaderService
+import dfialho.tveebot.tracker.api.EpisodeFile
 import dfialho.tveebot.tracker.api.TVShow
 import dfialho.tveebot.tracker.api.TVShowProvider
 import dfialho.tveebot.tracker.api.TrackerEngine
 import dfialho.tveebot.tracker.api.TrackerRepository
+import dfialho.tveebot.tracker.api.TrackingListener
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.DisposableBean
@@ -15,8 +18,9 @@ import java.util.*
 class TrackerService(
     private val engine: TrackerEngine,
     private val provider: TVShowProvider,
-    private val repository: TrackerRepository
-) : InitializingBean, DisposableBean {
+    private val repository: TrackerRepository,
+    private val downloaderService: DownloaderService
+) : TrackingListener, InitializingBean, DisposableBean {
 
     companion object {
         private val logger: Logger = LoggerFactory.getLogger(TrackerService::class.java)
@@ -27,7 +31,9 @@ class TrackerService(
 
         repository.putAll(provider.fetchTVShows())
         logger.info("Repository: ${repository.findAllTVShows()}")
+
         engine.start()
+        engine.addListener(this)
 
         logger.info("Started tracker service successfully")
     }
@@ -35,7 +41,13 @@ class TrackerService(
     override fun destroy() {
         logger.debug("Stopping tracker service")
         engine.stop()
+        engine.removeListener(this)
         logger.info("Stopped tracker service successfully")
+    }
+
+    override fun notify(tvShow: TVShow, episodeFile: EpisodeFile) {
+        logger.info("New episode from ${tvShow.title}: $episodeFile")
+        downloaderService.download(episodeFile.link)
     }
 
     /**
@@ -49,4 +61,5 @@ class TrackerService(
     fun setTVShowTracked(tvShowUUID: UUID, tracked: Boolean) {
         repository.setTracked(tvShowUUID, tracked)
     }
+
 }

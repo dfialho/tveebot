@@ -1,8 +1,12 @@
 package dfialho.tveebot.downloader
 
 import dfialho.tveebot.downloader.api.DownloadEngine
+import dfialho.tveebot.downloader.api.DownloadHandle
+import dfialho.tveebot.downloader.api.DownloadListener
+import dfialho.tveebot.downloader.api.DownloadQueue
 import dfialho.tveebot.downloader.api.DownloadReference
 import dfialho.tveebot.downloader.api.DownloadStatus
+import dfialho.tveebot.downloader.libtorrent.MagnetLink
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.DisposableBean
@@ -10,7 +14,10 @@ import org.springframework.beans.factory.InitializingBean
 import org.springframework.stereotype.Service
 
 @Service
-class DownloaderService(val engine: DownloadEngine) : InitializingBean, DisposableBean {
+class DownloaderService(
+    private val engine: DownloadEngine,
+    private val downloadQueue: DownloadQueue
+) : DownloadListener, InitializingBean, DisposableBean {
 
     companion object {
         private val logger: Logger = LoggerFactory.getLogger(DownloaderService::class.java)
@@ -18,23 +25,38 @@ class DownloaderService(val engine: DownloadEngine) : InitializingBean, Disposab
 
     override fun afterPropertiesSet() {
         logger.debug("Starting downloader service")
+
         engine.start()
+        engine.addListener(this)
+
+        // Restart every download in the queue
+        val downloadLinks = downloadQueue.getLinks()
+        downloadLinks.forEach { it.download(engine) }
+        logger.info("Restarted ${downloadLinks.size} downloads")
+
         logger.info("Started downloader service successfully")
     }
 
     override fun destroy() {
         logger.debug("Stopping downloader service")
         engine.stop()
+        engine.removeListener(this)
         logger.info("Stopped downloader service successfully")
+    }
+
+    override fun notifyFinished(handle: DownloadHandle) {
+        downloadQueue.remove(handle.reference)
+        logger.info("Finished downloading: ${handle.getStatus().name}")
     }
 
     /**
      * Adds a new download to the download engine from a [magnetLink] and returns a reference for it.
-     *
      * If the download was already being download then this will have no effect.
      */
     fun download(magnetLink: String): DownloadReference {
-        return engine.add(magnetLink).reference
+        return engine.add(magnetLink).reference.also {
+            downloadQueue.push(it, MagnetLink(magnetLink))
+        }
     }
 
     /**
@@ -63,6 +85,8 @@ class DownloaderService(val engine: DownloadEngine) : InitializingBean, Disposab
         if (!engine.remove(reference)) {
             throwNotFoundError(reference)
         }
+
+        downloadQueue.remove(reference)
     }
 
     /**

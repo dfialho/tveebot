@@ -1,13 +1,18 @@
 package dfialho.tveebot.downloader.libtorrent
 
 import com.frostwire.jlibtorrent.AddTorrentParams.parseMagnetUri
+import com.frostwire.jlibtorrent.AlertListener
 import com.frostwire.jlibtorrent.SessionManager
 import com.frostwire.jlibtorrent.Sha1Hash
 import com.frostwire.jlibtorrent.TorrentHandle
 import com.frostwire.jlibtorrent.TorrentInfo
+import com.frostwire.jlibtorrent.alerts.Alert
+import com.frostwire.jlibtorrent.alerts.AlertType
+import com.frostwire.jlibtorrent.alerts.TorrentFinishedAlert
 import com.google.common.util.concurrent.AbstractIdleService
 import dfialho.tveebot.downloader.api.DownloadEngine
 import dfialho.tveebot.downloader.api.DownloadHandle
+import dfialho.tveebot.downloader.api.DownloadListener
 import dfialho.tveebot.downloader.api.DownloadReference
 import java.nio.file.Path
 import javax.annotation.concurrent.NotThreadSafe
@@ -31,6 +36,16 @@ class LibTorrentDownloadEngine(private val savePath: Path) : AbstractIdleService
      * Set containing the references for every download currently managed by this download engine.
      */
     private val references: MutableSet<DownloadReference> = mutableSetOf()
+
+    /**
+     * Set containing the [DownloadListener]s to be notified of changes to the downloads manager by this engine.
+     */
+    private val listeners: MutableSet<DownloadListener> = mutableSetOf()
+
+    init {
+        // Register a native listener to have [listeners] be notified of changes to the downloads' state
+        session.addListener(NativeListener())
+    }
 
     override fun startUp() {
         start()
@@ -94,6 +109,14 @@ class LibTorrentDownloadEngine(private val savePath: Path) : AbstractIdleService
         return references.mapNotNull { getHandle(it) }
     }
 
+    override fun addListener(listener: DownloadListener) {
+        listeners.add(listener)
+    }
+
+    override fun removeListener(listener: DownloadListener) {
+        listeners.remove(listener)
+    }
+
     /**
      * Takes the reference and the native handle for a download and removes it from this engine.
      */
@@ -125,4 +148,25 @@ class LibTorrentDownloadEngine(private val savePath: Path) : AbstractIdleService
         return handle
     }
 
+    /**
+     * An implementation of the native [AlertListener] used to notify [DownloadListener]s registered with the
+     * [DownloadEngine] of changes to the downloads.
+     */
+    private inner class NativeListener : AlertListener {
+
+        override fun types(): IntArray? {
+            // Listen for alerts indicating a download has finished
+            return intArrayOf(AlertType.TORRENT_FINISHED.swig())
+        }
+
+        override fun alert(alert: Alert<*>?) {
+
+            // Monitoring only finished downloads
+            if (alert is TorrentFinishedAlert) {
+                // Notify every listener registered with the engine
+                listeners.forEach { it.notifyFinished(LibTorrentDownloadHandle(this@LibTorrentDownloadEngine, alert.handle())) }
+                session.remove(alert.handle())
+            }
+        }
+    }
 }

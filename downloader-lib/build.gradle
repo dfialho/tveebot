@@ -2,8 +2,16 @@ plugins {
     id "io.spring.dependency-management"
 }
 
+apply plugin: 'kotlin-spring'
+
 ext {
     jlibtorrentVersion = '1.2.0.17'
+}
+
+repositories {
+    maven {
+        url  "https://dl.bintray.com/kotlin/exposed"
+    }
 }
 
 dependencies {
@@ -11,6 +19,8 @@ dependencies {
 }
 
 dependencies {
+    compile "org.jetbrains.exposed:exposed:$exposedVersion"
+    compile "org.jetbrains.exposed:spring-transaction:$exposedVersion"
     implementation "com.frostwire:jlibtorrent:$jlibtorrentVersion"
     implementation 'org.springframework.boot:spring-boot-starter'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
