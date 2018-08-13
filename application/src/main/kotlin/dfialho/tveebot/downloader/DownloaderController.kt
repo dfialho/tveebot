@@ -2,8 +2,10 @@ package dfialho.tveebot.downloader
 
 import dfialho.tveebot.downloader.api.DownloadReference
 import dfialho.tveebot.downloader.api.DownloadStatus
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
@@ -21,7 +23,7 @@ class DownloaderController(private val downloaderService: DownloaderService) {
      *
      * If the download was already being download then this will have no effect.
      */
-    @GetMapping("add")
+    @PutMapping("add")
     fun add(magnetLink: String): DownloadReference {
         return downloaderService.download(magnetLink)
     }
@@ -49,7 +51,7 @@ class DownloaderController(private val downloaderService: DownloaderService) {
      *
      * @throws NoSuchElementException If not download with [reference] can be found
      */
-    @GetMapping("remove/{reference}")
+    @DeleteMapping("remove/{reference}")
     fun remove(@PathVariable reference: DownloadReference) {
         downloaderService.removeDownload(reference)
     }
