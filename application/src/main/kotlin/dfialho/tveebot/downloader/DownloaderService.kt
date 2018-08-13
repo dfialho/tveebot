@@ -7,8 +7,7 @@ import dfialho.tveebot.downloader.api.DownloadQueue
 import dfialho.tveebot.downloader.api.DownloadReference
 import dfialho.tveebot.downloader.api.DownloadStatus
 import dfialho.tveebot.downloader.libtorrent.MagnetLink
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import mu.KLogging
 import org.springframework.beans.factory.DisposableBean
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.stereotype.Service
@@ -19,12 +18,10 @@ class DownloaderService(
     private val downloadQueue: DownloadQueue
 ) : DownloadListener, InitializingBean, DisposableBean {
 
-    companion object {
-        private val logger: Logger = LoggerFactory.getLogger(DownloaderService::class.java)
-    }
+    companion object : KLogging()
 
     override fun afterPropertiesSet() {
-        logger.debug("Starting downloader service")
+        logger.debug { "Starting downloader service" }
 
         engine.start()
         engine.addListener(this)
@@ -32,21 +29,21 @@ class DownloaderService(
         // Restart every download in the queue
         val downloadLinks = downloadQueue.getLinks()
         downloadLinks.forEach { it.download(engine) }
-        logger.info("Restarted ${downloadLinks.size} downloads")
+        logger.info { "Restarted ${downloadLinks.size} downloads" }
 
-        logger.info("Started downloader service successfully")
+        logger.info { "Started downloader service successfully" }
     }
 
     override fun destroy() {
-        logger.debug("Stopping downloader service")
+        logger.debug { "Stopping downloader service" }
         engine.stop()
         engine.removeListener(this)
-        logger.info("Stopped downloader service successfully")
+        logger.info { "Stopped downloader service successfully" }
     }
 
     override fun notifyFinished(handle: DownloadHandle) {
         downloadQueue.remove(handle.reference)
-        logger.info("Finished downloading: ${handle.getStatus().name}")
+        logger.info { "Finished downloading: ${handle.getStatus().name}" }
     }
 
     /**

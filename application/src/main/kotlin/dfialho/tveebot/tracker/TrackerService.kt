@@ -7,8 +7,7 @@ import dfialho.tveebot.tracker.api.TVShowProvider
 import dfialho.tveebot.tracker.api.TrackerEngine
 import dfialho.tveebot.tracker.api.TrackerRepository
 import dfialho.tveebot.tracker.api.TrackingListener
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import mu.KLogging
 import org.springframework.beans.factory.DisposableBean
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.stereotype.Service
@@ -22,31 +21,32 @@ class TrackerService(
     private val downloaderService: DownloaderService
 ) : TrackingListener, InitializingBean, DisposableBean {
 
-    companion object {
-        private val logger: Logger = LoggerFactory.getLogger(TrackerService::class.java)
-    }
+    companion object : KLogging()
 
     override fun afterPropertiesSet() {
-        logger.debug("Starting tracker service")
+        logger.debug { "Starting tracker service" }
 
         repository.putAll(provider.fetchTVShows())
-        logger.info("Repository: ${repository.findAllTVShows()}")
+        logger.info { "Repository: ${repository.findAllTVShows()}" }
 
         engine.start()
         engine.addListener(this)
 
-        logger.info("Started tracker service successfully")
+        logger.info { "Started tracker service successfully" }
     }
 
     override fun destroy() {
-        logger.debug("Stopping tracker service")
+        logger.debug { "Stopping tracker service" }
         engine.stop()
         engine.removeListener(this)
-        logger.info("Stopped tracker service successfully")
+        logger.info { "Stopped tracker service successfully" }
     }
 
     override fun notify(tvShow: TVShow, episodeFile: EpisodeFile) {
-        logger.info("New episode from ${tvShow.title}: $episodeFile")
+        episodeFile.episode.apply {
+            logger.info { "New episode from ${tvShow.title}: ${season}x%02d - $title".format(number) }
+        }
+
         downloaderService.download(episodeFile.link)
     }
 

@@ -7,8 +7,7 @@ import dfialho.tveebot.tracker.api.TrackerEngine
 import dfialho.tveebot.tracker.api.TrackerRepository
 import dfialho.tveebot.tracker.api.TrackingListener
 import dfialho.tveebot.tracker.api.isMoreRecentThan
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import mu.KLogging
 import java.util.concurrent.TimeUnit
 
 /**
@@ -21,9 +20,7 @@ class ScheduledTrackerEngine(
     override val repository: TrackerRepository
 ) : TrackerEngine, AbstractScheduledService() {
 
-    companion object {
-        private val logger: Logger = LoggerFactory.getLogger(ScheduledTrackerEngine::class.java)
-    }
+    companion object : KLogging()
 
     /**
      * Set holding every [TrackingListener] to be notified of new episode files.
@@ -34,12 +31,12 @@ class ScheduledTrackerEngine(
     override fun scheduler(): Scheduler = Scheduler.newFixedRateSchedule(1, 5, TimeUnit.SECONDS)
 
     override fun runOneIteration() {
-        logger.info("Checking for new episodes...")
+        logger.info { "Checking for new episodes..." }
 
         try {
             for (tvShow in repository.findTVShows(tracked = true)) {
                 val episodeFiles = provider.fetchEpisodes(tvShow)
-                logger.trace("Episodes for '${tvShow.title}': $episodeFiles")
+                logger.trace { "Episodes for '${tvShow.title}': $episodeFiles" }
 
                 val existingEpisodeFiles = repository.findEpisodeFilesFrom(tvShow)
                     .associateBy { it.identifier }
@@ -48,15 +45,15 @@ class ScheduledTrackerEngine(
                     val existingFile: EpisodeFile? = existingEpisodeFiles[episodeFile.identifier]
 
                     if (existingFile == null || episodeFile isMoreRecentThan existingFile) {
-                        logger.info("New episode: $episodeFile")
+                        logger.debug { "New episode: $episodeFile" }
                         repository.put(tvShow, episodeFile)
                         listeners.forEach { it.notify(tvShow, episodeFile) }
                     }
                 }
             }
 
-        } catch (e: Exception) {
-            logger.warn("Failed to retrieve  service failed", e)
+        } catch (exception: Exception) {
+            logger.warn(exception) { "Failed to retrieve  service failed" }
         }
     }
 

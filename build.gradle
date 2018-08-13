@@ -33,6 +33,7 @@ subprojects {
 
     // Dependencies for Spek 2
     dependencies {
+        compile 'io.github.microutils:kotlin-logging:1.5.9'
         implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
 
         testImplementation ("org.jetbrains.spek:spek-api:$spekVersion")  {
