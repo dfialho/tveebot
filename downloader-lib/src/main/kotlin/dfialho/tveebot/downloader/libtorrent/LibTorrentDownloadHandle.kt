@@ -56,6 +56,7 @@ class LibTorrentDownloadHandle(
     override fun getStatus(): DownloadStatus = nativeHandle.status().let {
         DownloadStatus(
             nativeHandle.name(),
+            reference.value,
             it.state().toDownloadState(),
             it.progress(),
             it.downloadRate()

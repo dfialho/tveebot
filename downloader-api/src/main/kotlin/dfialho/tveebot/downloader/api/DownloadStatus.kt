@@ -13,6 +13,11 @@ data class DownloadStatus(
     val name: String,
 
     /**
+     * Reference for the download.
+     */
+    val reference: String,
+
+    /**
      * The current state of the download.
      */
     val state: DownloadState,
