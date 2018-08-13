@@ -46,8 +46,8 @@ class ScheduledTrackerEngine(
 
                     if (existingFile == null || episodeFile isMoreRecentThan existingFile) {
                         logger.debug { "New episode: $episodeFile" }
-                        repository.put(tvShow, episodeFile)
                         listeners.forEach { it.notify(tvShow, episodeFile) }
+                        repository.put(tvShow, episodeFile)
                     }
                 }
             }
