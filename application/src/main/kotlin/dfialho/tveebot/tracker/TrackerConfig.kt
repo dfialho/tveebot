@@ -5,4 +5,6 @@ import org.springframework.context.annotation.Configuration
 
 @Configuration
 @ConfigurationProperties("tracker")
-class TrackerConfig
+class TrackerConfig {
+    var checkPeriod: Long = 30 // seconds
+}

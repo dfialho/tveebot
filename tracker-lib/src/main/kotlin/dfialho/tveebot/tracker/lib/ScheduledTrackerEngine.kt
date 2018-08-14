@@ -18,7 +18,8 @@ import java.util.concurrent.TimeUnit
  */
 class ScheduledTrackerEngine(
     override val provider: TVShowProvider,
-    override val repository: TrackerRepository
+    override val repository: TrackerRepository,
+    private val checkPeriod: Long
 ) : TrackerEngine, AbstractScheduledService() {
 
     companion object : KLogging()
@@ -29,7 +30,7 @@ class ScheduledTrackerEngine(
     private val listeners: MutableSet<TrackingListener> = mutableSetOf()
 
     // Use a scheduler which call [runOneIteration] periodically to check for new episodes
-    override fun scheduler(): Scheduler = Scheduler.newFixedRateSchedule(1, 5, TimeUnit.SECONDS)
+    override fun scheduler(): Scheduler = Scheduler.newFixedRateSchedule(1, checkPeriod, TimeUnit.SECONDS)
 
     override fun runOneIteration(): Unit = try {
         logger.info { "Checking for new episodes..." }

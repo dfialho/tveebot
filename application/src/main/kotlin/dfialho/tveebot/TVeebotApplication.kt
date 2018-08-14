@@ -4,6 +4,7 @@ import dfialho.tveebot.downloader.DownloaderConfig
 import dfialho.tveebot.downloader.api.DownloadEngine
 import dfialho.tveebot.downloader.libtorrent.LibTorrentDownloadEngine
 import dfialho.tveebot.downloader.libtorrent.threadSafe
+import dfialho.tveebot.tracker.TrackerConfig
 import dfialho.tveebot.tracker.api.TVShowIDMapper
 import dfialho.tveebot.tracker.api.TVShowProvider
 import dfialho.tveebot.tracker.api.TrackerEngine
@@ -29,8 +30,8 @@ class TVeebotApplication {
     fun transactionManager(dataSource: DataSource) = SpringTransactionManager(dataSource)
 
     @Bean
-    fun trackerEngine(provider: TVShowProvider, repository: TrackerRepository): TrackerEngine =
-        ScheduledTrackerEngine(provider, repository)
+    fun trackerEngine(provider: TVShowProvider, repository: TrackerRepository, config: TrackerConfig): TrackerEngine =
+        ScheduledTrackerEngine(provider, repository, config.checkPeriod)
 
     @Bean
     @Profile("!development")
