@@ -8,6 +8,7 @@ import dfialho.tveebot.tracker.api.TrackerRepository
 import dfialho.tveebot.tracker.api.TrackingListener
 import dfialho.tveebot.tracker.api.isMoreRecentThan
 import mu.KLogging
+import java.io.IOException
 import java.util.concurrent.TimeUnit
 
 /**
@@ -30,31 +31,36 @@ class ScheduledTrackerEngine(
     // Use a scheduler which call [runOneIteration] periodically to check for new episodes
     override fun scheduler(): Scheduler = Scheduler.newFixedRateSchedule(1, 5, TimeUnit.SECONDS)
 
-    override fun runOneIteration() {
+    override fun runOneIteration(): Unit = try {
         logger.info { "Checking for new episodes..." }
 
-        try {
-            for (tvShow in repository.findTVShows(tracked = true)) {
-                val episodeFiles = provider.fetchEpisodes(tvShow)
-                logger.trace { "Episodes for '${tvShow.title}': $episodeFiles" }
+        for (tvShow in repository.findTVShows(tracked = true)) {
 
-                val existingEpisodeFiles = repository.findEpisodeFilesFrom(tvShow)
-                    .associateBy { it.identifier }
-
-                for (episodeFile in episodeFiles) {
-                    val existingFile: EpisodeFile? = existingEpisodeFiles[episodeFile.identifier]
-
-                    if (existingFile == null || episodeFile isMoreRecentThan existingFile) {
-                        logger.debug { "New episode: $episodeFile" }
-                        listeners.forEach { it.notify(tvShow, episodeFile) }
-                        repository.put(tvShow, episodeFile)
-                    }
-                }
+            val episodeFiles: List<EpisodeFile> = try {
+                provider.fetchEpisodes(tvShow)
+            } catch (e: IOException) {
+                logger.warn(e) { "Failed to fetch episodes for '${tvShow.title}' from the provider" }
+                continue
             }
 
-        } catch (exception: Exception) {
-            logger.warn(exception) { "Failed to retrieve  service failed" }
+            logger.trace { "Episodes for '${tvShow.title}': $episodeFiles" }
+
+            val existingEpisodeFiles = repository.findEpisodeFilesFrom(tvShow)
+                .associateBy { it.identifier }
+
+            for (episodeFile in episodeFiles) {
+                val existingFile: EpisodeFile? = existingEpisodeFiles[episodeFile.identifier]
+
+                if (existingFile == null || episodeFile isMoreRecentThan existingFile) {
+                    logger.debug { "New episode: $episodeFile" }
+                    listeners.forEach { it.notify(tvShow, episodeFile) }
+                    repository.put(tvShow, episodeFile)
+                }
+            }
         }
+
+    } catch (e: Exception) {
+        logger.error(e) { "Unexpected error occurred while fetching events from provider" }
     }
 
     override fun start() {

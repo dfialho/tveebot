@@ -1,5 +1,7 @@
 package dfialho.tveebot.tracker.api
 
+import java.io.IOException
+
 /**
  * A TV show provider is an entity which is able to provide information about one or more TV shows.
  *
@@ -13,12 +15,16 @@ interface TVShowProvider {
 
     /**
      * Fetches all TV Shows from the provider.
+     *
+     * @throws IOException if an error occurs when trying to reach the provider
      */
     fun fetchTVShows(): List<TVShow>
 
     /**
      * Fetches the most recent episodes available for [tvShow]. The number of episodes returned by this method is
      * specific to each implementation, but it is expected to at least return the most recent episodes.
+     *
+     * @throws IOException if an error occurs when trying to reach the provider
      */
     fun fetchEpisodes(tvShow: TVShow): List<EpisodeFile>
 }

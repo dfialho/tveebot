@@ -27,7 +27,7 @@ class TrackerService(
         logger.debug { "Starting tracker service" }
 
         repository.putAll(provider.fetchTVShows())
-        logger.info { "Repository: ${repository.findAllTVShows()}" }
+        logger.trace { "Repository: ${repository.findAllTVShows()}" }
 
         engine.start()
         engine.addListener(this)

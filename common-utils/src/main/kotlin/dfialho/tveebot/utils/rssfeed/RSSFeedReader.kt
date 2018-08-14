@@ -2,6 +2,7 @@ package dfialho.tveebot.utils.rssfeed
 
 import com.sun.syndication.feed.synd.SyndEntry
 import com.sun.syndication.feed.synd.SyndFeed
+import com.sun.syndication.io.FeedException
 import com.sun.syndication.io.SyndFeedInput
 import com.sun.syndication.io.XmlReader
 import java.io.File
@@ -25,23 +26,40 @@ class RSSFeedReader {
 
     /**
      * Reads an RSS feed from a [file] and returns the result in a [RSSFeed].
+     *
+     * @throws IllegalArgumentException if feed type could not be understood by any of the underlying parsers.
+     * @throws RSSFeedException if the feed could not be parsed
      */
-    fun read(file: File): RSSFeed {
-        return syndFeedInput.build(XmlReader(file)).toRSSFeed()
-    }
+    fun read(file: File): RSSFeed = read(XmlReader(file))
 
     /**
      * Reads an RSS feed from an [URL] and returns the result in a [RSSFeed].
+     *
+     * @throws IllegalArgumentException if feed type could not be understood by any of the underlying parsers.
+     * @throws RSSFeedException if the feed could not be parsed
      */
-    fun read(url: URL): RSSFeed {
-        return syndFeedInput.build(XmlReader(url)).toRSSFeed()
-    }
+    fun read(url: URL): RSSFeed = read(XmlReader(url))
 
     /**
      * Reads an RSS feed from an [InputStream] and returns the result in a [RSSFeed].
+     *
+     * @throws IllegalArgumentException if feed type could not be understood by any of the underlying parsers.
+     * @throws RSSFeedException if the feed could not be parsed
      */
-    fun read(inputStream: InputStream): RSSFeed {
-        return syndFeedInput.build(XmlReader(inputStream)).toRSSFeed()
+    fun read(inputStream: InputStream): RSSFeed = read(XmlReader(inputStream))
+
+    /**
+     * Base method to read the RSS feed from an [XmlReader].
+     *
+     * @throws IllegalArgumentException if feed type could not be understood by any of the underlying parsers.
+     * @throws RSSFeedException if the feed could not be parsed
+     */
+    private fun read(reader: XmlReader): RSSFeed {
+        return try {
+            syndFeedInput.build(reader).toRSSFeed()
+        } catch (e: FeedException) {
+            throw RSSFeedException(e.message.orEmpty())
+        }
     }
 }
 
@@ -54,10 +72,11 @@ private fun SyndFeed.toRSSFeed(): RSSFeed {
 
     return RSSFeed(
         title = this.title.orEmpty(),
-        items = syndEntries.map { RSSFeedItem(
-            it.title.orEmpty(),
-            it.link.orEmpty(),
-            it.publishedDate.toInstant())
+        items = syndEntries.map {
+            RSSFeedItem(
+                it.title.orEmpty(),
+                it.link.orEmpty(),
+                it.publishedDate.toInstant())
         }
     )
 }
