@@ -24,8 +24,8 @@ class DownloaderController(private val downloaderService: DownloaderService) {
      *
      * If the download was already being download then this will have no effect.
      */
-    @PutMapping("add")
-    fun add(magnetLink: String): DownloadReference {
+    @PutMapping("download")
+    fun download(magnetLink: String): DownloadReference {
         return downloaderService.download(magnetLink)
     }
 

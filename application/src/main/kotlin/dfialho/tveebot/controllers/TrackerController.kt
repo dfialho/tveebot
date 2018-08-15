@@ -32,7 +32,7 @@ class TrackerController(private val trackerService: TrackerService) {
     /**
      * Retrieves all TV shows currently NOT being tracked.
      */
-    @GetMapping("tvshows/nottracked")
+    @GetMapping("tvshows/not-tracked")
     fun getNotTrackedTVShows(): List<TVShow> = trackerService.getNotTrackedTVShows()
 
     /**
@@ -44,8 +44,8 @@ class TrackerController(private val trackerService: TrackerService) {
      *  - 720p (default)
      *  - 480p
      */
-    @PutMapping("tvshow/track/{uuid}")
-    fun trackTVShow(
+    @PutMapping("tvshow/{uuid}")
+    fun addTVShow(
         @PathVariable uuid: UUID,
         @RequestParam quality: String?
     ) {
@@ -55,8 +55,8 @@ class TrackerController(private val trackerService: TrackerService) {
     /**
      * Removes the TV show with the given UUID from the set of tracked TV shows.
      */
-    @DeleteMapping("tvshow/remove/{uuid}")
-    fun untrackTVShow(@PathVariable uuid: UUID) {
+    @DeleteMapping("tvshow/{uuid}")
+    fun removeTVShow(@PathVariable uuid: UUID) {
         trackerService.untrackTVShow(uuid)
     }
 }
