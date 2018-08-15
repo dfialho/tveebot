@@ -1,6 +1,6 @@
-package dfialho.tveebot.tracker
+package dfialho.tveebot.services.tracker
 
-import dfialho.tveebot.downloader.DownloaderService
+import dfialho.tveebot.services.downloader.DownloaderService
 import dfialho.tveebot.tracker.api.EpisodeFile
 import dfialho.tveebot.tracker.api.TVShow
 import dfialho.tveebot.tracker.api.TVShowProvider

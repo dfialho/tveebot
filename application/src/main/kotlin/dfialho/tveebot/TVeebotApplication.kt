@@ -1,10 +1,10 @@
 package dfialho.tveebot
 
-import dfialho.tveebot.downloader.DownloaderConfig
 import dfialho.tveebot.downloader.api.DownloadEngine
 import dfialho.tveebot.downloader.libtorrent.LibTorrentDownloadEngine
 import dfialho.tveebot.downloader.libtorrent.threadSafe
-import dfialho.tveebot.tracker.TrackerConfig
+import dfialho.tveebot.services.downloader.DownloaderConfig
+import dfialho.tveebot.services.tracker.TrackerConfig
 import dfialho.tveebot.tracker.api.TVShowIDMapper
 import dfialho.tveebot.tracker.api.TVShowProvider
 import dfialho.tveebot.tracker.api.TrackerEngine

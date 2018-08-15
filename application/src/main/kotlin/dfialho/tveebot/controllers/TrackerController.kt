@@ -1,5 +1,6 @@
-package dfialho.tveebot.tracker
+package dfialho.tveebot.controllers
 
+import dfialho.tveebot.services.tracker.TrackerService
 import dfialho.tveebot.tracker.api.TVShow
 import dfialho.tveebot.tracker.api.TrackedTVShow
 import dfialho.tveebot.tracker.api.VideoQuality
