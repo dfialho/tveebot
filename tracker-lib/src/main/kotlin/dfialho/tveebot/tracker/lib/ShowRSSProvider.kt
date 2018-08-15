@@ -18,7 +18,7 @@ import java.net.URL
 class ShowRSSProvider(private val idMapper: TVShowIDMapper) : TVShowProvider {
 
     companion object {
-        private const val SHOWRSS_URL = "https://google.pt"
+        private const val SHOWRSS_URL = "https://showrss.info/browse"
     }
 
     /**
