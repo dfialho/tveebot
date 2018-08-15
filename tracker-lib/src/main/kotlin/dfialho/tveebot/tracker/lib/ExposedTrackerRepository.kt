@@ -7,6 +7,7 @@ import dfialho.tveebot.tracker.api.TrackedTVShow
 import dfialho.tveebot.tracker.api.TrackerRepository
 import dfialho.tveebot.tracker.api.VideoQuality
 import dfialho.tveebot.tracker.api.toVideoQuality
+import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.batchInsert
@@ -58,6 +59,19 @@ class ExposedTrackerRepository(private val transactionTemplate: TransactionTempl
         }
     }
 
+    override fun findTrackedTVShow(tvShowUUID: UUID): TrackedTVShow? = TVShows
+        .select { TVShows.id eq tvShowUUID }
+        .map { it.toTrackedTVShow() }
+        .firstOrNull()
+
+    private fun ResultRow.toTrackedTVShow(): TrackedTVShow = TrackedTVShow(
+        TVShow(
+            title = this[TVShows.title],
+            id = this[TVShows.id]
+        ),
+        quality = this[TVShows.quality].toVideoQuality()
+    )
+
     override fun findAllTVShows(): List<TVShow> = TVShows
         .selectAll()
         .map {
@@ -69,15 +83,7 @@ class ExposedTrackerRepository(private val transactionTemplate: TransactionTempl
 
     override fun findTrackedTVShows(): List<TrackedTVShow> = TVShows
         .select { TVShows.tracked eq true }
-        .map {
-            TrackedTVShow(
-                TVShow(
-                    title = it[TVShows.title],
-                    id = it[TVShows.id]
-                ),
-                quality = it[TVShows.quality].toVideoQuality()
-            )
-        }
+        .map { it.toTrackedTVShow() }
 
     override fun findNotTrackedTVShows(): List<TVShow> = TVShows
         .select { TVShows.tracked eq false }
@@ -98,6 +104,12 @@ class ExposedTrackerRepository(private val transactionTemplate: TransactionTempl
     override fun setNotTracked(tvShowUUID: UUID) {
         TVShows.update({ TVShows.id eq tvShowUUID }) {
             it[TVShows.tracked] = false
+        }
+    }
+
+    override fun setTVShowVideoQuality(tvShowUUID: UUID, videoQuality: VideoQuality) {
+        TVShows.update({ TVShows.id eq tvShowUUID }) {
+            it[TVShows.quality] = videoQuality.toString()
         }
     }
 

@@ -4,10 +4,10 @@ import dfialho.tveebot.services.tracker.TrackerService
 import dfialho.tveebot.tracker.api.TVShow
 import dfialho.tveebot.tracker.api.TrackedTVShow
 import dfialho.tveebot.tracker.api.VideoQuality
-import dfialho.tveebot.tracker.api.toVideoQuality
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -39,17 +39,17 @@ class TrackerController(private val trackerService: TrackerService) {
      * Tells this tracker service to start tracking the TV show identified by [uuid]. Downloaded episode files for
      * this TV show must be of the specified video [quality].
      *
-     * The video quality parameter should be one of:
-     *  - 1080p
-     *  - 720p (default)
-     *  - 480p
+     * The video quality, which must be one of:
+     *  - "FULL_HD" (1080p)
+     *  - "HD" (720p)
+     *  - "SD" (480p)
      */
     @PutMapping("tvshow/{uuid}")
     fun addTVShow(
         @PathVariable uuid: UUID,
-        @RequestParam quality: String?
+        @RequestParam quality: VideoQuality?
     ) {
-        trackerService.trackTVShow(uuid, videoQuality = quality?.toVideoQuality() ?: VideoQuality.HD)
+        trackerService.trackTVShow(uuid, videoQuality = quality ?: VideoQuality.HD)
     }
 
     /**
@@ -58,5 +58,21 @@ class TrackerController(private val trackerService: TrackerService) {
     @DeleteMapping("tvshow/{uuid}")
     fun removeTVShow(@PathVariable uuid: UUID) {
         trackerService.untrackTVShow(uuid)
+    }
+
+    /**
+     * Sets the video [quality] of episode files corresponding to the TV show identified by [uuid].
+     *
+     * The video quality, which must be one of:
+     *  - "FULL_HD" (1080p)
+     *  - "HD" (720p)
+     *  - "SD" (480p)
+     */
+    @PostMapping("tvshow/{uuid}")
+    fun setTVShowVideoQuality(
+        @PathVariable uuid: UUID,
+        @RequestParam quality: VideoQuality
+    ) {
+        trackerService.setTVShowVideoQuality(uuid, quality)
     }
 }

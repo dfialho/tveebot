@@ -17,6 +17,11 @@ interface TrackerRepository {
     fun putAll(tvShows: List<TVShow>)
 
     /**
+     * Returns the [TrackedTVShow] identified by [tvShowUUID].
+     */
+    fun findTrackedTVShow(tvShowUUID: UUID): TrackedTVShow?
+
+    /**
      * Returns a list containing every TV show in the repository.
      */
     fun findAllTVShows(): List<TVShow>
@@ -43,6 +48,11 @@ interface TrackerRepository {
      * no effect.
      */
     fun setNotTracked(tvShowUUID: UUID)
+
+    /**
+     * Sets the [videoQuality] for the tracked TV show identified by [tvShowUUID].
+     */
+    fun setTVShowVideoQuality(tvShowUUID: UUID, videoQuality: VideoQuality)
 
     /**
      * Inserts the [episodeFile] into the repository associated with the TV show with [tvShowUUID], if it does not

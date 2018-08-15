@@ -14,6 +14,7 @@ import org.springframework.beans.factory.DisposableBean
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.stereotype.Service
 import java.util.*
+import kotlin.NoSuchElementException
 
 @Service
 class TrackerService(
@@ -78,4 +79,15 @@ class TrackerService(
         repository.setNotTracked(tvShowUUID)
     }
 
+    fun setTVShowVideoQuality(tvShowUUID: UUID, videoQuality: VideoQuality) {
+        val tvShow = repository.findTrackedTVShow(tvShowUUID)
+            ?: throw NoSuchElementException("No TV show with ID '$tvShowUUID' is being tracked")
+
+        // Remove any downloads of episode files of a different quality
+        if (tvShow.quality != videoQuality) {
+            downloaderService.removeAllFrom(tvShowUUID)
+        }
+
+        repository.setTVShowVideoQuality(tvShowUUID, videoQuality)
+    }
 }
