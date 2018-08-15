@@ -23,7 +23,7 @@ import org.springframework.transaction.support.TransactionTemplate
  */
 @Component
 @Transactional
-class DatabaseEpisodeDownloadQueue(private val transactionTemplate: TransactionTemplate) : EpisodeDownloadQueue, InitializingBean {
+class ExposedEpisodeDownloadQueue(private val transactionTemplate: TransactionTemplate) : EpisodeDownloadQueue, InitializingBean {
 
     private object Downloads : Table() {
         val reference = varchar("reference", length = 256).primaryKey()

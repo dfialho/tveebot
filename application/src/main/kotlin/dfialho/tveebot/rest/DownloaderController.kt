@@ -1,4 +1,4 @@
-package dfialho.tveebot.controllers
+package dfialho.tveebot.rest
 
 import dfialho.tveebot.downloader.api.DownloadReference
 import dfialho.tveebot.downloader.api.DownloadStatus

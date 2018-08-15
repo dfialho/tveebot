@@ -16,6 +16,12 @@ import org.springframework.stereotype.Service
 import java.util.*
 import kotlin.NoSuchElementException
 
+/**
+ * Service responsible for tracking TV shows and send episode files to the [DownloaderService] once a new episode is
+ * found for a tracked TV show.
+ *
+ * @author David Fialho (dfialho@protonmail.com)
+ */
 @Service
 class TrackerService(
     private val engine: TrackerEngine,
@@ -80,9 +86,12 @@ class TrackerService(
         repository.removeEpisodeFilesFrom(tvShowUUID)
     }
 
+    /**
+     * Sets the [videoQuality] of episode files corresponding to the TV show identified by [tvShowUUID].
+     */
     fun setTVShowVideoQuality(tvShowUUID: UUID, videoQuality: VideoQuality) {
         val tvShow = repository.findTrackedTVShow(tvShowUUID)
-            ?: throw NoSuchElementException("No TV show with ID '$tvShowUUID' is being tracked")
+        tvShow ?: throw NoSuchElementException("No TV show with ID '$tvShowUUID' is being tracked")
 
         // Remove any downloads of episode files of a different quality
         if (tvShow.quality != videoQuality) {

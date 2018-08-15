@@ -4,7 +4,7 @@ import dfialho.tveebot.downloader.api.DownloadEngine
 import dfialho.tveebot.downloader.api.DownloadReference
 
 /**
- * A [EpisodeDownloadQueue] holds the downloads currently being downloaded by a [DownloadEngine].
+ * An [EpisodeDownloadQueue] holds the downloads currently being downloaded by a [DownloadEngine].
  *
  * @author David Fialho (dfialho@protonmail.com)
  */

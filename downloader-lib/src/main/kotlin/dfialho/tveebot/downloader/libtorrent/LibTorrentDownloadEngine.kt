@@ -21,7 +21,6 @@ import javax.annotation.concurrent.NotThreadSafe
  * Implementation of a [DownloadEngine] based on the libtorrent library. This implementation is not thread-safe.
  *
  * @param savePath The path to the directory where the downloads are saved.
- *
  * @author David Fialho (dfialho@protonmail.com)
  */
 @NotThreadSafe

@@ -5,6 +5,7 @@ import dfialho.tveebot.downloader.api.DownloadHandle
 import dfialho.tveebot.downloader.api.DownloadListener
 import dfialho.tveebot.downloader.api.DownloadReference
 import dfialho.tveebot.downloader.api.DownloadStatus
+import dfialho.tveebot.services.tracker.TrackerService
 import dfialho.tveebot.tracker.api.EpisodeFile
 import mu.KLogging
 import org.springframework.beans.factory.DisposableBean
@@ -12,6 +13,11 @@ import org.springframework.beans.factory.InitializingBean
 import org.springframework.stereotype.Service
 import java.util.*
 
+/**
+ * Service responsible for downloading the episode files found by the [TrackerService].
+ *
+ * @author David Fialho (dfialho@protonmail.com)
+ */
 @Service
 class DownloaderService(
     private val engine: DownloadEngine,
@@ -42,8 +48,8 @@ class DownloaderService(
     }
 
     override fun notifyFinished(handle: DownloadHandle) {
-        downloadQueue.remove(handle.reference)
         logger.info { "Finished downloading: ${handle.getStatus().name}" }
+        downloadQueue.remove(handle.reference)
     }
 
     /**
@@ -51,14 +57,15 @@ class DownloaderService(
      * If the download was already being download then this will have no effect.
      */
     fun download(magnetLink: String): DownloadReference {
-        // FIXME include episode file?
         return engine.add(magnetLink).reference
     }
 
-    fun download(tvShowUUID: UUID, episodeFile: EpisodeFile): DownloadReference {
-        return engine.add(episodeFile.link).reference.also {
-            downloadQueue.push(EpisodeDownload(it, tvShowUUID, episodeFile))
-        }
+    /**
+     * Starts downloading the [episodeFile].
+     */
+    fun download(tvShowUUID: UUID, episodeFile: EpisodeFile) {
+        val handle = engine.add(episodeFile.link)
+        downloadQueue.push(EpisodeDownload(handle.reference, tvShowUUID, episodeFile))
     }
 
     /**
@@ -104,11 +111,11 @@ class DownloaderService(
             downloadQueue.remove(it.reference)
         }
     }
+}
 
-    /**
-     * Throws exception indicating the download corresponding to [reference] does not exist in this engine.
-     */
-    private fun throwNotFoundError(reference: DownloadReference): Nothing {
-        throw NoSuchElementException("Download with reference '$reference' not found")
-    }
+/**
+ * Throws exception indicating the download corresponding to [reference] does not exist in this engine.
+ */
+private fun throwNotFoundError(reference: DownloadReference): Nothing {
+    throw NoSuchElementException("Download with reference '$reference' not found")
 }

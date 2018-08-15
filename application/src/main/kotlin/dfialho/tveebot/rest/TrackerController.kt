@@ -1,4 +1,4 @@
-package dfialho.tveebot.controllers
+package dfialho.tveebot.rest
 
 import dfialho.tveebot.services.tracker.TrackerService
 import dfialho.tveebot.tracker.api.TVShow

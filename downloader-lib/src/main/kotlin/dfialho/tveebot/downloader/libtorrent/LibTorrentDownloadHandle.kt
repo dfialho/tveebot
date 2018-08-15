@@ -10,13 +10,11 @@ import java.util.*
 
 
 /**
- * [DownloadHandle] implementation based on the libtorrent library.
+ * A [DownloadHandle] implementation based on the libtorrent library.
  *
  * @property engine Internal download engine which creates this handle
  * @property nativeHandle Handle obtained through the libtorrent library
- *
  * @author David Fialho (dfialho@protonmail.com)
- * @see DownloadHandle
  */
 class LibTorrentDownloadHandle(
     private val engine: LibTorrentDownloadEngine,
