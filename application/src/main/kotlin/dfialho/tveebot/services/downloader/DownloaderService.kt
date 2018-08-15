@@ -91,10 +91,17 @@ class DownloaderService(
         downloadQueue.remove(reference)
     }
 
+    /**
+     * Removes every episode download corresponding to the TV show identified by [tvShowUUID].
+     */
     fun removeAllFrom(tvShowUUID: UUID) {
-        for ((reference, _, _) in downloadQueue.getAll()) {
-            engine.remove(reference)
-            downloadQueue.remove(reference)
+
+        val downloads: List<EpisodeDownload> = downloadQueue.getAll()
+            .filter { it.tvShowUUID == tvShowUUID }
+
+        downloads.forEach {
+            engine.remove(it.reference)
+            downloadQueue.remove(it.reference)
         }
     }
 
