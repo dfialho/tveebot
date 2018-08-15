@@ -49,7 +49,7 @@ class TrackerService(
             logger.info { "New episode from ${tvShow.title}: ${season}x%02d - $title".format(number) }
         }
 
-        downloaderService.download(episodeFile.link)
+        downloaderService.download(tvShow.id, episodeFile)
     }
 
     /**
@@ -74,6 +74,7 @@ class TrackerService(
      * Tells this tracker service to stop tracking TV show identified by [tvShowUUID].
      */
     fun untrackTVShow(tvShowUUID: UUID) {
+        downloaderService.removeAllFrom(tvShowUUID)
         repository.setNotTracked(tvShowUUID)
     }
 

@@ -6,16 +6,20 @@ package dfialho.tveebot.tracker.api
  * @property identifier An identifier specific to a video quality
  * @author David Fialho (dfialho@protonmail.com)
  */
-enum class VideoQuality(val identifier: String) {
+enum class VideoQuality(private val identifier: String) {
     FULL_HD("1080p"),
     HD("720p"),
-    SD("480p"),
+    SD("480p");
+
+    override fun toString(): String {
+        return identifier
+    }
 }
 
 /**
  * Map to convert an identifier to a video quality.
  */
-private val qualities: Map<String, VideoQuality> = VideoQuality.values().associateBy({it.identifier}, {it})
+private val qualities: Map<String, VideoQuality> = VideoQuality.values().associateBy({ it.toString() }, { it })
 
 /**
  * Returns the [VideoQuality] corresponding to this string identifier.

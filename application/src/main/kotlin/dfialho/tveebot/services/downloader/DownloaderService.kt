@@ -5,8 +5,7 @@ import dfialho.tveebot.downloader.api.DownloadHandle
 import dfialho.tveebot.downloader.api.DownloadListener
 import dfialho.tveebot.downloader.api.DownloadReference
 import dfialho.tveebot.downloader.api.DownloadStatus
-import dfialho.tveebot.downloader.libtorrent.MagnetLink
-import dfialho.tveebot.tracker.api.TVShow
+import dfialho.tveebot.tracker.api.EpisodeFile
 import mu.KLogging
 import org.springframework.beans.factory.DisposableBean
 import org.springframework.beans.factory.InitializingBean
@@ -16,7 +15,7 @@ import java.util.*
 @Service
 class DownloaderService(
     private val engine: DownloadEngine,
-    private val downloadQueue: DownloadQueue
+    private val downloadQueue: EpisodeDownloadQueue
 ) : DownloadListener, InitializingBean, DisposableBean {
 
     companion object : KLogging()
@@ -28,9 +27,9 @@ class DownloaderService(
         engine.addListener(this)
 
         // Restart every download in the queue
-        val downloadLinks = downloadQueue.getLinks()
-        downloadLinks.forEach { it.download(engine) }
-        logger.info { "Restarted ${downloadLinks.size} downloads" }
+        val episodeDownloads: List<EpisodeDownload> = downloadQueue.getAll()
+        episodeDownloads.forEach { engine.add(it.episodeFile.link) }
+        logger.info { "Restarted downloading ${episodeDownloads.size} episodes" }
 
         logger.info { "Started downloader service successfully" }
     }
@@ -52,8 +51,13 @@ class DownloaderService(
      * If the download was already being download then this will have no effect.
      */
     fun download(magnetLink: String): DownloadReference {
-        return engine.add(magnetLink).reference.also {
-            downloadQueue.push(it, MagnetLink(magnetLink))
+        // FIXME include episode file?
+        return engine.add(magnetLink).reference
+    }
+
+    fun download(tvShowUUID: UUID, episodeFile: EpisodeFile): DownloadReference {
+        return engine.add(episodeFile.link).reference.also {
+            downloadQueue.push(EpisodeDownload(it, tvShowUUID, episodeFile))
         }
     }
 
@@ -87,12 +91,11 @@ class DownloaderService(
         downloadQueue.remove(reference)
     }
 
-    fun removeTVShowDownloads(tvShow: TVShow) {
-
-    }
-
-    fun removeTVShowDownloads(uuid: UUID) {
-
+    fun removeAllFrom(tvShowUUID: UUID) {
+        for ((reference, _, _) in downloadQueue.getAll()) {
+            engine.remove(reference)
+            downloadQueue.remove(reference)
+        }
     }
 
     /**

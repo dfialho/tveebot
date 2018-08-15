@@ -30,7 +30,8 @@ class ExposedTrackerRepository(private val transactionTemplate: TransactionTempl
     private object TVShows : Table() {
         val id = uuid("id").primaryKey()
         val title = varchar("title", length = 256)
-        val quality = varchar("quality", length = 32).nullable()
+        val tracked = bool("tracked")
+        val quality = varchar("quality", length = 32)
     }
 
     private object EpisodeFiles : Table() {
@@ -67,16 +68,19 @@ class ExposedTrackerRepository(private val transactionTemplate: TransactionTempl
         }
 
     override fun findTrackedTVShows(): List<TrackedTVShow> = TVShows
-        .select { TVShows.quality.isNotNull() }
+        .select { TVShows.tracked eq true }
         .map {
             TrackedTVShow(
-                TVShow(title = it[TVShows.title], id = it[TVShows.id]),
-                quality = it[TVShows.quality]!!.toVideoQuality()
+                TVShow(
+                    title = it[TVShows.title],
+                    id = it[TVShows.id]
+                ),
+                quality = it[TVShows.quality].toVideoQuality()
             )
         }
 
     override fun findNotTrackedTVShows(): List<TVShow> = TVShows
-        .select { TVShows.quality.isNull() }
+        .select { TVShows.tracked eq false }
         .map {
             TVShow(
                 title = it[TVShows.title],
@@ -86,13 +90,14 @@ class ExposedTrackerRepository(private val transactionTemplate: TransactionTempl
 
     override fun setTracked(tvShowUUID: UUID, quality: VideoQuality) {
         TVShows.update({ TVShows.id eq tvShowUUID }) {
-            it[TVShows.quality] = quality.identifier
+            it[TVShows.tracked] = true
+            it[TVShows.quality] = quality.toString()
         }
     }
 
     override fun setNotTracked(tvShowUUID: UUID) {
         TVShows.update({ TVShows.id eq tvShowUUID }) {
-            it[TVShows.quality] = null
+            it[TVShows.tracked] = false
         }
     }
 
@@ -101,7 +106,7 @@ class ExposedTrackerRepository(private val transactionTemplate: TransactionTempl
             it[EpisodeFiles.tvShowID] = tvShowUUID
             it[EpisodeFiles.season] = episodeFile.episode.season
             it[EpisodeFiles.number] = episodeFile.episode.number
-            it[EpisodeFiles.quality] = episodeFile.quality.identifier
+            it[EpisodeFiles.quality] = episodeFile.quality.toString()
             it[EpisodeFiles.title] = episodeFile.episode.title
             it[EpisodeFiles.link] = episodeFile.link
             it[EpisodeFiles.publishedDate] = DateTime(episodeFile.publishedDate.toEpochMilli())

@@ -46,17 +46,17 @@ class TrackerController(private val trackerService: TrackerService) {
      */
     @PutMapping("tvshow/track/{uuid}")
     fun trackTVShow(
-        @PathVariable() uuid: UUID,
-        @RequestParam quality: String = VideoQuality.HD.identifier
+        @PathVariable uuid: UUID,
+        @RequestParam quality: String?
     ) {
-        trackerService.trackTVShow(uuid, quality.toVideoQuality())
+        trackerService.trackTVShow(uuid, videoQuality = quality?.toVideoQuality() ?: VideoQuality.HD)
     }
 
     /**
      * Removes the TV show with the given UUID from the set of tracked TV shows.
      */
     @DeleteMapping("tvshow/remove/{uuid}")
-    fun untrackTVShow(@PathVariable("uuid") tvShowUUID: UUID) {
-        trackerService.untrackTVShow(tvShowUUID)
+    fun untrackTVShow(@PathVariable uuid: UUID) {
+        trackerService.untrackTVShow(uuid)
     }
 }
