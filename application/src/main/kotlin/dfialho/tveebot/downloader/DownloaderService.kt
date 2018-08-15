@@ -3,14 +3,15 @@ package dfialho.tveebot.downloader
 import dfialho.tveebot.downloader.api.DownloadEngine
 import dfialho.tveebot.downloader.api.DownloadHandle
 import dfialho.tveebot.downloader.api.DownloadListener
-import dfialho.tveebot.downloader.api.DownloadQueue
 import dfialho.tveebot.downloader.api.DownloadReference
 import dfialho.tveebot.downloader.api.DownloadStatus
 import dfialho.tveebot.downloader.libtorrent.MagnetLink
+import dfialho.tveebot.tracker.api.TVShow
 import mu.KLogging
 import org.springframework.beans.factory.DisposableBean
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.stereotype.Service
+import java.util.*
 
 @Service
 class DownloaderService(
@@ -84,6 +85,14 @@ class DownloaderService(
         }
 
         downloadQueue.remove(reference)
+    }
+
+    fun removeTVShowDownloads(tvShow: TVShow) {
+
+    }
+
+    fun removeTVShowDownloads(uuid: UUID) {
+
     }
 
     /**

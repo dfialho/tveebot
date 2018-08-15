@@ -1,8 +1,9 @@
-package dfialho.tveebot.downloader.libtorrent
+package dfialho.tveebot.downloader
 
 import dfialho.tveebot.downloader.api.DownloadLink
-import dfialho.tveebot.downloader.api.DownloadQueue
 import dfialho.tveebot.downloader.api.DownloadReference
+import dfialho.tveebot.downloader.libtorrent.MagnetLink
+import dfialho.tveebot.downloader.libtorrent.TorrentFile
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.deleteWhere
@@ -45,7 +46,7 @@ class DatabaseDownloadQueue(private val transactionTemplate: TransactionTemplate
         Downloads.insertIgnore {
             it[Downloads.reference] = reference.value
             it[Downloads.link] = link.raw
-            it[Downloads.type] = if (link is TorrentFile) DOWNLOAD_TYPE_FILE else DOWNLOAD_TYPE_LINK
+            it[type] = if (link is TorrentFile) DOWNLOAD_TYPE_FILE else DOWNLOAD_TYPE_LINK
         }
     }
 
