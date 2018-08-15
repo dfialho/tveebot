@@ -77,6 +77,7 @@ class TrackerService(
     fun untrackTVShow(tvShowUUID: UUID) {
         downloaderService.removeAllFrom(tvShowUUID)
         repository.setNotTracked(tvShowUUID)
+        repository.removeEpisodeFilesFrom(tvShowUUID)
     }
 
     fun setTVShowVideoQuality(tvShowUUID: UUID, videoQuality: VideoQuality) {

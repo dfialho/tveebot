@@ -65,4 +65,10 @@ interface TrackerRepository {
      * returns an empty list.
      */
     fun findEpisodeFilesFrom(tvShow: TVShow): List<EpisodeFile>
+
+    /**
+     * Removes every [EpisodeFile] from TV show identified by [tvShowUUID] available in the repository. If no episode
+     * file is found then this method has no effect.
+     */
+    fun removeEpisodeFilesFrom(tvShowUUID: UUID)
 }

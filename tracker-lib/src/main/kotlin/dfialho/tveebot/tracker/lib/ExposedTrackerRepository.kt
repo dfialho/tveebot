@@ -11,6 +11,7 @@ import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.batchInsert
+import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.selectAll
@@ -139,4 +140,8 @@ class ExposedTrackerRepository(private val transactionTemplate: TransactionTempl
                 publishedDate = it[EpisodeFiles.publishedDate].toDate().toInstant()
             )
         }
+
+    override fun removeEpisodeFilesFrom(tvShowUUID: UUID) {
+        EpisodeFiles.deleteWhere { EpisodeFiles.tvShowID eq tvShowUUID }
+    }
 }
