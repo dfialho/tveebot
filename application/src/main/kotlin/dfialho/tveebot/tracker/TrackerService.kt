@@ -4,9 +4,11 @@ import dfialho.tveebot.downloader.DownloaderService
 import dfialho.tveebot.tracker.api.EpisodeFile
 import dfialho.tveebot.tracker.api.TVShow
 import dfialho.tveebot.tracker.api.TVShowProvider
+import dfialho.tveebot.tracker.api.TrackedTVShow
 import dfialho.tveebot.tracker.api.TrackerEngine
 import dfialho.tveebot.tracker.api.TrackerRepository
 import dfialho.tveebot.tracker.api.TrackingListener
+import dfialho.tveebot.tracker.api.VideoQuality
 import mu.KLogging
 import org.springframework.beans.factory.DisposableBean
 import org.springframework.beans.factory.InitializingBean
@@ -51,15 +53,28 @@ class TrackerService(
     }
 
     /**
-     * Returns a list containing every TV show either being [tracked] or not [tracked].
+     * Returns a list containing every TV show currently being tracked.
      */
-    fun getTVShows(tracked: Boolean): List<TVShow> = repository.findTVShows(tracked)
+    fun getTrackedTVShows(): List<TrackedTVShow> = repository.findTrackedTVShows()
 
     /**
-     * Sets the TV show identified by [tvShowUUID] as [tracked].
+     * Returns a list containing every TV show currently NOT being tracked.
      */
-    fun setTVShowTracked(tvShowUUID: UUID, tracked: Boolean) {
-        repository.setTracked(tvShowUUID, tracked)
+    fun getNotTrackedTVShows(): List<TVShow> = repository.findNotTrackedTVShows()
+
+    /**
+     * Tells this tracker service to start tracking TV show identified by [tvShowUUID]. Downloaded episode files for
+     * this TV show must be of the specified [videoQuality].
+     */
+    fun trackTVShow(tvShowUUID: UUID, videoQuality: VideoQuality) {
+        repository.setTracked(tvShowUUID, videoQuality)
+    }
+
+    /**
+     * Tells this tracker service to stop tracking TV show identified by [tvShowUUID].
+     */
+    fun untrackTVShow(tvShowUUID: UUID) {
+        repository.setNotTracked(tvShowUUID)
     }
 
 }

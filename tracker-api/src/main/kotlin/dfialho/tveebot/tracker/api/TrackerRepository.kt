@@ -12,42 +12,43 @@ import java.util.*
 interface TrackerRepository {
 
     /**
-     * Inserts the [tvShow] into the repository, if it does not exist yet. Otherwise, it throws an exception.
-     * According to [tracked], the TV show is marked as being "tracked" or not. By default, the TV show is marked
-     * as "not tracked".
-     *
-     * @throws
-     */
-    fun put(tvShow: TVShow, tracked: Boolean = false)
-
-    /**
      * Inserts a batch of TV shows into the repository. Those already included in the repository will be ignored.
      */
     fun putAll(tvShows: List<TVShow>)
 
     /**
-     * Retrieves every TV show in the repository.
+     * Returns a list containing every TV show in the repository.
      */
     fun findAllTVShows(): List<TVShow>
 
     /**
-     * Retrieves every TV show marked as either "tracked" (if [tracked] is true) or "not tracked" (if [tracked] is
-     * false).
+     * Returns a list containing every TV show marked being tracked.
      */
-    fun findTVShows(tracked: Boolean): List<TVShow>
+    fun findTrackedTVShows(): List<TrackedTVShow>
 
     /**
-     * Sets the TV show with [tvShowUUID] as either "tracker" or "not tracked" according to [tracked].
+     * Returns a list containing every TV show that is NOT marked as being tracked.
      */
-    fun setTracked(tvShowUUID: UUID, tracked: Boolean = true)
+    fun findNotTrackedTVShows(): List<TVShow>
 
     /**
-     * Inserts the [episodeFile] into the repository associated with [tvShow], if it does not exist yet. Otherwise it
-     * throws an exception.
-     *
-     * @throws
+     * Marks the TV show with [tvShowUUID] as being tracked and sets the video [quality] the episodes of this TV show
+     * are expected to be downloaded.
      */
-    fun put(tvShow: TVShow, episodeFile: EpisodeFile)
+    fun setTracked(tvShowUUID: UUID, quality: VideoQuality)
+
+    /**
+     * Marks the TV show with [tvShowUUID] as not being tracked. If the TV show was being tracked it will lost all
+     * tracking information, such as, the video quality. If the TV shows was not being tracked, then this method has
+     * no effect.
+     */
+    fun setNotTracked(tvShowUUID: UUID)
+
+    /**
+     * Inserts the [episodeFile] into the repository associated with the TV show with [tvShowUUID], if it does not
+     * exist yet. Otherwise it throws an exception.
+     */
+    fun put(tvShowUUID: UUID, episodeFile: EpisodeFile)
 
     /**
      * Retrieves every [EpisodeFile] from [tvShow] available in the repository. If no episode file is found then it

@@ -1,6 +1,9 @@
 package dfialho.tveebot.tracker
 
 import dfialho.tveebot.tracker.api.TVShow
+import dfialho.tveebot.tracker.api.TrackedTVShow
+import dfialho.tveebot.tracker.api.VideoQuality
+import dfialho.tveebot.tracker.api.toVideoQuality
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -20,27 +23,39 @@ import java.util.*
 class TrackerController(private val trackerService: TrackerService) {
 
     /**
-     * According to [tracked], retrieves either every TV show currently being tracked, or every TV show not being
-     * tracked.
+     * Retrieves all TV shows currently being tracked.
      */
-    @GetMapping("tvshows")
-    fun getTVShows(@RequestParam("tracked") tracked: Boolean = true): List<TVShow> {
-        return trackerService.getTVShows(tracked)
-    }
+    @GetMapping("tvshows/tracked")
+    fun getTrackedTVShows(): List<TrackedTVShow> = trackerService.getTrackedTVShows()
 
     /**
-     * Adds the TV show with the given UUID to the set of tracked TV shows.
+     * Retrieves all TV shows currently NOT being tracked.
      */
-    @PutMapping("tvshow/add/{uuid}")
-    fun startTrackingTVShow(@PathVariable("uuid") tvShowUUID: UUID) {
-        trackerService.setTVShowTracked(tvShowUUID, tracked = true)
+    @GetMapping("tvshows/nottracked")
+    fun getNotTrackedTVShows(): List<TVShow> = trackerService.getNotTrackedTVShows()
+
+    /**
+     * Tells this tracker service to start tracking the TV show identified by [uuid]. Downloaded episode files for
+     * this TV show must be of the specified video [quality].
+     *
+     * The video quality parameter should be one of:
+     *  - 1080p
+     *  - 720p (default)
+     *  - 480p
+     */
+    @PutMapping("tvshow/track/{uuid}")
+    fun trackTVShow(
+        @PathVariable() uuid: UUID,
+        @RequestParam quality: String = VideoQuality.HD.identifier
+    ) {
+        trackerService.trackTVShow(uuid, quality.toVideoQuality())
     }
 
     /**
      * Removes the TV show with the given UUID from the set of tracked TV shows.
      */
     @DeleteMapping("tvshow/remove/{uuid}")
-    fun stopTrackingTVShow(@PathVariable("uuid") tvShowUUID: UUID) {
-        trackerService.setTVShowTracked(tvShowUUID, tracked = false)
+    fun untrackTVShow(@PathVariable("uuid") tvShowUUID: UUID) {
+        trackerService.untrackTVShow(tvShowUUID)
     }
 }

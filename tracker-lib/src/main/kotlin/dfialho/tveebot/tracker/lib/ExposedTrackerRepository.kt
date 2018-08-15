@@ -3,14 +3,14 @@ package dfialho.tveebot.tracker.lib
 import dfialho.tveebot.tracker.api.Episode
 import dfialho.tveebot.tracker.api.EpisodeFile
 import dfialho.tveebot.tracker.api.TVShow
+import dfialho.tveebot.tracker.api.TrackedTVShow
 import dfialho.tveebot.tracker.api.TrackerRepository
+import dfialho.tveebot.tracker.api.VideoQuality
 import dfialho.tveebot.tracker.api.toVideoQuality
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.batchInsert
 import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.insertIgnore
-import org.jetbrains.exposed.sql.replace
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.update
@@ -30,7 +30,7 @@ class ExposedTrackerRepository(private val transactionTemplate: TransactionTempl
     private object TVShows : Table() {
         val id = uuid("id").primaryKey()
         val title = varchar("title", length = 256)
-        val tracked = bool("tracked").default(false)
+        val quality = varchar("quality", length = 32).nullable()
     }
 
     private object EpisodeFiles : Table() {
@@ -50,14 +50,6 @@ class ExposedTrackerRepository(private val transactionTemplate: TransactionTempl
         }
     }
 
-    override fun put(tvShow: TVShow, tracked: Boolean) {
-        TVShows.insert {
-            it[TVShows.id] = tvShow.id
-            it[TVShows.title] = tvShow.title
-            it[TVShows.tracked] = tracked
-        }
-    }
-
     override fun putAll(tvShows: List<TVShow>) {
         TVShows.batchInsert(tvShows, ignore = true) {
             this[TVShows.id] = it.id
@@ -74,9 +66,17 @@ class ExposedTrackerRepository(private val transactionTemplate: TransactionTempl
             )
         }
 
-    override fun findTVShows(tracked: Boolean): List<TVShow> = TVShows
-        .slice(TVShows.id, TVShows.title)
-        .select { TVShows.tracked eq tracked }
+    override fun findTrackedTVShows(): List<TrackedTVShow> = TVShows
+        .select { TVShows.quality.isNotNull() }
+        .map {
+            TrackedTVShow(
+                TVShow(title = it[TVShows.title], id = it[TVShows.id]),
+                quality = it[TVShows.quality]!!.toVideoQuality()
+            )
+        }
+
+    override fun findNotTrackedTVShows(): List<TVShow> = TVShows
+        .select { TVShows.quality.isNull() }
         .map {
             TVShow(
                 title = it[TVShows.title],
@@ -84,15 +84,21 @@ class ExposedTrackerRepository(private val transactionTemplate: TransactionTempl
             )
         }
 
-    override fun setTracked(tvShowUUID: UUID, tracked: Boolean) {
+    override fun setTracked(tvShowUUID: UUID, quality: VideoQuality) {
         TVShows.update({ TVShows.id eq tvShowUUID }) {
-            it[TVShows.tracked] = tracked
+            it[TVShows.quality] = quality.identifier
         }
     }
 
-    override fun put(tvShow: TVShow, episodeFile: EpisodeFile) {
+    override fun setNotTracked(tvShowUUID: UUID) {
+        TVShows.update({ TVShows.id eq tvShowUUID }) {
+            it[TVShows.quality] = null
+        }
+    }
+
+    override fun put(tvShowUUID: UUID, episodeFile: EpisodeFile) {
         EpisodeFiles.insert {
-            it[EpisodeFiles.tvShowID] = tvShow.id
+            it[EpisodeFiles.tvShowID] = tvShowUUID
             it[EpisodeFiles.season] = episodeFile.episode.season
             it[EpisodeFiles.number] = episodeFile.episode.number
             it[EpisodeFiles.quality] = episodeFile.quality.identifier

@@ -5,8 +5,8 @@ import java.util.*
 /**
  * Representation of a TV show.
  *
- * @property title The title of the TV show
- * @property id The identifier of the TV show. This is unique for each TV Show.
+ * @property title title of the TV show
+ * @property id identifier of the TV show. This is unique for each TV Show.
  *
  * @author David Fialho (dfialho@protonmail.com)
  */
