@@ -1,10 +1,10 @@
 package dfialho.tveebot.tracker.api
 
 /**
- * A [TrackerEngine] tracks a set of TV shows marked as "tracked" in the [repository]. To track these TV shows
+ * A [TrackerEngine] tracks a set of TV shows marked as "tracked" in the [recorder]. To track these TV shows
  * it uses a [provider], from which it retrieves the episode information about each tracked TV show.
  *
- * The [repository] also keeps tracking information about each TV show, such as the details about the episode files
+ * The [recorder] also keeps tracking information about each TV show, such as the details about the episode files
  * available for it. A [TrackerEngine] also keeps a set of [TrackingListener]s which are notified every time the
  * tracker obtains a new episode file from the [provider] corresponding to one of the TV shows being tracked.
  *
@@ -19,7 +19,7 @@ interface TrackerEngine {
      * Repository holding the TV shows being tracked and the [EpisodeFile]s collected by the tracker from
      * the [provider]/
      */
-    val repository: TrackerRepository
+    val recorder: EpisodeRecorder
 
     /**
      * Provider used to obtain the [EpisodeFile]s from each tracked TV show.

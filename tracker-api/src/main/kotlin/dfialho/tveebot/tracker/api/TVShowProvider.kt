@@ -5,9 +5,10 @@ import java.io.IOException
 /**
  * A TV show provider is an entity which is able to provide information about one or more TV shows.
  *
- * It is sort of a database which contains data about TV shows, including information details about recent episodes
- * corresponding to each TV show. As with any database, it does not necessarily contain information about all episodes
- * of a TV show. Still, it is expected to be able to provide information about the most recent episodes of each TV show.
+ * It is sort of a database which contains data about TV shows, including information details about
+ * recent episodes corresponding to each TV show. As with any database, it does not necessarily contain information
+ * about all episodes of a TV show. Still, it is expected to be able to provide information about the most recent
+ * episodes of each TV show.
  *
  * @author David Fialho (dfialho@protonmail.com)
  */

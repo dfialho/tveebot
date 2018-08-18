@@ -1,0 +1,25 @@
+package dfialho.tveebot.tracker.api
+
+/**
+ * Entity responsible for keeping track of the episodes found for each TV show being tracked.
+ *
+ * @author David Fialho (dfialho@protonmail.com)
+ */
+interface EpisodeRecorder {
+
+    /**
+     * Returns a list containing all TV shows currently being tracked.
+     */
+    fun getTVShows(): List<TrackedTVShow>
+
+    /**
+     * Returns a list containing the episodes from [tvShow] already found.
+     */
+    fun getEpisodes(tvShow: TrackedTVShow): List<EpisodeFile>
+
+    /**
+     * Inserts the [episode] into the recorder if it does not exist yet. Otherwise, it updates an existing episode file
+     * if an only if [episode] file is more recent than the existing episode file.
+     */
+    fun putOrUpdateIfMoreRecent(tvShow: TrackedTVShow, episode: EpisodeFile): Boolean
+}

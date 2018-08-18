@@ -20,4 +20,4 @@ internal data class EpisodeIdentifier(
  * Extension property to obtain [EpisodeIdentifier] for an [EpisodeFile].
  */
 internal val EpisodeFile.identifier: EpisodeIdentifier
-    get() = EpisodeIdentifier(this.episode.season, this.episode.number, this.quality)
+    get() = EpisodeIdentifier(this.season, this.number, this.quality)

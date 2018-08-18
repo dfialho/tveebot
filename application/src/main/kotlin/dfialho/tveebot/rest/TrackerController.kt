@@ -49,7 +49,7 @@ class TrackerController(private val trackerService: TrackerService) {
         @PathVariable uuid: UUID,
         @RequestParam quality: VideoQuality?
     ) {
-        trackerService.trackTVShow(uuid, videoQuality = quality ?: VideoQuality.HD)
+        trackerService.trackTVShow(uuid, videoQuality = quality ?: VideoQuality.default())
     }
 
     /**

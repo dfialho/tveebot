@@ -11,6 +11,14 @@ enum class VideoQuality(private val identifier: String) {
     HD("720p"),
     SD("480p");
 
+    companion object {
+
+        /**
+         * Returns the default video quality.
+         */
+        fun default(): VideoQuality = SD
+    }
+
     override fun toString(): String {
         return identifier
     }

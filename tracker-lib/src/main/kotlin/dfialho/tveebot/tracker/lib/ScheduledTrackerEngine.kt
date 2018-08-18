@@ -2,11 +2,10 @@ package dfialho.tveebot.tracker.lib
 
 import com.google.common.util.concurrent.AbstractScheduledService
 import dfialho.tveebot.tracker.api.EpisodeFile
+import dfialho.tveebot.tracker.api.EpisodeRecorder
 import dfialho.tveebot.tracker.api.TVShowProvider
 import dfialho.tveebot.tracker.api.TrackerEngine
-import dfialho.tveebot.tracker.api.TrackerRepository
 import dfialho.tveebot.tracker.api.TrackingListener
-import dfialho.tveebot.tracker.api.isMoreRecentThan
 import mu.KLogging
 import java.io.IOException
 import java.util.concurrent.TimeUnit
@@ -18,7 +17,7 @@ import java.util.concurrent.TimeUnit
  */
 class ScheduledTrackerEngine(
     override val provider: TVShowProvider,
-    override val repository: TrackerRepository,
+    override val recorder: EpisodeRecorder,
     private val checkPeriod: Long
 ) : TrackerEngine, AbstractScheduledService() {
 
@@ -35,33 +34,23 @@ class ScheduledTrackerEngine(
     override fun runOneIteration(): Unit = try {
         logger.info { "Checking for new episodes..." }
 
-        for (trackedTVShow in repository.findTrackedTVShows()) {
+        for (trackedTVShow in recorder.getTVShows()) {
 
-            val episodeFiles: List<EpisodeFile> = try {
-                provider.fetchEpisodes(trackedTVShow.asTVShow())
+            val episodes: List<EpisodeFile> = try {
+                provider.fetchEpisodes(trackedTVShow.toTVShow())
             } catch (e: IOException) {
                 logger.warn(e) { "Failed to fetch episodes for '${trackedTVShow.title}' from the provider" }
                 continue
             }
 
-            logger.trace { "Episodes for '${trackedTVShow.title}': $episodeFiles" }
+            logger.trace { "Episodes for '${trackedTVShow.title}': $episodes" }
 
-            val existingEpisodeFiles = repository.findEpisodeFilesFrom(trackedTVShow.asTVShow())
-                .associateBy { it.identifier }
+            for (episode in episodes) {
+                val isNewEpisode: Boolean = recorder.putOrUpdateIfMoreRecent(trackedTVShow, episode)
 
-            for (episodeFile in episodeFiles) {
-
-                // Ignore episode files which do not match the video quality required for this TV show
-                if (episodeFile.quality != trackedTVShow.quality) {
-                    continue
-                }
-
-                val existingFile: EpisodeFile? = existingEpisodeFiles[episodeFile.identifier]
-
-                if (existingFile == null || episodeFile isMoreRecentThan existingFile) {
-                    logger.debug { "New episode: $episodeFile" }
-                    listeners.forEach { it.notify(trackedTVShow.asTVShow(), episodeFile) }
-                    repository.put(trackedTVShow.id, episodeFile)
+                if (isNewEpisode) {
+                    logger.debug { "New episode: $episode" }
+                    listeners.forEach { it.notify(trackedTVShow, episode) }
                 }
             }
         }

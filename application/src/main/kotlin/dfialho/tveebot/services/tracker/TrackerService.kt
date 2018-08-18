@@ -1,12 +1,13 @@
 package dfialho.tveebot.services.tracker
 
+import dfialho.tveebot.data.TrackerRepository
+import dfialho.tveebot.data.TrackerRepositoryException
 import dfialho.tveebot.services.downloader.DownloaderService
 import dfialho.tveebot.tracker.api.EpisodeFile
 import dfialho.tveebot.tracker.api.TVShow
 import dfialho.tveebot.tracker.api.TVShowProvider
 import dfialho.tveebot.tracker.api.TrackedTVShow
 import dfialho.tveebot.tracker.api.TrackerEngine
-import dfialho.tveebot.tracker.api.TrackerRepository
 import dfialho.tveebot.tracker.api.TrackingListener
 import dfialho.tveebot.tracker.api.VideoQuality
 import mu.KLogging
@@ -51,12 +52,10 @@ class TrackerService(
         logger.info { "Stopped tracker service successfully" }
     }
 
-    override fun notify(tvShow: TVShow, episodeFile: EpisodeFile) {
-        episodeFile.episode.apply {
-            logger.info { "New episode from ${tvShow.title}: ${season}x%02d - $title".format(number) }
-        }
-
-        downloaderService.download(tvShow.id, episodeFile)
+    // Invoked when the tracker engine finds a new episode
+    override fun notify(tvShow: TrackedTVShow, episode: EpisodeFile) {
+        logger.info { "New episode: ${tvShow.title} - ${episode.toPrettyString()}" }
+        downloadEpisode(tvShow, episode)
     }
 
     /**
@@ -75,29 +74,59 @@ class TrackerService(
      */
     fun trackTVShow(tvShowUUID: UUID, videoQuality: VideoQuality) {
         repository.setTracked(tvShowUUID, videoQuality)
+
+        repository.findTrackedTVShow(tvShowUUID)?.let {
+            downloadEpisodesFrom(it)
+            logger.info { "Started tracking TV show: ${it.title}" }
+        }
     }
 
     /**
      * Tells this tracker service to stop tracking TV show identified by [tvShowUUID].
      */
     fun untrackTVShow(tvShowUUID: UUID) {
-        downloaderService.removeAllFrom(tvShowUUID)
         repository.setNotTracked(tvShowUUID)
-        repository.removeEpisodeFilesFrom(tvShowUUID)
+        downloaderService.removeAllFrom(tvShowUUID)
+        repository.removeEpisodesFrom(tvShowUUID)
+
+        logger.info { "Stopped tracking TV show: ${repository.findTrackedTVShow(tvShowUUID)?.title}" }
     }
 
     /**
-     * Sets the [videoQuality] of episode files corresponding to the TV show identified by [tvShowUUID].
+     * Sets the [newVideoQuality] of episode files corresponding to the TV show identified by [tvShowUUID].
      */
-    fun setTVShowVideoQuality(tvShowUUID: UUID, videoQuality: VideoQuality) {
-        val tvShow = repository.findTrackedTVShow(tvShowUUID)
-        tvShow ?: throw NoSuchElementException("No TV show with ID '$tvShowUUID' is being tracked")
+    fun setTVShowVideoQuality(tvShowUUID: UUID, newVideoQuality: VideoQuality) {
 
-        // Remove any downloads of episode files of a different quality
-        if (tvShow.quality != videoQuality) {
-            downloaderService.removeAllFrom(tvShowUUID)
+        val originalTVShow = repository.findTrackedTVShow(tvShowUUID)
+
+        try {
+            repository.setTVShowVideoQuality(tvShowUUID, newVideoQuality)
+        } catch (e: TrackerRepositoryException) {
+            throw NoSuchElementException("No TV show with ID '$tvShowUUID' is being tracked")
         }
 
-        repository.setTVShowVideoQuality(tvShowUUID, videoQuality)
+        if (originalTVShow != null && originalTVShow.quality != newVideoQuality) {
+            // Remove any downloads of episode files of a different quality
+            downloaderService.removeAllFrom(tvShowUUID)
+
+            // Start downloading every episode already found with the new video quality
+            val tvShowWithNewQuality = originalTVShow.copy(quality = newVideoQuality)
+            downloadEpisodesFrom(tvShowWithNewQuality)
+
+            logger.info { "Changed video quality of '${originalTVShow.title}' from ${originalTVShow.quality} to $newVideoQuality" }
+        } else {
+            logger.info { "Video quality of '${originalTVShow?.title}' not changed" }
+        }
+    }
+
+    private fun downloadEpisode(tvShow: TrackedTVShow, episode: EpisodeFile) {
+        // Enforce that only episode files of a specified video quality are downloaded
+        if (episode.quality == tvShow.quality) {
+            downloaderService.download(tvShow.toTVShow(), episode)
+        }
+    }
+
+    private fun downloadEpisodesFrom(tvShow: TrackedTVShow) {
+        repository.findEpisodesFrom(tvShow.id).forEach { downloadEpisode(tvShow, it) }
     }
 }

@@ -1,5 +1,6 @@
 package dfialho.tveebot.services.downloader
 
+import dfialho.tveebot.data.TrackerRepository
 import dfialho.tveebot.downloader.api.DownloadEngine
 import dfialho.tveebot.downloader.api.DownloadHandle
 import dfialho.tveebot.downloader.api.DownloadListener
@@ -7,6 +8,7 @@ import dfialho.tveebot.downloader.api.DownloadReference
 import dfialho.tveebot.downloader.api.DownloadStatus
 import dfialho.tveebot.services.tracker.TrackerService
 import dfialho.tveebot.tracker.api.EpisodeFile
+import dfialho.tveebot.tracker.api.TVShow
 import mu.KLogging
 import org.springframework.beans.factory.DisposableBean
 import org.springframework.beans.factory.InitializingBean
@@ -21,7 +23,7 @@ import java.util.*
 @Service
 class DownloaderService(
     private val engine: DownloadEngine,
-    private val downloadQueue: EpisodeDownloadQueue
+    private val repository: TrackerRepository
 ) : DownloadListener, InitializingBean, DisposableBean {
 
     companion object : KLogging()
@@ -33,8 +35,8 @@ class DownloaderService(
         engine.addListener(this)
 
         // Restart every download in the queue
-        val episodeDownloads: List<EpisodeDownload> = downloadQueue.getAll()
-        episodeDownloads.forEach { engine.add(it.episodeFile.link) }
+        val episodeDownloads: List<EpisodeDownload> = repository.findAllDownloads()
+        episodeDownloads.forEach { engine.add(it.episode.link) }
         logger.info { "Restarted downloading ${episodeDownloads.size} episodes" }
 
         logger.info { "Started downloader service successfully" }
@@ -48,8 +50,13 @@ class DownloaderService(
     }
 
     override fun notifyFinished(handle: DownloadHandle) {
-        logger.info { "Finished downloading: ${handle.getStatus().name}" }
-        downloadQueue.remove(handle.reference)
+        val download = repository.findDownload(handle.reference) ?: throw IllegalStateException("Download was already removed")
+
+        with(download) {
+            logger.info { "Finished downloading: ${tvShow.title} - ${episode.toPrettyString()}" }
+        }
+
+        repository.removeDownload(handle.reference)
     }
 
     /**
@@ -63,9 +70,11 @@ class DownloaderService(
     /**
      * Starts downloading the [episodeFile].
      */
-    fun download(tvShowUUID: UUID, episodeFile: EpisodeFile) {
+    fun download(tvShow: TVShow, episodeFile: EpisodeFile) {
         val handle = engine.add(episodeFile.link)
-        downloadQueue.push(EpisodeDownload(handle.reference, tvShowUUID, episodeFile))
+        repository.put(EpisodeDownload(handle.reference, tvShow, episodeFile))
+
+        logger.info { "Started downloading: ${tvShow.title} - ${episodeFile.toPrettyString()}" }
     }
 
     /**
@@ -95,21 +104,15 @@ class DownloaderService(
             throwNotFoundError(reference)
         }
 
-        downloadQueue.remove(reference)
+        repository.removeDownload(reference)
     }
 
     /**
      * Removes every episode download corresponding to the TV show identified by [tvShowUUID].
      */
     fun removeAllFrom(tvShowUUID: UUID) {
-
-        val downloads: List<EpisodeDownload> = downloadQueue.getAll()
-            .filter { it.tvShowUUID == tvShowUUID }
-
-        downloads.forEach {
-            engine.remove(it.reference)
-            downloadQueue.remove(it.reference)
-        }
+        repository.findDownloadsFrom(tvShowUUID).forEach { engine.remove(it.reference) }
+        repository.removeAllDownloadsFrom(tvShowUUID)
     }
 }
 
