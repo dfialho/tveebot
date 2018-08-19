@@ -25,7 +25,6 @@ interface TrackerRepository {
      * @throws IllegalArgumentException if the format of some of the parameters is invalid. For instance, the title
      * is too long.
      */
-    //FIXME
     fun put(tvShow: TVShow)
 
     /**
@@ -98,6 +97,9 @@ interface TrackerRepository {
     /**
      * Retrieves every episode from TV show identified by [tvShowUUID] available in the repository. If no episode file
      * is found then it returns an empty list.
+     *
+     * @throws TrackerRepositoryException if some error occurs when executing this operation.
+     * @throws NoSuchElementException if the repository does not contain a TV show with the specified [tvShowUUID].
      */
     fun findEpisodesFrom(tvShowUUID: UUID): List<EpisodeFile>
 

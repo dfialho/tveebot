@@ -45,6 +45,14 @@ object ExposedTrackerRepositorySpec : Spek({
     given("empty repository") {
         beforeEachTest { repository.clearAll() }
 
+        on("looking for episodes from TV show") {
+            val operation = { repository.findEpisodesFrom(UUID.randomUUID()) }
+
+            it("should throw NoSuchElementException") {
+                operation shouldThrow NoSuchElementException::class
+            }
+        }
+
         on("putting a non-tracked TV show") {
             val tvShow = randomTVShow(tracked = false)
             repository.put(tvShow)
@@ -253,23 +261,55 @@ object ExposedTrackerRepositorySpec : Spek({
     }
 
     given("repository with some tv shows and episodes") {
-        val tvShowList = randomTVShows(4, tracked = true)
-        val existingTVShow = tvShowList.first()
-        val secondExistingTVShow = tvShowList.last()
+        val nonTrackedTVShow = randomTVShow(tracked = false)
+        val trackedTVShow = randomTVShow(tracked = true)
+        val tvShowList = randomTVShows(4, tracked = true) + nonTrackedTVShow + trackedTVShow
+        val existingTVShow = trackedTVShow
 
         val existingEpisode = episodeWith(season = 1, quality = VideoQuality.SD)
-        val existingEpisodeFiles = listOf(
+
+        val trackedEpisodes = listOf(
             existingEpisode,
             episodeWith(season = 2),
             episodeWith(season = 3),
             episodeWith(season = 4)
         )
 
+        val nonTrackedEpisodes = listOf(
+            episodeWith(season = 5),
+            episodeWith(season = 6),
+            episodeWith(season = 7)
+        )
+
         beforeEachTest {
             repository.clearAll()
             repository.putAll(tvShowList)
-            existingEpisodeFiles.forEach { repository.put(existingTVShow.id, it) }
-            existingEpisodeFiles.forEach { repository.put(secondExistingTVShow.id, it) }
+            trackedEpisodes.forEach { repository.put(trackedTVShow.id, it) }
+            nonTrackedEpisodes.forEach { repository.put(nonTrackedTVShow.id, it) }
+        }
+
+        on("looking for episodes from tracked TV show") {
+            val episodes = repository.findEpisodesFrom(trackedTVShow.id)
+
+            it("should return every episode associated with that TV show") {
+                episodes shouldContainSame trackedEpisodes
+            }
+        }
+
+        on("looking for episodes from non-tracked TV show") {
+            val episodes = repository.findEpisodesFrom(nonTrackedTVShow.id)
+
+            it("should return every episode associated with that TV show") {
+                episodes shouldContainSame nonTrackedEpisodes
+            }
+        }
+
+        on("looking for episodes from non-existing TV show") {
+            val operation = { repository.findEpisodesFrom(UUID.randomUUID()) }
+
+            it("should throw NoSuchElementException") {
+                operation shouldThrow NoSuchElementException::class
+            }
         }
 
         on("putting an existing episode") {

@@ -25,6 +25,7 @@ import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.transaction.support.TransactionTemplate
 import java.util.*
+import kotlin.NoSuchElementException
 
 /**
  * [TrackerRepository] implementation based on the exposed framework.
@@ -177,9 +178,15 @@ class ExposedTrackerRepository(private val transactionTemplate: TransactionTempl
     }
 
     override fun findEpisodesFrom(tvShowUUID: UUID): List<EpisodeFile> = repositoryTransaction {
-        Episodes
+        val episodes = Episodes
             .select { Episodes.tvShowID eq tvShowUUID }
             .map { it.toEpisodeFile() }
+
+        if (episodes.isEmpty() && !tvShowExists(tvShowUUID)) {
+            throw NoSuchElementException("TV show `$tvShowUUID` not found")
+        }
+
+        episodes
     }
 
     override fun findEpisodesByTVShow(): Map<TVShow, List<EpisodeFile>> = repositoryTransaction {
@@ -237,6 +244,13 @@ class ExposedTrackerRepository(private val transactionTemplate: TransactionTempl
         Downloads.deleteAll()
         Episodes.deleteAll()
         TVShows.deleteAll()
+    }
+
+    /**
+     * Checks if a TV show with [uuid] exists.
+     */
+    private fun tvShowExists(uuid: UUID): Boolean {
+        return TVShows.select { TVShows.id eq uuid }.count() > 0
     }
 
     private fun ResultRow.toTVShow(): TVShow = TVShow(
