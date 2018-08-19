@@ -58,6 +58,11 @@ class TrackerService(
     }
 
     /**
+     * Returns a list with every TV show in the repository.
+     */
+    fun getAllTVShows(): List<TVShow> = repository.findAllTVShows()
+
+    /**
      * Returns a list containing every TV show currently being tracked.
      */
     fun getTrackedTVShows(): List<TVShow> = repository.findTrackedTVShows()

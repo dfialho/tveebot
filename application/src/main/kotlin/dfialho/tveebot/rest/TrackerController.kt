@@ -24,6 +24,12 @@ import java.util.*
 class TrackerController(private val trackerService: TrackerService) {
 
     /**
+     * Retrieves all TV shows in the repository.
+     */
+    @GetMapping("tvshows/all")
+    fun getAllTVShows(): List<TVShow> = trackerService.getAllTVShows()
+
+    /**
      * Retrieves all TV shows currently being tracked.
      */
     @GetMapping("tvshows/tracked")
