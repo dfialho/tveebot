@@ -75,9 +75,12 @@ class TrackerService(
     /**
      * Returns a map associating each TV show to its episodes.
      */
-    fun getAllEpisodesByTVShow(): Map<UUID, List<EpisodeFile>> {
-        return repository.findEpisodesByTVShow().mapKeys { it.key.id }
-    }
+    fun getAllEpisodesByTVShow(): Map<UUID, List<EpisodeFile>> = repository.findEpisodesByTVShow().mapKeys { it.key.id }
+
+    /**
+     * Returns a list containing every episode from the TV show identified by [tvShowUUID]
+     */
+    fun getEpisodesFrom(tvShowUUID: UUID): List<EpisodeFile> = repository.findEpisodesFrom(tvShowUUID)
 
     /**
      * Tells this tracker service to start tracking TV show identified by [tvShowUUID]. Downloaded episode files for

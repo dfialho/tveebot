@@ -48,6 +48,12 @@ class TrackerController(private val trackerService: TrackerService) {
     fun getAllEpisodesByTVShow(): Map<UUID, List<EpisodeFile>> = trackerService.getAllEpisodesByTVShow()
 
     /**
+     * Retrieves all episodes associated by TV show.
+     */
+    @GetMapping("episodes/tvshow/{uuid}")
+    fun getEpisodesFrom(@PathVariable uuid: UUID): List<EpisodeFile> = trackerService.getEpisodesFrom(uuid)
+
+    /**
      * Tells this tracker service to start tracking the TV show identified by [uuid]. Downloaded episode files for
      * this TV show must be of the specified video [quality].
      *
