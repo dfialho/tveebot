@@ -120,14 +120,14 @@ class TrackerService(
         }
 
         if (originalTVShow != null && originalTVShow.quality != newVideoQuality) {
+            logger.info { "Changed video quality of '${originalTVShow.title}' from ${originalTVShow.quality} to $newVideoQuality" }
+
             // Remove any downloads of episode files of a different quality
             downloaderService.removeAllFrom(tvShowUUID)
 
             // Start downloading every episode already found with the new video quality
             val tvShowWithNewQuality = originalTVShow.copy(quality = newVideoQuality)
             downloadEpisodesFrom(tvShowWithNewQuality)
-
-            logger.info { "Changed video quality of '${originalTVShow.title}' from ${originalTVShow.quality} to $newVideoQuality" }
         } else {
             logger.info { "Video quality of '${originalTVShow?.title}' not changed" }
         }

@@ -111,8 +111,11 @@ class DownloaderService(
      * Removes every episode download corresponding to the TV show identified by [tvShowUUID].
      */
     fun removeAllFrom(tvShowUUID: UUID) {
-        repository.findDownloadsFrom(tvShowUUID).forEach { engine.remove(it.reference) }
         repository.removeAllDownloadsFrom(tvShowUUID)
+        repository.findDownloadsFrom(tvShowUUID).forEach {
+            engine.remove(it.reference)
+            logger.info { "Stopped downloading: ${it.tvShow.title} - ${it.episode.toPrettyString()}" }
+        }
     }
 }
 
