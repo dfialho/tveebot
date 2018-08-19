@@ -5,7 +5,6 @@ import dfialho.tveebot.services.downloader.EpisodeDownload
 import dfialho.tveebot.tracker.api.Episode
 import dfialho.tveebot.tracker.api.EpisodeFile
 import dfialho.tveebot.tracker.api.TVShow
-import dfialho.tveebot.tracker.api.TrackedTVShow
 import dfialho.tveebot.tracker.api.VideoQuality
 import dfialho.tveebot.tracker.api.toVideoQuality
 import org.jetbrains.exposed.exceptions.ExposedSQLException
@@ -42,7 +41,7 @@ class ExposedTrackerRepository(private val transactionTemplate: TransactionTempl
         val id = uuid("id").primaryKey()
         val title = varchar("title", length = 256)
         val tracked = bool("tracked")
-        val quality = varchar("quality", length = 32).default(VideoQuality.default().toString())
+        val quality = varchar("quality", length = 32)
     }
 
     private object Episodes : Table() {
@@ -74,15 +73,7 @@ class ExposedTrackerRepository(private val transactionTemplate: TransactionTempl
         TVShows.insert {
             it[id] = tvShow.id
             it[title] = tvShow.title
-            it[tracked] = false
-        }
-    }
-
-    override fun put(tvShow: TrackedTVShow): Unit = repositoryTransaction {
-        TVShows.insert {
-            it[id] = tvShow.id
-            it[title] = tvShow.title
-            it[tracked] = true
+            it[tracked] = tvShow.tracked
             it[quality] = tvShow.quality.toString()
         }
     }
@@ -91,14 +82,16 @@ class ExposedTrackerRepository(private val transactionTemplate: TransactionTempl
         TVShows.batchInsert(tvShows, ignore = true) {
             this[TVShows.id] = it.id
             this[TVShows.title] = it.title
+            this[TVShows.tracked] = it.tracked
+            this[TVShows.quality] = it.quality.toString()
         }
     }
 
-    override fun findTrackedTVShow(tvShowUUID: UUID): TrackedTVShow? = repositoryTransaction {
+    override fun findTrackedTVShow(tvShowUUID: UUID): TVShow? = repositoryTransaction {
         TVShows
             .select { (TVShows.id eq tvShowUUID) and (TVShows.tracked eq true) }
-            .map { it.toTrackedTVShow() }
-            .firstOrNull()
+            .map { it.toTVShow() }
+            .singleOrNull()
     }
 
     override fun findAllTVShows(): List<TVShow> = repositoryTransaction {
@@ -107,10 +100,10 @@ class ExposedTrackerRepository(private val transactionTemplate: TransactionTempl
             .map { it.toTVShow() }
     }
 
-    override fun findTrackedTVShows(): List<TrackedTVShow> = repositoryTransaction {
+    override fun findTrackedTVShows(): List<TVShow> = repositoryTransaction {
         TVShows
             .select { TVShows.tracked eq true }
-            .map { it.toTrackedTVShow() }
+            .map { it.toTVShow() }
     }
 
     override fun findNotTrackedTVShows(): List<TVShow> = repositoryTransaction {
@@ -164,7 +157,7 @@ class ExposedTrackerRepository(private val transactionTemplate: TransactionTempl
         val existingEpisode = Episodes
             .select { Episodes.id eq episodeIDOf(tvShowUUID, episode) }
             .map { it.toEpisodeFile() }
-            .firstOrNull()
+            .singleOrNull()
 
         when {
             existingEpisode == null -> {
@@ -206,7 +199,7 @@ class ExposedTrackerRepository(private val transactionTemplate: TransactionTempl
         (Downloads innerJoin Episodes innerJoin TVShows)
             .select { Downloads.reference eq reference.value }
             .map { it.toEpisodeDownload() }
-            .firstOrNull()
+            .singleOrNull()
     }
 
     override fun findAllDownloads(): List<EpisodeDownload> = repositoryTransaction {
@@ -235,17 +228,11 @@ class ExposedTrackerRepository(private val transactionTemplate: TransactionTempl
         TVShows.deleteAll()
     }
 
-    private fun ResultRow.toTrackedTVShow(): TrackedTVShow = TrackedTVShow(
-        TVShow(
-            title = this[TVShows.title],
-            id = this[TVShows.id]
-        ),
-        quality = this[TVShows.quality].toVideoQuality()
-    )
-
     private fun ResultRow.toTVShow(): TVShow = TVShow(
+        id = this[TVShows.id],
         title = this[TVShows.title],
-        id = this[TVShows.id]
+        quality = this[TVShows.quality].toVideoQuality(),
+        tracked = this[TVShows.tracked]
     )
 
     private fun ResultRow.toEpisodeDownload(): EpisodeDownload = EpisodeDownload(

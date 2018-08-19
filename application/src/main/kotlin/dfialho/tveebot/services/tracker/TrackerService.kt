@@ -6,7 +6,6 @@ import dfialho.tveebot.services.downloader.DownloaderService
 import dfialho.tveebot.tracker.api.EpisodeFile
 import dfialho.tveebot.tracker.api.TVShow
 import dfialho.tveebot.tracker.api.TVShowProvider
-import dfialho.tveebot.tracker.api.TrackedTVShow
 import dfialho.tveebot.tracker.api.TrackerEngine
 import dfialho.tveebot.tracker.api.TrackingListener
 import dfialho.tveebot.tracker.api.VideoQuality
@@ -53,7 +52,7 @@ class TrackerService(
     }
 
     // Invoked when the tracker engine finds a new episode
-    override fun notify(tvShow: TrackedTVShow, episode: EpisodeFile) {
+    override fun notify(tvShow: TVShow, episode: EpisodeFile) {
         logger.info { "New episode: ${tvShow.title} - ${episode.toPrettyString()}" }
         downloadEpisode(tvShow, episode)
     }
@@ -61,7 +60,7 @@ class TrackerService(
     /**
      * Returns a list containing every TV show currently being tracked.
      */
-    fun getTrackedTVShows(): List<TrackedTVShow> = repository.findTrackedTVShows()
+    fun getTrackedTVShows(): List<TVShow> = repository.findTrackedTVShows()
 
     /**
      * Returns a list containing every TV show currently NOT being tracked.
@@ -119,14 +118,14 @@ class TrackerService(
         }
     }
 
-    private fun downloadEpisode(tvShow: TrackedTVShow, episode: EpisodeFile) {
+    private fun downloadEpisode(tvShow: TVShow, episode: EpisodeFile) {
         // Enforce that only episode files of a specified video quality are downloaded
         if (episode.quality == tvShow.quality) {
-            downloaderService.download(tvShow.toTVShow(), episode)
+            downloaderService.download(tvShow, episode)
         }
     }
 
-    private fun downloadEpisodesFrom(tvShow: TrackedTVShow) {
+    private fun downloadEpisodesFrom(tvShow: TVShow) {
         repository.findEpisodesFrom(tvShow.id).forEach { downloadEpisode(tvShow, it) }
     }
 }

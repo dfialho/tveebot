@@ -3,7 +3,6 @@ package dfialho.tveebot.services.downloader
 import dfialho.tveebot.downloader.api.DownloadReference
 import dfialho.tveebot.tracker.api.EpisodeFile
 import dfialho.tveebot.tracker.api.TVShow
-import java.util.*
 
 /**
  * Data class to represent an episode that is being downloaded.

@@ -6,7 +6,6 @@ import dfialho.tveebot.services.downloader.EpisodeDownload
 import dfialho.tveebot.tracker.api.Episode
 import dfialho.tveebot.tracker.api.EpisodeFile
 import dfialho.tveebot.tracker.api.TVShow
-import dfialho.tveebot.tracker.api.TrackedTVShow
 import dfialho.tveebot.tracker.api.VideoQuality
 import org.amshove.kluent.AnyException
 import org.amshove.kluent.shouldBeEmpty
@@ -26,10 +25,7 @@ import org.jetbrains.spek.api.dsl.on
 import org.springframework.transaction.support.TransactionTemplate
 import java.lang.Math.random
 import java.time.Instant
-import java.time.temporal.ChronoUnit
-import java.time.temporal.TemporalUnit
 import java.util.*
-import java.util.concurrent.TimeUnit
 
 /**
  * Spec for the [ExposedTrackerRepository].
@@ -38,7 +34,7 @@ import java.util.concurrent.TimeUnit
  */
 object ExposedTrackerRepositorySpec : Spek({
 
-    val repository by memoized {
+    val repository: TrackerRepository by memoized {
         TransactionalTrackerRepository(
             ExposedTrackerRepository(getTransactionTemplate()).apply {
                 afterPropertiesSet()
@@ -49,8 +45,8 @@ object ExposedTrackerRepositorySpec : Spek({
     given("empty repository") {
         beforeEachTest { repository.clearAll() }
 
-        on("putting a TV show") {
-            val tvShow = randomTVShow()
+        on("putting a non-tracked TV show") {
+            val tvShow = randomTVShow(tracked = false)
             repository.put(tvShow)
 
             it("contains the new TV show") {
@@ -67,44 +63,45 @@ object ExposedTrackerRepositorySpec : Spek({
         }
 
         on("putting a tracked TV show") {
-            val trackedTVShow = TrackedTVShow(randomTVShow(), quality = VideoQuality.FULL_HD)
+            val trackedTVShow = randomTVShow(tracked = true, quality = VideoQuality.FULL_HD)
             repository.put(trackedTVShow)
 
-            it("contains the new TV show") {
-                repository.findAllTVShows() shouldContain trackedTVShow.toTVShow()
+            it("should contain the new TV show") {
+                repository.findAllTVShows() shouldContain trackedTVShow
             }
 
-            it("TV show is NOT in the non-tracked list") {
-                repository.findNotTrackedTVShows() shouldNotContain trackedTVShow.toTVShow()
+            it("should not contain the TV show in the non-tracked list") {
+                repository.findNotTrackedTVShows() shouldNotContain trackedTVShow
             }
 
-            it("TV show is in the tracked list") {
+            it("should contain the TV show in the tracked list") {
                 repository.findTrackedTVShows() shouldContain trackedTVShow
             }
         }
 
-        on("putting a collection of new TV shows") {
-            val tvShowCollection = randomTVShows(3)
+        on("putting a collection of a mix o tracked and non-tracked TV shows") {
+            val trackedTVShows = randomTVShows(3, tracked = true)
+            val nonTrackedTVShows = randomTVShows(3, tracked = false)
+            val tvShowCollection: List<TVShow> = trackedTVShows + nonTrackedTVShows
             repository.putAll(tvShowCollection)
 
-            it("none of them is in the tracked list") {
-                repository.findTrackedTVShows().shouldBeEmpty()
+            it("should contain all new TV shows") {
+                repository.findAllTVShows() shouldContainSame tvShowCollection
             }
 
-            it("all of them are in the non-tracked list") {
-                repository.findNotTrackedTVShows() shouldContainSame tvShowCollection
+            it("should contain only non-tracked TV shows in the non-tracked list") {
+                repository.findNotTrackedTVShows() shouldContainSame nonTrackedTVShows
+            }
+
+            it("should  only tracked TV shows in the tracked list") {
+                repository.findTrackedTVShows() shouldContainSame trackedTVShows
             }
         }
     }
 
     given("repository containing some non-tracked tv shows") {
-        val existingTVShow = randomTVShow()
-        val originalTVShowList = listOf(
-            existingTVShow,
-            randomTVShow(),
-            randomTVShow(),
-            randomTVShow()
-        )
+        val existingTVShow = randomTVShow(tracked = false)
+        val originalTVShowList = randomTVShows(4, tracked = false) + existingTVShow
 
         beforeEachTest {
             repository.clearAll()
@@ -112,7 +109,7 @@ object ExposedTrackerRepositorySpec : Spek({
         }
 
         on("putting a TV show with the same ID as an existing one") {
-            val operation = { repository.put(TVShow("new tv show", existingTVShow.id)) }
+            val operation = { repository.put(TVShow(existingTVShow.id, "new tv show")) }
 
             it("should throw TrackerRepositoryException") {
                 operation shouldThrow TrackerRepositoryException::class
@@ -120,7 +117,7 @@ object ExposedTrackerRepositorySpec : Spek({
         }
 
         on("putting a tracked TV show with the same ID as a TV show in the non-tracked list") {
-            val trackedTVShow = TrackedTVShow(TVShow("new tracked tv show", existingTVShow.id), VideoQuality.FULL_HD)
+            val trackedTVShow = TVShow(existingTVShow.id, "new tracked tv show", quality = VideoQuality.FULL_HD)
             val operation = { repository.put(trackedTVShow) }
 
             it("should throw TrackerRepositoryException") {
@@ -132,12 +129,12 @@ object ExposedTrackerRepositorySpec : Spek({
             }
 
             it("should not include the new tv show in the repository") {
-                repository.findAllTVShows() shouldNotContain trackedTVShow.toTVShow()
+                repository.findAllTVShows() shouldNotContain trackedTVShow
             }
         }
 
         on("putting a tv show with too long title") {
-            val operation = { repository.put(TVShow("tv show".repeat(100))) }
+            val operation = { repository.put(TVShow(UUID.randomUUID(), "tv show".repeat(100))) }
 
             it("should throw IllegalArgumentException") {
                 operation shouldThrow IllegalArgumentException::class
@@ -145,7 +142,7 @@ object ExposedTrackerRepositorySpec : Spek({
         }
 
         on("putting a collection of if existing tv shows") {
-            repository.putAll(listOf(TVShow("new title", existingTVShow.id)))
+            repository.putAll(listOf(TVShow(existingTVShow.id, "new title")))
 
             it("should keep the original TV shows") {
                 repository.findAllTVShows() shouldContainSame originalTVShowList
@@ -180,13 +177,15 @@ object ExposedTrackerRepositorySpec : Spek({
 
     given("repository containing non-tracked and tracked tv shows") {
         val originalVideoQuality = VideoQuality.SD
-        val trackedTVShow = TrackedTVShow(TVShow("tracked"), originalVideoQuality)
-        val nonTrackedTVShow = TVShow("non-tracked")
+        val trackedTVShow = TVShow(UUID.randomUUID(), "tracked", quality = originalVideoQuality, tracked = true)
+        val nonTrackedTVShow = TVShow(UUID.randomUUID(), "non-tracked", tracked = false)
+        val trackedTVShows = randomTVShows(3, tracked = true) + trackedTVShow
+        val nonTrackedTVShows = randomTVShows(3, tracked = false) + nonTrackedTVShow
+        val tvShowCollection: List<TVShow> = trackedTVShows + nonTrackedTVShows
 
         beforeEachTest {
             repository.clearAll()
-            repository.put(trackedTVShow)
-            repository.put(nonTrackedTVShow)
+            repository.putAll(tvShowCollection)
         }
 
         on("setting as `tracked` a TV show in the non-tracked list") {
@@ -198,7 +197,7 @@ object ExposedTrackerRepositorySpec : Spek({
             }
 
             it("should contain the tv show in the tracked list") {
-                repository.findTrackedTVShows().map { it.toTVShow() } shouldContain nonTrackedTVShow
+                repository.findTrackedTVShows() shouldContain nonTrackedTVShow.copy(quality = newVideoQuality)
             }
 
             it("should hold the newly specified video quality") {
@@ -219,7 +218,7 @@ object ExposedTrackerRepositorySpec : Spek({
             repository.setNotTracked(trackedTVShow.id)
 
             it("should contain the tv show in the non-tracked list") {
-                repository.findNotTrackedTVShows() shouldContain trackedTVShow.toTVShow()
+                repository.findNotTrackedTVShows() shouldContain trackedTVShow
             }
 
             it("should no longer the tv show in the tracked list") {
@@ -248,13 +247,13 @@ object ExposedTrackerRepositorySpec : Spek({
             }
 
             it("should not include tv show in the tracked list") {
-                repository.findTrackedTVShows().map { it.toTVShow() } shouldNotContain nonTrackedTVShow
+                repository.findTrackedTVShows() shouldNotContain nonTrackedTVShow
             }
         }
     }
 
     given("repository with some tv shows and episodes") {
-        val tvShowList = randomTVShows(4)
+        val tvShowList = randomTVShows(4, tracked = true)
         val existingTVShow = tvShowList.first()
         val secondExistingTVShow = tvShowList.last()
 
@@ -553,16 +552,16 @@ private fun randomString(): String = UUID.randomUUID().toString()
 /**
  * Generates a list containing [n] random TV shows and returns the list.
  */
-private fun randomTVShows(n: Int): List<TVShow> {
+private fun randomTVShows(n: Int, tracked: Boolean = false, quality: VideoQuality = VideoQuality.default()): List<TVShow> {
     val title = randomString()
-    return (1..n).map { TVShow("$title-$it") }
+    return (1..n).map { TVShow(UUID.randomUUID(), "$title-$it", quality, tracked) }
 }
 
 /**
  * Generates a single random TV show and returns it.
  */
-private fun randomTVShow(): TVShow {
-    return randomTVShows(1).first()
+private fun randomTVShow(tracked: Boolean = false, quality: VideoQuality = VideoQuality.default()): TVShow {
+    return randomTVShows(1, tracked, quality).first()
 }
 
 /**
@@ -598,11 +597,10 @@ private fun getTransactionTemplate(): TransactionTemplate {
  */
 class TransactionalTrackerRepository(private val repository: TrackerRepository) : TrackerRepository {
     override fun put(tvShow: TVShow) = transaction { repository.put(tvShow) }
-    override fun put(tvShow: TrackedTVShow) = transaction { repository.put(tvShow) }
     override fun putAll(tvShows: List<TVShow>) = transaction { repository.putAll(tvShows) }
-    override fun findTrackedTVShow(tvShowUUID: UUID) = transaction { repository.findTrackedTVShow(tvShowUUID) }
+    override fun findTrackedTVShow(tvShowUUID: UUID): TVShow? = transaction { repository.findTrackedTVShow(tvShowUUID) }
     override fun findAllTVShows() = transaction { repository.findAllTVShows() }
-    override fun findTrackedTVShows() = transaction { repository.findTrackedTVShows() }
+    override fun findTrackedTVShows(): List<TVShow> = transaction { repository.findTrackedTVShows() }
     override fun findNotTrackedTVShows() = transaction { repository.findNotTrackedTVShows() }
     override fun setTracked(tvShowUUID: UUID, quality: VideoQuality) = transaction { repository.setTracked(tvShowUUID, quality) }
     override fun setNotTracked(tvShowUUID: UUID) = transaction { repository.setNotTracked(tvShowUUID) }

@@ -15,5 +15,5 @@ interface TrackingListener {
      * @param tvShow The TV show to which the [episode] corresponds.
      * @param episode The newly found episode.
      */
-    fun notify(tvShow: TrackedTVShow, episode: EpisodeFile)
+    fun notify(tvShow: TVShow, episode: EpisodeFile)
 }

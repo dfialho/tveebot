@@ -4,7 +4,6 @@ import dfialho.tveebot.downloader.api.DownloadReference
 import dfialho.tveebot.services.downloader.EpisodeDownload
 import dfialho.tveebot.tracker.api.EpisodeFile
 import dfialho.tveebot.tracker.api.TVShow
-import dfialho.tveebot.tracker.api.TrackedTVShow
 import dfialho.tveebot.tracker.api.TrackerEngine
 import dfialho.tveebot.tracker.api.VideoQuality
 import java.util.*
@@ -19,24 +18,15 @@ import java.util.*
 interface TrackerRepository {
 
     /**
-     * Inserts a new TV show into the repository. The TV show will not be tracked after being inserted.
+     * Inserts a new TV show into the repository.
      *
      * @throws TrackerRepositoryException if some error occurs when trying to insert the TV show. For instance, the
      * repository already contains a TV show with the same ID.
      * @throws IllegalArgumentException if the format of some of the parameters is invalid. For instance, the title
      * is too long.
      */
+    //FIXME
     fun put(tvShow: TVShow)
-
-    /**
-     * Inserts a new TV show into the repository to be tracked. The TV show will be tracked after being inserted.
-     *
-     * @throws TrackerRepositoryException if some error occurs when trying to insert the TV show. For instance, the
-     * repository already contains a TV show with the same ID.
-     * @throws IllegalArgumentException if the format of some of the parameters is invalid. For instance, the title
-     * is too long.
-     */
-    fun put(tvShow: TrackedTVShow)
 
     /**
      * Inserts a batch of TV shows into the repository. Those already included in the repository will be ignored.
@@ -44,9 +34,9 @@ interface TrackerRepository {
     fun putAll(tvShows: List<TVShow>)
 
     /**
-     * Returns the [TrackedTVShow] identified by [tvShowUUID].
+     * Returns the [TVShow] identified by [tvShowUUID].
      */
-    fun findTrackedTVShow(tvShowUUID: UUID): TrackedTVShow?
+    fun findTrackedTVShow(tvShowUUID: UUID): TVShow?
 
     /**
      * Returns a list containing every TV show in the repository.
@@ -56,7 +46,7 @@ interface TrackerRepository {
     /**
      * Returns a list containing every TV show marked being tracked.
      */
-    fun findTrackedTVShows(): List<TrackedTVShow>
+    fun findTrackedTVShows(): List<TVShow>
 
     /**
      * Returns a list containing every TV show that is NOT marked as being tracked.

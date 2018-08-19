@@ -2,7 +2,6 @@ package dfialho.tveebot.rest
 
 import dfialho.tveebot.services.tracker.TrackerService
 import dfialho.tveebot.tracker.api.TVShow
-import dfialho.tveebot.tracker.api.TrackedTVShow
 import dfialho.tveebot.tracker.api.VideoQuality
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -27,7 +26,7 @@ class TrackerController(private val trackerService: TrackerService) {
      * Retrieves all TV shows currently being tracked.
      */
     @GetMapping("tvshows/tracked")
-    fun getTrackedTVShows(): List<TrackedTVShow> = trackerService.getTrackedTVShows()
+    fun getTrackedTVShows(): List<TVShow> = trackerService.getTrackedTVShows()
 
     /**
      * Retrieves all TV shows currently NOT being tracked.

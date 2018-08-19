@@ -34,23 +34,23 @@ class ScheduledTrackerEngine(
     override fun runOneIteration(): Unit = try {
         logger.info { "Checking for new episodes..." }
 
-        for (trackedTVShow in recorder.getTVShows()) {
+        for (tvShow in recorder.getTVShows()) {
 
             val episodes: List<EpisodeFile> = try {
-                provider.fetchEpisodes(trackedTVShow.toTVShow())
+                provider.fetchEpisodes(tvShow)
             } catch (e: IOException) {
-                logger.warn(e) { "Failed to fetch episodes for '${trackedTVShow.title}' from the provider" }
+                logger.warn(e) { "Failed to fetch episodes for '${tvShow.title}' from the provider" }
                 continue
             }
 
-            logger.trace { "Episodes for '${trackedTVShow.title}': $episodes" }
+            logger.trace { "Episodes for '${tvShow.title}': $episodes" }
 
             for (episode in episodes) {
-                val isNewEpisode: Boolean = recorder.putOrUpdateIfMoreRecent(trackedTVShow, episode)
+                val isNewEpisode: Boolean = recorder.putOrUpdateIfMoreRecent(tvShow, episode)
 
                 if (isNewEpisode) {
                     logger.debug { "New episode: $episode" }
-                    listeners.forEach { it.notify(trackedTVShow, episode) }
+                    listeners.forEach { it.notify(tvShow, episode) }
                 }
             }
         }
