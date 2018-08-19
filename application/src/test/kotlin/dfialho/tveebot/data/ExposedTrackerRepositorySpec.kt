@@ -608,6 +608,7 @@ class TransactionalTrackerRepository(private val repository: TrackerRepository) 
     override fun put(tvShowUUID: UUID, episode: EpisodeFile) = transaction { repository.put(tvShowUUID, episode) }
     override fun putOrUpdateIf(tvShowUUID: UUID, episode: EpisodeFile, predicate: (old: EpisodeFile, new: EpisodeFile) -> Boolean) = transaction { repository.putOrUpdateIf(tvShowUUID, episode, predicate) }
     override fun findEpisodesFrom(tvShowUUID: UUID) = transaction { repository.findEpisodesFrom(tvShowUUID) }
+    override fun findEpisodesByTVShow() = transaction { repository.findEpisodesByTVShow() }
     override fun removeEpisodesFrom(tvShowUUID: UUID) = transaction { repository.removeEpisodesFrom(tvShowUUID) }
     override fun put(download: EpisodeDownload) = transaction { repository.put(download) }
     override fun findDownload(reference: DownloadReference) = transaction { repository.findDownload(reference) }

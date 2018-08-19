@@ -182,6 +182,17 @@ class ExposedTrackerRepository(private val transactionTemplate: TransactionTempl
             .map { it.toEpisodeFile() }
     }
 
+    override fun findEpisodesByTVShow(): Map<TVShow, List<EpisodeFile>> = repositoryTransaction {
+        val episodesByTVShow = mutableMapOf<TVShow, MutableList<EpisodeFile>>()
+
+        (TVShows innerJoin Episodes)
+            .selectAll()
+            .map { it.toTVShow() to it.toEpisodeFile() }
+            .forEach { (tvShow, episode) -> episodesByTVShow.putIfAbsent(tvShow, mutableListOf(episode))?.add(episode) }
+
+        episodesByTVShow
+    }
+
     override fun removeEpisodesFrom(tvShowUUID: UUID): Unit = repositoryTransaction {
         Downloads.deleteWhere { Downloads.tvShowID eq tvShowUUID }
         Episodes.deleteWhere { Episodes.tvShowID eq tvShowUUID }

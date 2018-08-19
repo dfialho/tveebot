@@ -68,6 +68,13 @@ class TrackerService(
     fun getNotTrackedTVShows(): List<TVShow> = repository.findNotTrackedTVShows()
 
     /**
+     * Returns a map associating each TV show to its episodes.
+     */
+    fun getAllEpisodesByTVShow(): Map<UUID, List<EpisodeFile>> {
+        return repository.findEpisodesByTVShow().mapKeys { it.key.id }
+    }
+
+    /**
      * Tells this tracker service to start tracking TV show identified by [tvShowUUID]. Downloaded episode files for
      * this TV show must be of the specified [videoQuality].
      */

@@ -1,6 +1,7 @@
 package dfialho.tveebot.rest
 
 import dfialho.tveebot.services.tracker.TrackerService
+import dfialho.tveebot.tracker.api.EpisodeFile
 import dfialho.tveebot.tracker.api.TVShow
 import dfialho.tveebot.tracker.api.VideoQuality
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -33,6 +34,12 @@ class TrackerController(private val trackerService: TrackerService) {
      */
     @GetMapping("tvshows/not-tracked")
     fun getNotTrackedTVShows(): List<TVShow> = trackerService.getNotTrackedTVShows()
+
+    /**
+     * Retrieves all episodes associated by TV show.
+     */
+    @GetMapping("episodes/all")
+    fun getAllEpisodesByTVShow(): Map<UUID, List<EpisodeFile>> = trackerService.getAllEpisodesByTVShow()
 
     /**
      * Tells this tracker service to start tracking the TV show identified by [uuid]. Downloaded episode files for

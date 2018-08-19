@@ -102,6 +102,11 @@ interface TrackerRepository {
     fun findEpisodesFrom(tvShowUUID: UUID): List<EpisodeFile>
 
     /**
+     * Retrieves every episode in the repository and groups it by TV show.
+     */
+    fun findEpisodesByTVShow(): Map<TVShow, List<EpisodeFile>>
+
+    /**
      * Removes every episode from TV show identified by [tvShowUUID] available in the repository. If no episode
      * file is found then this method has no effect. If the episode has downloads associated with it, then those are
      * removed too.
