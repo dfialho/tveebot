@@ -55,6 +55,9 @@ interface TrackerRepository {
     /**
      * Marks the TV show with [tvShowUUID] as being tracked and sets the video [quality] the episodes of this TV show
      * are expected to be downloaded.
+     *
+     * @throws IllegalStateException if the TV show with ID [tvShowUUID] is already being tracked.
+     * @throws NoSuchElementException if no TV show with ID [tvShowUUID] exists.
      */
     fun setTracked(tvShowUUID: UUID, quality: VideoQuality)
 
@@ -62,13 +65,16 @@ interface TrackerRepository {
      * Marks the TV show with [tvShowUUID] as not being tracked. If the TV show was being tracked it will lost all
      * tracking information, such as, the video quality. If the TV shows was not being tracked, then this method has
      * no effect.
+     *
+     * @throws IllegalStateException if the TV show with ID [tvShowUUID] is already not being tracked.
+     * @throws NoSuchElementException if no TV show with ID [tvShowUUID] exists.
      */
     fun setNotTracked(tvShowUUID: UUID)
 
     /**
      * Sets the [videoQuality] for the tracked TV show identified by [tvShowUUID].
      *
-     * @throws TrackerRepositoryException if no TV show with ID [tvShowUUID] is being tracked
+     * @throws NoSuchElementException if no TV show with ID [tvShowUUID] is being tracked
      */
     fun setTVShowVideoQuality(tvShowUUID: UUID, videoQuality: VideoQuality)
 

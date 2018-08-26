@@ -114,15 +114,31 @@ class ExposedTrackerRepository(private val transactionTemplate: TransactionTempl
     }
 
     override fun setTracked(tvShowUUID: UUID, quality: VideoQuality): Unit = repositoryTransaction {
-        TVShows.update({ TVShows.id eq tvShowUUID }) {
+        val updateCount = TVShows.update({ (TVShows.id eq tvShowUUID) and (TVShows.tracked eq false) }) {
             it[tracked] = true
             it[this.quality] = quality.toString()
+        }
+
+        if (updateCount == 0) {
+            if (tvShowExists(tvShowUUID)) {
+                throw IllegalStateException("TV Show '$tvShowUUID' is already being tracked")
+            } else {
+                throwTVShowNotFoundError(tvShowUUID)
+            }
         }
     }
 
     override fun setNotTracked(tvShowUUID: UUID): Unit = repositoryTransaction {
-        TVShows.update({ TVShows.id eq tvShowUUID }) {
+        val updateCount = TVShows.update({ (TVShows.id eq tvShowUUID) and (TVShows.tracked eq true) }) {
             it[tracked] = false
+        }
+
+        if (updateCount == 0) {
+            if (tvShowExists(tvShowUUID)) {
+                throw IllegalStateException("TV Show '$tvShowUUID' is not being tracked")
+            } else {
+                throwTVShowNotFoundError(tvShowUUID)
+            }
         }
     }
 
@@ -132,7 +148,7 @@ class ExposedTrackerRepository(private val transactionTemplate: TransactionTempl
         }
 
         if (updateCount == 0) {
-            throw TrackerRepositoryException("No TV show with ID '$tvShowUUID' is being tracked")
+            throwTVShowNotFoundError(tvShowUUID, extraMessage = "it is not being tracked")
         }
     }
 
@@ -288,4 +304,8 @@ class ExposedTrackerRepository(private val transactionTemplate: TransactionTempl
     private fun episodeIDOf(tvShowUUID: UUID, episode: EpisodeFile): String {
         return "$tvShowUUID.${episode.season}.${episode.number}.${episode.quality}"
     }
+}
+
+private fun throwTVShowNotFoundError(uuid: UUID, extraMessage: String? = null): Nothing {
+    throw NoSuchElementException("TV Show '$uuid' not found" + if (extraMessage == null) "" else ": $extraMessage")
 }

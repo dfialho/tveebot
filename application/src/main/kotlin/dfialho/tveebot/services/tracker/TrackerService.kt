@@ -1,7 +1,6 @@
 package dfialho.tveebot.services.tracker
 
 import dfialho.tveebot.data.TrackerRepository
-import dfialho.tveebot.data.TrackerRepositoryException
 import dfialho.tveebot.services.downloader.DownloaderService
 import dfialho.tveebot.tracker.api.EpisodeFile
 import dfialho.tveebot.tracker.api.TVShow
@@ -14,7 +13,6 @@ import org.springframework.beans.factory.DisposableBean
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.stereotype.Service
 import java.util.*
-import kotlin.NoSuchElementException
 
 /**
  * Service responsible for tracking TV shows and send episode files to the [DownloaderService] once a new episode is
@@ -73,18 +71,24 @@ class TrackerService(
     fun getNotTrackedTVShows(): List<TVShow> = repository.findNotTrackedTVShows()
 
     /**
-     * Returns a map associating each TV show to its episodes.
+     * Returns a map associating each TV show to its episodes. TV shows without any episode are not included in the
+     * returned map.
      */
     fun getAllEpisodesByTVShow(): Map<UUID, List<EpisodeFile>> = repository.findEpisodesByTVShow().mapKeys { it.key.id }
 
     /**
-     * Returns a list containing every episode from the TV show identified by [tvShowUUID]
+     * Returns a list containing every episode from the TV show identified by [tvShowUUID].
+     *
+     * @throws NoSuchElementException if no TV show is found with id [tvShowUUID].
      */
     fun getEpisodesFrom(tvShowUUID: UUID): List<EpisodeFile> = repository.findEpisodesFrom(tvShowUUID)
 
     /**
      * Tells this tracker service to start tracking TV show identified by [tvShowUUID]. Downloaded episode files for
      * this TV show must be of the specified [videoQuality].
+     *
+     * @throws IllegalStateException if the TV show with ID [tvShowUUID] is already being tracked.
+     * @throws NoSuchElementException if no TV show is found with id [tvShowUUID].
      */
     fun trackTVShow(tvShowUUID: UUID, videoQuality: VideoQuality) {
         repository.setTracked(tvShowUUID, videoQuality)
@@ -97,27 +101,26 @@ class TrackerService(
 
     /**
      * Tells this tracker service to stop tracking TV show identified by [tvShowUUID].
+     *
+     * @throws IllegalStateException if the TV show with ID [tvShowUUID] is already being tracked.
+     * @throws NoSuchElementException if no TV show is found with id [tvShowUUID].
      */
     fun untrackTVShow(tvShowUUID: UUID) {
         repository.setNotTracked(tvShowUUID)
         downloaderService.removeAllFrom(tvShowUUID)
-        repository.removeEpisodesFrom(tvShowUUID)
 
         logger.info { "Stopped tracking TV show: ${repository.findTrackedTVShow(tvShowUUID)?.title}" }
     }
 
     /**
      * Sets the [newVideoQuality] of episode files corresponding to the TV show identified by [tvShowUUID].
+     *
+     * @throws NoSuchElementException if no TV show is found with id [tvShowUUID].
      */
     fun setTVShowVideoQuality(tvShowUUID: UUID, newVideoQuality: VideoQuality) {
-
         val originalTVShow = repository.findTrackedTVShow(tvShowUUID)
 
-        try {
-            repository.setTVShowVideoQuality(tvShowUUID, newVideoQuality)
-        } catch (e: TrackerRepositoryException) {
-            throw NoSuchElementException("No TV show with ID '$tvShowUUID' is being tracked")
-        }
+        repository.setTVShowVideoQuality(tvShowUUID, newVideoQuality)
 
         if (originalTVShow != null && originalTVShow.quality != newVideoQuality) {
             logger.info { "Changed video quality of '${originalTVShow.title}' from ${originalTVShow.quality} to $newVideoQuality" }

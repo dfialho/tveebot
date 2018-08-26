@@ -1,8 +1,11 @@
 package dfialho.tveebot.data
 
-import dfialho.tveebot.TVeebotApplication
-import dfialho.tveebot.downloader.api.DownloadReference
 import dfialho.tveebot.services.downloader.EpisodeDownload
+import dfialho.tveebot.testing.randomDownloadReference
+import dfialho.tveebot.testing.randomEpisode
+import dfialho.tveebot.testing.randomInstant
+import dfialho.tveebot.testing.randomTVShow
+import dfialho.tveebot.testing.randomTVShows
 import dfialho.tveebot.tracker.api.Episode
 import dfialho.tveebot.tracker.api.EpisodeFile
 import dfialho.tveebot.tracker.api.TVShow
@@ -17,15 +20,11 @@ import org.amshove.kluent.shouldEqual
 import org.amshove.kluent.shouldNotContain
 import org.amshove.kluent.shouldNotThrow
 import org.amshove.kluent.shouldThrow
-import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.spek.api.Spek
 import org.jetbrains.spek.api.dsl.given
 import org.jetbrains.spek.api.dsl.it
 import org.jetbrains.spek.api.dsl.on
-import org.springframework.transaction.support.TransactionTemplate
-import java.lang.Math.random
-import java.time.Instant
-import java.util.*
+import java.util.UUID.randomUUID
 
 /**
  * Spec for the [ExposedTrackerRepository].
@@ -34,19 +33,13 @@ import java.util.*
  */
 object ExposedTrackerRepositorySpec : Spek({
 
-    val repository: TrackerRepository by memoized {
-        TransactionalTrackerRepository(
-            ExposedTrackerRepository(getTransactionTemplate()).apply {
-                afterPropertiesSet()
-            }
-        )
-    }
+    val repository: TrackerRepository by memoized { emptyTrackerRepository() }
 
     given("empty repository") {
         beforeEachTest { repository.clearAll() }
 
         on("looking for episodes from TV show") {
-            val operation = { repository.findEpisodesFrom(UUID.randomUUID()) }
+            val operation = { repository.findEpisodesFrom(randomUUID()) }
 
             it("should throw NoSuchElementException") {
                 operation shouldThrow NoSuchElementException::class
@@ -142,7 +135,7 @@ object ExposedTrackerRepositorySpec : Spek({
         }
 
         on("putting a tv show with too long title") {
-            val operation = { repository.put(TVShow(UUID.randomUUID(), "tv show".repeat(100))) }
+            val operation = { repository.put(TVShow(randomUUID(), "tv show".repeat(100))) }
 
             it("should throw IllegalArgumentException") {
                 operation shouldThrow IllegalArgumentException::class
@@ -185,8 +178,8 @@ object ExposedTrackerRepositorySpec : Spek({
 
     given("repository containing non-tracked and tracked tv shows") {
         val originalVideoQuality = VideoQuality.SD
-        val trackedTVShow = TVShow(UUID.randomUUID(), "tracked", quality = originalVideoQuality, tracked = true)
-        val nonTrackedTVShow = TVShow(UUID.randomUUID(), "non-tracked", tracked = false)
+        val trackedTVShow = TVShow(randomUUID(), "tracked", quality = originalVideoQuality, tracked = true)
+        val nonTrackedTVShow = TVShow(randomUUID(), "non-tracked", tracked = false)
         val trackedTVShows = randomTVShows(3, tracked = true) + trackedTVShow
         val nonTrackedTVShows = randomTVShows(3, tracked = false) + nonTrackedTVShow
         val tvShowCollection: List<TVShow> = trackedTVShows + nonTrackedTVShows
@@ -214,11 +207,26 @@ object ExposedTrackerRepositorySpec : Spek({
         }
 
         on("setting as `tracked` a TV show in the tracked list") {
-            val newVideoQuality = VideoQuality.FULL_HD
-            repository.setTracked(trackedTVShow.id, newVideoQuality)
+            val operation = { repository.setTracked(trackedTVShow.id, trackedTVShow.quality) }
 
-            it("should change the tv show's video quality to one specified") {
-                repository.findTrackedTVShow(trackedTVShow.id)?.quality shouldEqual newVideoQuality
+            it("should throw IllegalStateException") {
+                operation shouldThrow IllegalStateException::class
+            }
+
+            it("should not add any tv show to tracked list") {
+                repository.findTrackedTVShows() shouldEqual trackedTVShows
+            }
+        }
+        
+        on("setting as `tracked` a non-existing TV show") {
+            val operation = { repository.setTracked(randomUUID(), VideoQuality.SD) }
+
+            it("should throw NoSuchElementException") {
+                operation shouldThrow NoSuchElementException::class
+            }
+
+            it("should not add any tv show to tracked list") {
+                repository.findTrackedTVShows() shouldEqual trackedTVShows
             }
         }
 
@@ -250,8 +258,8 @@ object ExposedTrackerRepositorySpec : Spek({
         on("setting new video quality for non-tracked TV") {
             val operation = { repository.setTVShowVideoQuality(nonTrackedTVShow.id, VideoQuality.FULL_HD) }
 
-            it("should throw TrackerRepositoryException") {
-                operation shouldThrow TrackerRepositoryException::class
+            it("should throw NoSuchElementException") {
+                operation shouldThrow NoSuchElementException::class
             }
 
             it("should not include tv show in the tracked list") {
@@ -266,19 +274,19 @@ object ExposedTrackerRepositorySpec : Spek({
         val tvShowList = randomTVShows(4, tracked = true) + nonTrackedTVShow + trackedTVShow
         val existingTVShow = trackedTVShow
 
-        val existingEpisode = episodeWith(season = 1, quality = VideoQuality.SD)
+        val existingEpisode = randomEpisode(season = 1, quality = VideoQuality.SD)
 
         val trackedEpisodes = listOf(
             existingEpisode,
-            episodeWith(season = 2),
-            episodeWith(season = 3),
-            episodeWith(season = 4)
+            randomEpisode(season = 2),
+            randomEpisode(season = 3),
+            randomEpisode(season = 4)
         )
 
         val nonTrackedEpisodes = listOf(
-            episodeWith(season = 5),
-            episodeWith(season = 6),
-            episodeWith(season = 7)
+            randomEpisode(season = 5),
+            randomEpisode(season = 6),
+            randomEpisode(season = 7)
         )
 
         beforeEachTest {
@@ -305,7 +313,7 @@ object ExposedTrackerRepositorySpec : Spek({
         }
 
         on("looking for episodes from non-existing TV show") {
-            val operation = { repository.findEpisodesFrom(UUID.randomUUID()) }
+            val operation = { repository.findEpisodesFrom(randomUUID()) }
 
             it("should throw NoSuchElementException") {
                 operation shouldThrow NoSuchElementException::class
@@ -330,7 +338,7 @@ object ExposedTrackerRepositorySpec : Spek({
         }
 
         on("putting new episode with a predicate that returns true") {
-            val episode = episodeWith(season = 10)
+            val episode = randomEpisode(season = 10)
             val returnValue = repository.putOrUpdateIf(existingTVShow.id, episode) { _, _ -> true }
 
             it("should return true") {
@@ -343,7 +351,7 @@ object ExposedTrackerRepositorySpec : Spek({
         }
 
         on("putting new episode with a predicate that returns false") {
-            val episode = episodeWith(season = 10)
+            val episode = randomEpisode(season = 10)
             val returnValue = repository.putOrUpdateIf(existingTVShow.id, episode) { _, _ -> false }
 
             it("should return true") {
@@ -426,9 +434,9 @@ object ExposedTrackerRepositorySpec : Spek({
 
     given("repository with tv shows, episodes, and downloads") {
         val existingTVShow = randomTVShow()
-        val existingEpisodeWithDownload = episodeWith(season = 1)
-        val existingEpisodeWithoutDownload = episodeWith(season = 2)
-        val existingDownload = EpisodeDownload(randomReference(), existingTVShow, existingEpisodeWithDownload)
+        val existingEpisodeWithDownload = randomEpisode(season = 1)
+        val existingEpisodeWithoutDownload = randomEpisode(season = 2)
+        val existingDownload = EpisodeDownload(randomDownloadReference(), existingTVShow, existingEpisodeWithDownload)
 
         beforeEachTest {
             repository.clearAll()
@@ -439,8 +447,8 @@ object ExposedTrackerRepositorySpec : Spek({
         }
 
         on("putting a download for non-existing episode") {
-            val nonExistingEpisode = episodeWith(season = 10)
-            val download = EpisodeDownload(randomReference(), existingTVShow, nonExistingEpisode)
+            val nonExistingEpisode = randomEpisode(season = 10)
+            val download = EpisodeDownload(randomDownloadReference(), existingTVShow, nonExistingEpisode)
             val operation = { repository.put(download) }
 
             it("should throw a TrackerRepositoryException") {
@@ -458,7 +466,7 @@ object ExposedTrackerRepositorySpec : Spek({
 
         on("putting a download for existing episode not associated with a download") {
             val download = EpisodeDownload(
-                randomReference(),
+                randomDownloadReference(),
                 existingTVShow,
                 existingEpisodeWithoutDownload
             )
@@ -478,11 +486,7 @@ object ExposedTrackerRepositorySpec : Spek({
         }
 
         on("putting a download for episode already associated with a download") {
-            val download = EpisodeDownload(
-                randomReference(),
-                existingTVShow,
-                existingEpisodeWithDownload
-            )
+            val download = EpisodeDownload(randomDownloadReference(), existingTVShow, existingEpisodeWithDownload)
             repository.put(download)
 
             it("should contain the download") {
@@ -499,11 +503,7 @@ object ExposedTrackerRepositorySpec : Spek({
         }
 
         on("putting existing download") {
-            val download = EpisodeDownload(
-                existingDownload.reference,
-                existingTVShow,
-                existingEpisodeWithDownload
-            )
+            val download = EpisodeDownload(existingDownload.reference, existingTVShow, existingEpisodeWithDownload)
             val operation = { repository.put(download) }
 
             it("should throw TrackerRepositoryException") {
@@ -545,7 +545,7 @@ object ExposedTrackerRepositorySpec : Spek({
         }
 
         on("removing a non-existing download") {
-            val operation = { repository.removeDownload(randomReference()) }
+            val operation = { repository.removeDownload(randomDownloadReference()) }
 
             it("should not throw anything") {
                 operation shouldNotThrow AnyException
@@ -578,83 +578,3 @@ object ExposedTrackerRepositorySpec : Spek({
         }
     }
 })
-
-/**
- * Returns a randomly generated [Instant].
- */
-private fun randomInstant(): Instant = Instant.ofEpochSecond(random().toInt().toLong())
-
-/**
- * Returns a random string.
- */
-private fun randomString(): String = UUID.randomUUID().toString()
-
-/**
- * Generates a list containing [n] random TV shows and returns the list.
- */
-private fun randomTVShows(n: Int, tracked: Boolean = false, quality: VideoQuality = VideoQuality.default()): List<TVShow> {
-    val title = randomString()
-    return (1..n).map { TVShow(UUID.randomUUID(), "$title-$it", quality, tracked) }
-}
-
-/**
- * Generates a single random TV show and returns it.
- */
-private fun randomTVShow(tracked: Boolean = false, quality: VideoQuality = VideoQuality.default()): TVShow {
-    return randomTVShows(1, tracked, quality).first()
-}
-
-/**
- * Generates a random [DownloadReference] and returns it.
- */
-private fun randomReference() = DownloadReference(randomString())
-
-/**
- * Generates a single random episode file and returns it.
- */
-private fun episodeWith(
-    season: Int = 1,
-    number: Int = 1,
-    quality: VideoQuality = VideoQuality.default()
-): EpisodeFile {
-    val salt = randomString()
-
-    return EpisodeFile(
-        Episode("$salt-title", season, number),
-        quality,
-        "$salt-link",
-        randomInstant()
-    )
-}
-
-private fun getTransactionTemplate(): TransactionTemplate {
-    val app = TVeebotApplication()
-    return app.transactionTemplate(app.transactionManager(app.dataSourceForDevelopment()))
-}
-
-/**
- * Required to have all operations be transactional.
- */
-class TransactionalTrackerRepository(private val repository: TrackerRepository) : TrackerRepository {
-    override fun put(tvShow: TVShow) = transaction { repository.put(tvShow) }
-    override fun putAll(tvShows: List<TVShow>) = transaction { repository.putAll(tvShows) }
-    override fun findTrackedTVShow(tvShowUUID: UUID): TVShow? = transaction { repository.findTrackedTVShow(tvShowUUID) }
-    override fun findAllTVShows() = transaction { repository.findAllTVShows() }
-    override fun findTrackedTVShows(): List<TVShow> = transaction { repository.findTrackedTVShows() }
-    override fun findNotTrackedTVShows() = transaction { repository.findNotTrackedTVShows() }
-    override fun setTracked(tvShowUUID: UUID, quality: VideoQuality) = transaction { repository.setTracked(tvShowUUID, quality) }
-    override fun setNotTracked(tvShowUUID: UUID) = transaction { repository.setNotTracked(tvShowUUID) }
-    override fun setTVShowVideoQuality(tvShowUUID: UUID, videoQuality: VideoQuality) = transaction { repository.setTVShowVideoQuality(tvShowUUID, videoQuality) }
-    override fun put(tvShowUUID: UUID, episode: EpisodeFile) = transaction { repository.put(tvShowUUID, episode) }
-    override fun putOrUpdateIf(tvShowUUID: UUID, episode: EpisodeFile, predicate: (old: EpisodeFile, new: EpisodeFile) -> Boolean) = transaction { repository.putOrUpdateIf(tvShowUUID, episode, predicate) }
-    override fun findEpisodesFrom(tvShowUUID: UUID) = transaction { repository.findEpisodesFrom(tvShowUUID) }
-    override fun findEpisodesByTVShow() = transaction { repository.findEpisodesByTVShow() }
-    override fun removeEpisodesFrom(tvShowUUID: UUID) = transaction { repository.removeEpisodesFrom(tvShowUUID) }
-    override fun put(download: EpisodeDownload) = transaction { repository.put(download) }
-    override fun findDownload(reference: DownloadReference) = transaction { repository.findDownload(reference) }
-    override fun findAllDownloads() = transaction { repository.findAllDownloads() }
-    override fun findDownloadsFrom(tvShowUUID: UUID) = transaction { repository.findDownloadsFrom(tvShowUUID) }
-    override fun removeDownload(reference: DownloadReference) = transaction { repository.removeDownload(reference) }
-    override fun removeAllDownloadsFrom(tvShowUUID: UUID) = transaction { repository.removeAllDownloadsFrom(tvShowUUID) }
-    override fun clearAll() = transaction { repository.clearAll() }
-}
