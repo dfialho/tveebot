@@ -1,7 +1,7 @@
 buildscript {
     ext {
         kotlinVersion = '1.2.60'
-        spekVersion = '1.1.5'
+        spekVersion = '2.0.0-alpha.1'
         kluentVersion = '1.40'
         springBootVersion = '2.0.4.RELEASE'
         guavaVersion = '26.0-jre'
@@ -29,26 +29,28 @@ subprojects {
         mavenCentral()
         jcenter()   // Required by Kluent
         maven { url "http://dl.bintray.com/jetbrains/spek" }   // Required by Spek 2 until a stable release
+        maven { url "https://dl.bintray.com/spekframework/spek-dev" }
     }
 
     // Dependencies for Spek 2
     dependencies {
-        compile 'io.github.microutils:kotlin-logging:1.5.9'
-        implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+        // some version of Kotlin
+        implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
 
-        testImplementation ("org.jetbrains.spek:spek-api:$spekVersion")  {
+        testImplementation ("org.spekframework.spek2:spek-dsl-jvm:$spekVersion")  {
             exclude group: 'org.jetbrains.kotlin'
         }
-        testRuntimeOnly ("org.jetbrains.spek:spek-junit-platform-engine:$spekVersion") {
+        testRuntimeOnly ("org.spekframework.spek2:spek-runner-junit5:$spekVersion") {
             exclude group: 'org.junit.platform'
             exclude group: 'org.jetbrains.kotlin'
         }
 
-        // Spek requires kotlin-reflect, can be omitted if already in the classpath
+        // spek requires kotlin-reflect, can be omitted if already in the classpath
         testRuntimeOnly "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
     }
 
     dependencies {
+        implementation 'io.github.microutils:kotlin-logging:1.5.9'
         implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
         testImplementation "org.amshove.kluent:kluent:$kluentVersion"
     }
@@ -70,7 +72,7 @@ subprojects {
 
     test {
         useJUnitPlatform {
-            includeEngines 'spek'
+            includeEngines 'spek2'
         }
     }
 }
