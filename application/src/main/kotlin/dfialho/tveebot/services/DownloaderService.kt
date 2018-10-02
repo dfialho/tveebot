@@ -1,4 +1,4 @@
-package dfialho.tveebot.services.downloader
+package dfialho.tveebot.services
 
 import dfialho.tveebot.data.TrackerRepository
 import dfialho.tveebot.downloader.api.DownloadEngine
@@ -6,29 +6,21 @@ import dfialho.tveebot.downloader.api.DownloadHandle
 import dfialho.tveebot.downloader.api.DownloadListener
 import dfialho.tveebot.downloader.api.DownloadReference
 import dfialho.tveebot.downloader.api.DownloadStatus
-import dfialho.tveebot.services.tracker.TrackerService
+import dfialho.tveebot.data.EpisodeDownload
 import dfialho.tveebot.tracker.api.EpisodeFile
 import dfialho.tveebot.tracker.api.TVShow
 import mu.KLogging
-import org.springframework.beans.factory.DisposableBean
-import org.springframework.beans.factory.InitializingBean
-import org.springframework.stereotype.Service
 import java.util.*
 
-/**
- * Service responsible for downloading the episode files found by the [TrackerService].
- *
- * @author David Fialho (dfialho@protonmail.com)
- */
-@Service
 class DownloaderService(
     private val engine: DownloadEngine,
     private val repository: TrackerRepository
-) : DownloadListener, InitializingBean, DisposableBean {
+
+) : Service, DownloadListener {
 
     companion object : KLogging()
 
-    override fun afterPropertiesSet() {
+    override fun start() {
         logger.debug { "Starting downloader service" }
 
         engine.start()
@@ -37,12 +29,13 @@ class DownloaderService(
         // Restart every download in the queue
         val episodeDownloads: List<EpisodeDownload> = repository.findAllDownloads()
         episodeDownloads.forEach { engine.add(it.episode.link) }
+        episodeDownloads.forEach { engine.add(it.episode.link) }
         logger.info { "Restarted downloading ${episodeDownloads.size} episodes" }
 
         logger.info { "Started downloader service successfully" }
     }
 
-    override fun destroy() {
+    override fun stop() {
         logger.debug { "Stopping downloader service" }
         engine.stop()
         engine.removeListener(this)
@@ -50,7 +43,8 @@ class DownloaderService(
     }
 
     override fun notifyFinished(handle: DownloadHandle) {
-        val download = repository.findDownload(handle.reference) ?: throw IllegalStateException("Download was already removed")
+        val download = repository.findDownload(handle.reference)
+            ?: throw IllegalStateException("Download was already removed")
 
         with(download) {
             logger.info { "Finished downloading: ${tvShow.title} - ${episode.toPrettyString()}" }

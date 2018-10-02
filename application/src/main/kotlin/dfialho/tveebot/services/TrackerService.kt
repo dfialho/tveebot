@@ -1,7 +1,6 @@
-package dfialho.tveebot.services.tracker
+package dfialho.tveebot.services
 
 import dfialho.tveebot.data.TrackerRepository
-import dfialho.tveebot.services.downloader.DownloaderService
 import dfialho.tveebot.tracker.api.EpisodeFile
 import dfialho.tveebot.tracker.api.TVShow
 import dfialho.tveebot.tracker.api.TVShowProvider
@@ -9,28 +8,19 @@ import dfialho.tveebot.tracker.api.TrackerEngine
 import dfialho.tveebot.tracker.api.TrackingListener
 import dfialho.tveebot.tracker.api.VideoQuality
 import mu.KLogging
-import org.springframework.beans.factory.DisposableBean
-import org.springframework.beans.factory.InitializingBean
-import org.springframework.stereotype.Service
 import java.util.*
 
-/**
- * Service responsible for tracking TV shows and send episode files to the [DownloaderService] once a new episode is
- * found for a tracked TV show.
- *
- * @author David Fialho (dfialho@protonmail.com)
- */
-@Service
 class TrackerService(
     private val engine: TrackerEngine,
     private val provider: TVShowProvider,
     private val repository: TrackerRepository,
-    private val downloaderService: DownloaderService
-) : TrackingListener, InitializingBean, DisposableBean {
+    private val downloader: DownloaderService
+
+) : Service, TrackingListener {
 
     companion object : KLogging()
 
-    override fun afterPropertiesSet() {
+    override fun start() {
         logger.debug { "Starting tracker service" }
 
         repository.putAll(provider.fetchTVShows())
@@ -42,7 +32,7 @@ class TrackerService(
         logger.info { "Started tracker service successfully" }
     }
 
-    override fun destroy() {
+    override fun stop() {
         logger.debug { "Stopping tracker service" }
         engine.stop()
         engine.removeListener(this)
@@ -107,7 +97,7 @@ class TrackerService(
      */
     fun untrackTVShow(tvShowUUID: UUID) {
         repository.setNotTracked(tvShowUUID)
-        downloaderService.removeAllFrom(tvShowUUID)
+        downloader.removeAllFrom(tvShowUUID)
 
         logger.info { "Stopped tracking TV show: ${repository.findTrackedTVShow(tvShowUUID)?.title}" }
     }
@@ -126,7 +116,7 @@ class TrackerService(
             logger.info { "Changed video quality of '${originalTVShow.title}' from ${originalTVShow.quality} to $newVideoQuality" }
 
             // Remove any downloads of episode files of a different quality
-            downloaderService.removeAllFrom(tvShowUUID)
+            downloader.removeAllFrom(tvShowUUID)
 
             // Start downloading every episode already found with the new video quality
             val tvShowWithNewQuality = originalTVShow.copy(quality = newVideoQuality)
@@ -139,7 +129,7 @@ class TrackerService(
     private fun downloadEpisode(tvShow: TVShow, episode: EpisodeFile) {
         // Enforce that only episode files of a specified video quality are downloaded
         if (episode.quality == tvShow.quality) {
-            downloaderService.download(tvShow, episode)
+            downloader.download(tvShow, episode)
         }
     }
 

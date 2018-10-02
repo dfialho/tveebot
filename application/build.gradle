@@ -1,16 +1,12 @@
-plugins {
-    id "io.spring.dependency-management"
-}
+apply plugin: 'application'
 
-apply plugin: 'kotlin-spring'
-apply plugin: 'eclipse'
-apply plugin: 'org.springframework.boot'
-apply plugin: 'io.spring.dependency-management'
+mainClassName = "io.ktor.server.netty.DevelopmentEngine"
+
+kotlin { experimental { coroutines "enable" } }
 
 repositories {
-    maven {
-        url  "https://dl.bintray.com/kotlin/exposed"
-    }
+    maven { url "https://dl.bintray.com/kotlin/exposed" }
+    maven { url "https://dl.bintray.com/kotlin/ktor" }
 }
 
 dependencies {
@@ -19,22 +15,11 @@ dependencies {
 }
 
 dependencies {
-    compile "org.jetbrains.exposed:spring-transaction:$exposedVersion"
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'com.fasterxml.jackson.module:jackson-module-kotlin'
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
-    implementation "org.jetbrains.kotlin:kotlin-reflect"
-    runtime 'com.h2database:h2'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    implementation "org.kodein.di:kodein-di-generic-jvm:$kodeinVersion"
+    runtime "com.h2database:h2:$h2Version"
 }
 
-compileKotlin {
-    kotlinOptions {
-        freeCompilerArgs = ["-Xjsr305=strict"]
-    }
-}
-compileTestKotlin {
-    kotlinOptions {
-        freeCompilerArgs = ["-Xjsr305=strict"]
-    }
+dependencies {
+    compile "io.ktor:ktor-server-netty:$ktorVersion"
+    compile "io.ktor:ktor-gson:$ktorVersion"
 }

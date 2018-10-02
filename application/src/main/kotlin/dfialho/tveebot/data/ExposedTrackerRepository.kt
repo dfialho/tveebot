@@ -1,13 +1,13 @@
 package dfialho.tveebot.data
 
 import dfialho.tveebot.downloader.api.DownloadReference
-import dfialho.tveebot.services.downloader.EpisodeDownload
 import dfialho.tveebot.tracker.api.Episode
 import dfialho.tveebot.tracker.api.EpisodeFile
 import dfialho.tveebot.tracker.api.TVShow
 import dfialho.tveebot.tracker.api.VideoQuality
 import dfialho.tveebot.tracker.api.toVideoQuality
 import org.jetbrains.exposed.exceptions.ExposedSQLException
+import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.Table
@@ -18,25 +18,19 @@ import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
 import org.joda.time.DateTime
-import org.springframework.beans.factory.InitializingBean
-import org.springframework.stereotype.Repository
-import org.springframework.transaction.annotation.Transactional
-import org.springframework.transaction.support.TransactionTemplate
 import java.util.*
 import kotlin.NoSuchElementException
 
 /**
  * [TrackerRepository] implementation based on the exposed framework.
  *
- * @param transactionTemplate Required to manage the transactions.
+ * FIXME
  * @author David Fialho (dfialho@protonmail.com)
  */
-@Repository
-@Transactional
-class ExposedTrackerRepository(private val transactionTemplate: TransactionTemplate)
-    : TrackerRepository, InitializingBean {
+class ExposedTrackerRepository(private val db: Database) : TrackerRepository {
 
     private object TVShows : Table() {
         val id = uuid("id").primaryKey()
@@ -62,11 +56,9 @@ class ExposedTrackerRepository(private val transactionTemplate: TransactionTempl
         val tvShowID = reference("tvshow_id", Episodes.tvShowID)
     }
 
-    override fun afterPropertiesSet() {
-        transactionTemplate.execute {
-            SchemaUtils.create(TVShows)
-            SchemaUtils.create(Episodes)
-            SchemaUtils.create(Downloads)
+    init {
+        repositoryTransaction {
+            SchemaUtils.create(TVShows, Episodes, Downloads)
         }
     }
 
@@ -295,7 +287,7 @@ class ExposedTrackerRepository(private val transactionTemplate: TransactionTempl
 
     private fun <T> repositoryTransaction(body: () -> T): T {
         try {
-            return body()
+            return transaction(db) { body() }
         } catch (e: ExposedSQLException) {
             throw TrackerRepositoryException("Failed to execute operation", e)
         }

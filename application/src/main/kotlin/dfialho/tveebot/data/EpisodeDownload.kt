@@ -1,4 +1,4 @@
-package dfialho.tveebot.services.downloader
+package dfialho.tveebot.data
 
 import dfialho.tveebot.downloader.api.DownloadReference
 import dfialho.tveebot.tracker.api.EpisodeFile

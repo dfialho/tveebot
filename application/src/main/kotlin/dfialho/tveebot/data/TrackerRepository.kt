@@ -1,7 +1,6 @@
 package dfialho.tveebot.data
 
 import dfialho.tveebot.downloader.api.DownloadReference
-import dfialho.tveebot.services.downloader.EpisodeDownload
 import dfialho.tveebot.tracker.api.EpisodeFile
 import dfialho.tveebot.tracker.api.TVShow
 import dfialho.tveebot.tracker.api.TrackerEngine
