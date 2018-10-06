@@ -42,6 +42,8 @@ class DownloaderService(
 
     override fun notifyFinished(handle: DownloadHandle) {
         logger.debug { "Finished downloading: ${handle.reference}" }
+        engine.remove(handle.reference)
+
         alertService.raiseAlert(Alerts.DownloadFinished, handle.reference)
     }
 
