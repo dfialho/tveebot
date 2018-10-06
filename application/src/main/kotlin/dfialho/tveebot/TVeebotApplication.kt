@@ -49,7 +49,7 @@ object DbSettings {
 
 object TVeebotConfig {
     val checkPeriod: Long = 10 // seconds
-    val savePath: Path = Paths.get("~/Downloads/tveebot")
+    val savePath: Path = Paths.get("/home/david/Downloads/tveebot")
 }
 
 fun Application.mainModule() {

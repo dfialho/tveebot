@@ -86,15 +86,11 @@ class DownloaderService(
     }
 
     /**
-     * Removes every episode download corresponding to the TV show identified by [tvShowUUID].
+     * Removes all downloads in the given references.
      */
-    fun removeAllFrom(tvShowUUID: UUID) {
-        // TODO Move logic to get Downloads from TV to caller and have only a method that takes a list of references
-        repository.removeAllDownloadsFrom(tvShowUUID)
-        repository.findDownloadsFrom(tvShowUUID).forEach {
-            engine.remove(it.reference)
-            logger.info { "Stopped downloading: ${it.episode.toPrettyString()}" }
-        }
+    fun removeAll(references: List<DownloadReference>) {
+        references.forEach { engine.remove(it) }
+        repository.removeAllDownloads(references)
     }
 }
 

@@ -69,9 +69,9 @@ class TrackerService(
      * @throws NoSuchElementException if no TV show is found with id [tvShowUUID].
      */
     fun untrackTVShow(tvShowUUID: UUID) {
-        repository.setNotTracked(tvShowUUID)
-
         repository.findTrackedTVShow(tvShowUUID)?.let {
+            repository.setNotTracked(tvShowUUID)
+
             logger.info { "Stopped tracking TV show: ${it.title}" }
             alertService.raiseAlert(Alerts.StoppedTrackingTVShow, it.toTVShow())
         }

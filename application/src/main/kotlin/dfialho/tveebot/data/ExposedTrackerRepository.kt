@@ -251,6 +251,10 @@ class ExposedTrackerRepository(private val db: Database) : TrackerRepository {
         Downloads.deleteWhere { Downloads.reference eq reference.value }
     }
 
+    override fun removeAllDownloads(references: List<DownloadReference>): Unit = repositoryTransaction {
+        Downloads.deleteWhere { Downloads.reference inList references.map { it.value } }
+    }
+
     override fun removeAllDownloadsFrom(tvShowID: TVShowID): Unit = repositoryTransaction {
         Downloads.deleteWhere { Downloads.tvShowID eq tvShowID }
     }

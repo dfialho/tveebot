@@ -43,7 +43,7 @@ class TVeebotService(
     }
 
     private fun onStoppedTrackingTVShow(tvShow: TVShow) {
-        downloader.removeAllFrom(tvShow.id)
+        removeDownloadsFrom(tvShow.id)
     }
 
     private fun onNewEpisodeFound(parameters: NewEpisodeParameters) {
@@ -102,10 +102,11 @@ class TVeebotService(
     }
 
     private fun removeDownloadsFrom(tvShowID: TVShowID) {
-        repository.removeAllDownloadsFrom(tvShowID)
-        repository.findDownloadsFrom(tvShowID).forEach { download ->
-            downloader.remove(download.reference)
-            logger.info { "Stopped downloading: ${download.episode.toPrettyString()}" }
+        val downloads = repository.findDownloadsFrom(tvShowID)
+        downloader.removeAll(downloads.map { it.reference })
+
+        for ((_, episode) in downloads) {
+            logger.info { "Stopped downloading: ${episode.toPrettyString()}" }
         }
     }
 }

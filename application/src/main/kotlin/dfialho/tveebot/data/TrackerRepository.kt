@@ -160,6 +160,12 @@ interface TrackerRepository {
     fun removeDownload(reference: DownloadReference)
 
     /**
+     * Removes the downloads with the given [references]. If the repository does not contain a download with one
+     * of the specified [references], then that reference is ignored.
+     */
+    fun removeAllDownloads(references: List<DownloadReference>)
+
+    /**
      * Removes every download of an episode from the TV show identified by [tvShowID].
      */
     fun removeAllDownloadsFrom(tvShowID: TVShowID)
