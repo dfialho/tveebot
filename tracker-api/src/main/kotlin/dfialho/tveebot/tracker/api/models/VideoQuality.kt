@@ -1,4 +1,4 @@
-package dfialho.tveebot.tracker.api
+package dfialho.tveebot.tracker.api.models
 
 /**
  * Representation for the quality of video files.

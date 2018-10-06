@@ -1,11 +1,18 @@
 package dfialho.tveebot.data
 
+import dfialho.tveebot.data.models.EpisodeDownload
+import dfialho.tveebot.data.models.EpisodeEntity
+import dfialho.tveebot.data.models.TVShowEntity
 import dfialho.tveebot.downloader.api.DownloadReference
-import dfialho.tveebot.tracker.api.Episode
-import dfialho.tveebot.tracker.api.EpisodeFile
-import dfialho.tveebot.tracker.api.TVShow
-import dfialho.tveebot.tracker.api.VideoQuality
-import dfialho.tveebot.tracker.api.toVideoQuality
+import dfialho.tveebot.tracker.api.models.Episode
+import dfialho.tveebot.tracker.api.models.EpisodeFile
+import dfialho.tveebot.tracker.api.models.TVShow
+import dfialho.tveebot.tracker.api.models.TVShowEpisodeFile
+import dfialho.tveebot.tracker.api.models.TVShowID
+import dfialho.tveebot.tracker.api.models.VideoQuality
+import dfialho.tveebot.tracker.api.models.toVideoQuality
+import dfialho.tveebot.tracker.lib.EpisodeIDGenerator
+import dfialho.tveebot.tvShowEpisodeFileOf
 import org.jetbrains.exposed.exceptions.ExposedSQLException
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.ResultRow
@@ -47,7 +54,7 @@ class ExposedTrackerRepository(private val db: Database) : TrackerRepository {
         val quality = varchar("quality", length = 32)
         val title = varchar("title", length = 256)
         val link = varchar("link", length = 1024)
-        val publishedDate = datetime("published_date")
+        val publishDate = datetime("published_date")
     }
 
     private object Downloads : Table() {
@@ -62,7 +69,7 @@ class ExposedTrackerRepository(private val db: Database) : TrackerRepository {
         }
     }
 
-    override fun put(tvShow: TVShow): Unit = repositoryTransaction {
+    override fun put(tvShow: TVShowEntity): Unit = repositoryTransaction {
         TVShows.insert {
             it[id] = tvShow.id
             it[title] = tvShow.title
@@ -71,7 +78,7 @@ class ExposedTrackerRepository(private val db: Database) : TrackerRepository {
         }
     }
 
-    override fun putAll(tvShows: List<TVShow>): Unit = repositoryTransaction {
+    override fun putAll(tvShows: List<TVShowEntity>): Unit = repositoryTransaction {
         TVShows.batchInsert(tvShows, ignore = true) {
             this[TVShows.id] = it.id
             this[TVShows.title] = it.title
@@ -80,104 +87,104 @@ class ExposedTrackerRepository(private val db: Database) : TrackerRepository {
         }
     }
 
-    override fun findTrackedTVShow(tvShowUUID: UUID): TVShow? = repositoryTransaction {
+    override fun findTrackedTVShow(tvShowID: TVShowID): TVShowEntity? = repositoryTransaction {
         TVShows
-            .select { (TVShows.id eq tvShowUUID) and (TVShows.tracked eq true) }
-            .map { it.toTVShow() }
+            .select { (TVShows.id eq tvShowID) and (TVShows.tracked eq true) }
+            .map { it.toTVShowEntity() }
             .singleOrNull()
     }
 
-    override fun findAllTVShows(): List<TVShow> = repositoryTransaction {
+    override fun findAllTVShows(): List<TVShowEntity> = repositoryTransaction {
         TVShows
             .selectAll()
-            .map { it.toTVShow() }
+            .map { it.toTVShowEntity() }
     }
 
-    override fun findTrackedTVShows(): List<TVShow> = repositoryTransaction {
+    override fun findTrackedTVShows(): List<TVShowEntity> = repositoryTransaction {
         TVShows
             .select { TVShows.tracked eq true }
-            .map { it.toTVShow() }
+            .map { it.toTVShowEntity() }
     }
 
-    override fun findNotTrackedTVShows(): List<TVShow> = repositoryTransaction {
+    override fun findNotTrackedTVShows(): List<TVShowEntity> = repositoryTransaction {
         TVShows
             .select { TVShows.tracked eq false }
-            .map { it.toTVShow() }
+            .map { it.toTVShowEntity() }
     }
 
-    override fun setTracked(tvShowUUID: UUID, quality: VideoQuality): Unit = repositoryTransaction {
-        val updateCount = TVShows.update({ (TVShows.id eq tvShowUUID) and (TVShows.tracked eq false) }) {
+    override fun setTracked(tvShowID: TVShowID, quality: VideoQuality): Unit = repositoryTransaction {
+        val updateCount = TVShows.update({ (TVShows.id eq tvShowID) and (TVShows.tracked eq false) }) {
             it[tracked] = true
             it[this.quality] = quality.toString()
         }
 
         if (updateCount == 0) {
-            if (tvShowExists(tvShowUUID)) {
-                throw IllegalStateException("TV Show '$tvShowUUID' is already being tracked")
+            if (tvShowExists(tvShowID)) {
+                throw IllegalStateException("TV Show '$tvShowID' is already being tracked")
             } else {
-                throwTVShowNotFoundError(tvShowUUID)
+                throwTVShowNotFoundError(tvShowID)
             }
         }
     }
 
-    override fun setNotTracked(tvShowUUID: UUID): Unit = repositoryTransaction {
-        val updateCount = TVShows.update({ (TVShows.id eq tvShowUUID) and (TVShows.tracked eq true) }) {
+    override fun setNotTracked(tvShowID: TVShowID): Unit = repositoryTransaction {
+        val updateCount = TVShows.update({ (TVShows.id eq tvShowID) and (TVShows.tracked eq true) }) {
             it[tracked] = false
         }
 
         if (updateCount == 0) {
-            if (tvShowExists(tvShowUUID)) {
-                throw IllegalStateException("TV Show '$tvShowUUID' is not being tracked")
+            if (tvShowExists(tvShowID)) {
+                throw IllegalStateException("TV Show '$tvShowID' is not being tracked")
             } else {
-                throwTVShowNotFoundError(tvShowUUID)
+                throwTVShowNotFoundError(tvShowID)
             }
         }
     }
 
-    override fun setTVShowVideoQuality(tvShowUUID: UUID, videoQuality: VideoQuality): Unit = repositoryTransaction {
-        val updateCount = TVShows.update({ (TVShows.id eq tvShowUUID) and (TVShows.tracked eq true) }) {
+    override fun setTVShowVideoQuality(tvShowID: TVShowID, videoQuality: VideoQuality): Unit = repositoryTransaction {
+        val updateCount = TVShows.update({ (TVShows.id eq tvShowID) and (TVShows.tracked eq true) }) {
             it[quality] = videoQuality.toString()
         }
 
         if (updateCount == 0) {
-            throwTVShowNotFoundError(tvShowUUID, extraMessage = "it is not being tracked")
+            throwTVShowNotFoundError(tvShowID, extraMessage = "it is not being tracked")
         }
     }
 
-    override fun put(tvShowUUID: UUID, episode: EpisodeFile): Unit = repositoryTransaction {
+    override fun put(tvShowID: TVShowID, episode: EpisodeFile): Unit = repositoryTransaction {
         Episodes.insert {
-            it[id] = episodeIDOf(tvShowUUID, episode)
-            it[tvShowID] = tvShowUUID
+            it[id] = episodeIDOf(tvShowID, episode)
+            it[this.tvShowID] = tvShowID
             it[season] = episode.season
             it[number] = episode.number
             it[quality] = episode.quality.toString()
             it[title] = episode.title
             it[link] = episode.link
-            it[publishedDate] = DateTime(episode.publishedDate.toEpochMilli())
+            it[publishDate] = DateTime(episode.publishDate.toEpochMilli())
         }
     }
 
     override fun putOrUpdateIf(
-        tvShowUUID: UUID,
+        tvShowID: TVShowID,
         episode: EpisodeFile,
         predicate: (old: EpisodeFile, new: EpisodeFile) -> Boolean
     ): Boolean = repositoryTransaction {
 
         val existingEpisode = Episodes
-            .select { Episodes.id eq episodeIDOf(tvShowUUID, episode) }
+            .select { Episodes.id eq episodeIDOf(tvShowID, episode) }
             .map { it.toEpisodeFile() }
             .singleOrNull()
 
         when {
             existingEpisode == null -> {
-                put(tvShowUUID, episode)
+                put(tvShowID, episode)
                 true
             }
             predicate(existingEpisode, episode) -> {
-                Episodes.update({ Episodes.id eq episodeIDOf(tvShowUUID, episode) }) {
+                Episodes.update({ Episodes.id eq episodeIDOf(tvShowID, episode) }) {
                     it[Episodes.title] = episode.title
                     it[Episodes.link] = episode.link
-                    it[Episodes.publishedDate] = DateTime(episode.publishedDate.toEpochMilli())
+                    it[Episodes.publishDate] = DateTime(episode.publishDate.toEpochMilli())
                 }
                 true
             }
@@ -185,38 +192,38 @@ class ExposedTrackerRepository(private val db: Database) : TrackerRepository {
         }
     }
 
-    override fun findEpisodesFrom(tvShowUUID: UUID): List<EpisodeFile> = repositoryTransaction {
+    override fun findEpisodesFrom(tvShowID: TVShowID): List<EpisodeEntity> = repositoryTransaction {
         val episodes = Episodes
-            .select { Episodes.tvShowID eq tvShowUUID }
-            .map { it.toEpisodeFile() }
+            .select { Episodes.tvShowID eq tvShowID }
+            .map { it.toEpisodeEntity() }
 
-        if (episodes.isEmpty() && !tvShowExists(tvShowUUID)) {
-            throw NoSuchElementException("TV show `$tvShowUUID` not found")
+        if (episodes.isEmpty() && !tvShowExists(tvShowID)) {
+            throw NoSuchElementException("TV show `$tvShowID` not found")
         }
 
         episodes
     }
 
-    override fun findEpisodesByTVShow(): Map<TVShow, List<EpisodeFile>> = repositoryTransaction {
-        val episodesByTVShow = mutableMapOf<TVShow, MutableList<EpisodeFile>>()
+    override fun findEpisodesByTVShow(): Map<TVShowEntity, List<EpisodeEntity>> = repositoryTransaction {
+        val episodesByTVShow = mutableMapOf<TVShowEntity, MutableList<EpisodeEntity>>()
 
         (TVShows innerJoin Episodes)
             .selectAll()
-            .map { it.toTVShow() to it.toEpisodeFile() }
+            .map { it.toTVShowEntity() to it.toEpisodeEntity() }
             .forEach { (tvShow, episode) -> episodesByTVShow.putIfAbsent(tvShow, mutableListOf(episode))?.add(episode) }
 
         episodesByTVShow
     }
 
-    override fun removeEpisodesFrom(tvShowUUID: UUID): Unit = repositoryTransaction {
-        Downloads.deleteWhere { Downloads.tvShowID eq tvShowUUID }
-        Episodes.deleteWhere { Episodes.tvShowID eq tvShowUUID }
+    override fun removeEpisodesFrom(tvShowID: TVShowID): Unit = repositoryTransaction {
+        Downloads.deleteWhere { Downloads.tvShowID eq tvShowID }
+        Episodes.deleteWhere { Episodes.tvShowID eq tvShowID }
     }
 
     override fun put(download: EpisodeDownload): Unit = repositoryTransaction {
         Downloads.insert {
-            it[episodeID] = episodeIDOf(download.tvShow.id, download.episode)
-            it[tvShowID] = download.tvShow.id
+            it[episodeID] = episodeIDOf(download.episode.tvShowID, download.episode)
+            it[tvShowID] = download.episode.tvShowID
             it[reference] = download.reference.value
         }
     }
@@ -234,9 +241,9 @@ class ExposedTrackerRepository(private val db: Database) : TrackerRepository {
             .map { it.toEpisodeDownload() }
     }
 
-    override fun findDownloadsFrom(tvShowUUID: UUID): List<EpisodeDownload> = repositoryTransaction {
+    override fun findDownloadsFrom(tvShowID: TVShowID): List<EpisodeDownload> = repositoryTransaction {
         (Downloads innerJoin Episodes innerJoin TVShows)
-            .select { (Downloads.tvShowID eq tvShowUUID) }
+            .select { (Downloads.tvShowID eq tvShowID) }
             .map { it.toEpisodeDownload() }
     }
 
@@ -244,8 +251,8 @@ class ExposedTrackerRepository(private val db: Database) : TrackerRepository {
         Downloads.deleteWhere { Downloads.reference eq reference.value }
     }
 
-    override fun removeAllDownloadsFrom(tvShowUUID: UUID): Unit = repositoryTransaction {
-        Downloads.deleteWhere { Downloads.tvShowID eq tvShowUUID }
+    override fun removeAllDownloadsFrom(tvShowID: TVShowID): Unit = repositoryTransaction {
+        Downloads.deleteWhere { Downloads.tvShowID eq tvShowID }
     }
 
     override fun clearAll(): Unit = repositoryTransaction {
@@ -261,17 +268,34 @@ class ExposedTrackerRepository(private val db: Database) : TrackerRepository {
         return TVShows.select { TVShows.id eq uuid }.count() > 0
     }
 
-    private fun ResultRow.toTVShow(): TVShow = TVShow(
+    private fun ResultRow.toTVShowEntity(): TVShowEntity = TVShowEntity(
         id = this[TVShows.id],
         title = this[TVShows.title],
         quality = this[TVShows.quality].toVideoQuality(),
         tracked = this[TVShows.tracked]
     )
 
+    private fun ResultRow.toTVShow(): TVShow = TVShow(
+        id = this[TVShows.id],
+        title = this[TVShows.title],
+        quality = this[TVShows.quality].toVideoQuality()
+    )
+
     private fun ResultRow.toEpisodeDownload(): EpisodeDownload = EpisodeDownload(
         reference = DownloadReference(this[Downloads.reference]),
-        tvShow = this.toTVShow(),
-        episode = this.toEpisodeFile()
+        episode = tvShowEpisodeFileOf(
+            tvShow = this.toTVShow(),
+            episode = this.toEpisodeFile()
+        )
+    )
+    private fun ResultRow.toEpisodeEntity(): EpisodeEntity = EpisodeEntity(
+        id = this[Episodes.id],
+        title = this[Episodes.title],
+        season = this[Episodes.season],
+        number = this[Episodes.number],
+        quality = this[Episodes.quality].toVideoQuality(),
+        link = this[Episodes.link],
+        publishDate = this[Episodes.publishDate].toDate().toInstant()
     )
 
     private fun ResultRow.toEpisodeFile(): EpisodeFile = EpisodeFile(
@@ -282,7 +306,7 @@ class ExposedTrackerRepository(private val db: Database) : TrackerRepository {
         ),
         quality = this[Episodes.quality].toVideoQuality(),
         link = this[Episodes.link],
-        publishedDate = this[Episodes.publishedDate].toDate().toInstant()
+        publishDate = this[Episodes.publishDate].toDate().toInstant()
     )
 
     private fun <T> repositoryTransaction(body: () -> T): T {
@@ -293,8 +317,16 @@ class ExposedTrackerRepository(private val db: Database) : TrackerRepository {
         }
     }
 
-    private fun episodeIDOf(tvShowUUID: UUID, episode: EpisodeFile): String {
-        return "$tvShowUUID.${episode.season}.${episode.number}.${episode.quality}"
+    private fun episodeIDOf(tvShowID: TVShowID, episode: EpisodeFile): String {
+        return with(episode) {
+            EpisodeIDGenerator.getID(tvShowID, season, number, quality)
+        }
+    }
+
+    private fun episodeIDOf(tvShowID: TVShowID, episode: TVShowEpisodeFile): String {
+        return with(episode) {
+            EpisodeIDGenerator.getID(tvShowID, season, number, quality)
+        }
     }
 }
 

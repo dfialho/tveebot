@@ -1,22 +1,25 @@
 package dfialho.tveebot.data
 
-import dfialho.tveebot.tracker.api.EpisodeFile
+import dfialho.tveebot.toEpisodeFile
+import dfialho.tveebot.toTVShow
 import dfialho.tveebot.tracker.api.EpisodeRecorder
-import dfialho.tveebot.tracker.api.TVShow
-import dfialho.tveebot.tracker.api.isMoreRecentThan
+import dfialho.tveebot.tracker.api.models.TVShow
+import dfialho.tveebot.tracker.api.models.TVShowEpisodeFile
+import dfialho.tveebot.tracker.api.models.isMoreRecentThan
 
 /**
  * Implementation of an [EpisodeRecorder] backed by the [TrackerRepository].
  *
  * @author David Fialho (dfialho@protonmail.com)
  */
+// TODO Replace with TrackingList and EpisodeLedger
 class EpisodeRecorderRepository(private val repository: TrackerRepository) : EpisodeRecorder {
 
-    override fun getTVShows(): List<TVShow> = repository.findTrackedTVShows()
+    override fun getTVShows(): List<TVShow> = repository.findTrackedTVShows().map { it.toTVShow() }
 
-    override fun getEpisodes(tvShow: TVShow): List<EpisodeFile> = repository.findEpisodesFrom(tvShow.id)
-
-    override fun putOrUpdateIfMoreRecent(tvShow: TVShow, episode: EpisodeFile): Boolean {
-        return repository.putOrUpdateIf(tvShow.id, episode) { oldEpisode, newEpisode -> newEpisode isMoreRecentThan oldEpisode }
+    override fun putOrUpdateIfMoreRecent(episode: TVShowEpisodeFile): Boolean {
+        return repository.putOrUpdateIf(episode.tvShowID, episode.toEpisodeFile()) {
+            oldEpisode, newEpisode -> newEpisode isMoreRecentThan oldEpisode
+        }
     }
 }

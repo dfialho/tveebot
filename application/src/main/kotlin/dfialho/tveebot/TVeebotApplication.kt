@@ -6,9 +6,14 @@ import dfialho.tveebot.data.TrackerRepository
 import dfialho.tveebot.downloader.api.DownloadEngine
 import dfialho.tveebot.downloader.libtorrent.LibTorrentDownloadEngine
 import dfialho.tveebot.routing.downloader
+import dfialho.tveebot.routing.info
 import dfialho.tveebot.routing.tracker
+import dfialho.tveebot.routing.tveebot
+import dfialho.tveebot.services.AlertService
 import dfialho.tveebot.services.DownloaderService
+import dfialho.tveebot.services.InformationService
 import dfialho.tveebot.services.ServiceManager
+import dfialho.tveebot.services.TVeebotService
 import dfialho.tveebot.services.TrackerService
 import dfialho.tveebot.tracker.api.EpisodeRecorder
 import dfialho.tveebot.tracker.api.TVShowIDMapper
@@ -57,16 +62,19 @@ fun Application.mainModule() {
         bind<EpisodeRecorder>() with singleton { EpisodeRecorderRepository(instance()) }
         bind<DownloadEngine>() with singleton { LibTorrentDownloadEngine(TVeebotConfig.savePath) }
         bind<TrackerEngine>() with singleton { ScheduledTrackerEngine(instance(), instance(), TVeebotConfig.checkPeriod) }
-        bind<DownloaderService>() with singleton { DownloaderService(instance(), instance()) }
+        bind<AlertService>() with singleton { AlertService() }
+        bind<DownloaderService>() with singleton { DownloaderService(instance(), instance(), instance()) }
         bind<TrackerService>() with singleton { TrackerService(instance(), instance(), instance(), instance()) }
-        bind<ServiceManager>() with singleton { ServiceManager(instance(), instance()) }
+        bind<InformationService>() with singleton { InformationService(instance()) }
+        bind<TVeebotService>() with singleton { TVeebotService(instance(), instance(), instance()) }
+        bind<ServiceManager>() with singleton { ServiceManager(instance(), instance(), instance(), instance(), instance()) }
     }
 
     val serviceManager by kodein.instance<ServiceManager>()
-    serviceManager.start()
+    serviceManager.startAll()
 
     environment.monitor.subscribe(ApplicationStopped) {
-        serviceManager.stop()
+        serviceManager.stopAll()
     }
 
     Runtime.getRuntime().addShutdownHook(thread(start = false) {
@@ -90,9 +98,10 @@ fun Application.routingModule(serviceManager: ServiceManager) {
     routing {
         tracker(serviceManager.tracker)
         downloader(serviceManager.downloader)
+        info(serviceManager.information)
+        tveebot(serviceManager.tveebot)
     }
 }
-
 
 fun Application.shutdown() {
     log.info("Server is going down")

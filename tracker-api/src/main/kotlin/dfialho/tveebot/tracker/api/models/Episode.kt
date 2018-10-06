@@ -1,4 +1,4 @@
-package dfialho.tveebot.tracker.api
+package dfialho.tveebot.tracker.api.models
 
 /**
  * Representation of a TV show episode.

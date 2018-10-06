@@ -1,7 +1,7 @@
 package dfialho.tveebot.tracker.lib
 
-import dfialho.tveebot.tracker.api.Episode
-import dfialho.tveebot.tracker.api.VideoQuality
+import dfialho.tveebot.tracker.api.models.Episode
+import dfialho.tveebot.tracker.api.models.VideoQuality
 import org.amshove.kluent.shouldEqual
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe

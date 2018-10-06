@@ -1,74 +1,58 @@
 package dfialho.tveebot.services
 
 import dfialho.tveebot.data.TrackerRepository
+import dfialho.tveebot.data.models.EpisodeDownload
 import dfialho.tveebot.downloader.api.DownloadEngine
 import dfialho.tveebot.downloader.api.DownloadHandle
 import dfialho.tveebot.downloader.api.DownloadListener
 import dfialho.tveebot.downloader.api.DownloadReference
 import dfialho.tveebot.downloader.api.DownloadStatus
-import dfialho.tveebot.data.EpisodeDownload
-import dfialho.tveebot.tracker.api.EpisodeFile
-import dfialho.tveebot.tracker.api.TVShow
+import dfialho.tveebot.exceptions.NotFoundException
+import dfialho.tveebot.toPrettyString
+import dfialho.tveebot.tracker.api.models.TVShowEpisodeFile
 import mu.KLogging
 import java.util.*
 
 class DownloaderService(
     private val engine: DownloadEngine,
-    private val repository: TrackerRepository
+    private val repository: TrackerRepository,
+    private val alertService: AlertService
 
 ) : Service, DownloadListener {
 
     companion object : KLogging()
 
-    override fun start() {
-        logger.debug { "Starting downloader service" }
+    override val name: String
+        get() = "Downloader Service"
 
+    override fun start() = logStart(logger) {
         engine.start()
         engine.addListener(this)
 
         // Restart every download in the queue
         val episodeDownloads: List<EpisodeDownload> = repository.findAllDownloads()
         episodeDownloads.forEach { engine.add(it.episode.link) }
-        episodeDownloads.forEach { engine.add(it.episode.link) }
         logger.info { "Restarted downloading ${episodeDownloads.size} episodes" }
-
-        logger.info { "Started downloader service successfully" }
     }
 
-    override fun stop() {
-        logger.debug { "Stopping downloader service" }
+    override fun stop() = logStop(logger) {
         engine.stop()
         engine.removeListener(this)
-        logger.info { "Stopped downloader service successfully" }
     }
 
     override fun notifyFinished(handle: DownloadHandle) {
-        val download = repository.findDownload(handle.reference)
-            ?: throw IllegalStateException("Download was already removed")
-
-        with(download) {
-            logger.info { "Finished downloading: ${tvShow.title} - ${episode.toPrettyString()}" }
-        }
-
-        repository.removeDownload(handle.reference)
-    }
-
-    /**
-     * Adds a new download to the download engine from a [magnetLink] and returns a reference for it.
-     * If the download was already being download then this will have no effect.
-     */
-    fun download(magnetLink: String): DownloadReference {
-        return engine.add(magnetLink).reference
+        logger.debug { "Finished downloading: ${handle.reference}" }
+        alertService.raiseAlert(Alerts.DownloadFinished, handle.reference)
     }
 
     /**
      * Starts downloading the [episodeFile].
      */
-    fun download(tvShow: TVShow, episodeFile: EpisodeFile) {
+    fun download(episodeFile: TVShowEpisodeFile) {
         val handle = engine.add(episodeFile.link)
-        repository.put(EpisodeDownload(handle.reference, tvShow, episodeFile))
+        repository.put(EpisodeDownload(handle.reference, episodeFile))
 
-        logger.info { "Started downloading: ${tvShow.title} - ${episodeFile.toPrettyString()}" }
+        logger.debug { "Downloading episode: ${episodeFile.toPrettyString()} with reference ${handle.reference}" }
     }
 
     /**
@@ -92,7 +76,7 @@ class DownloaderService(
      *
      * @throws NoSuchElementException If not download with [reference] can be found
      */
-    fun removeDownload(reference: DownloadReference) {
+    fun remove(reference: DownloadReference) {
 
         if (!engine.remove(reference)) {
             throwNotFoundError(reference)
@@ -105,10 +89,11 @@ class DownloaderService(
      * Removes every episode download corresponding to the TV show identified by [tvShowUUID].
      */
     fun removeAllFrom(tvShowUUID: UUID) {
+        // TODO Move logic to get Downloads from TV to caller and have only a method that takes a list of references
         repository.removeAllDownloadsFrom(tvShowUUID)
         repository.findDownloadsFrom(tvShowUUID).forEach {
             engine.remove(it.reference)
-            logger.info { "Stopped downloading: ${it.tvShow.title} - ${it.episode.toPrettyString()}" }
+            logger.info { "Stopped downloading: ${it.episode.toPrettyString()}" }
         }
     }
 }
@@ -117,5 +102,5 @@ class DownloaderService(
  * Throws exception indicating the download corresponding to [reference] does not exist in this engine.
  */
 private fun throwNotFoundError(reference: DownloadReference): Nothing {
-    throw NoSuchElementException("Download with reference '$reference' not found")
+    throw NotFoundException("Download with reference '$reference' not found")
 }

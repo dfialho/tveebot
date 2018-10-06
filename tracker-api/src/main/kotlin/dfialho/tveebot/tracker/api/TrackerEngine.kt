@@ -16,13 +16,13 @@ package dfialho.tveebot.tracker.api
 interface TrackerEngine {
 
     /**
-     * Repository holding the TV shows being tracked and the [EpisodeFile]s collected by the tracker from
-     * the [provider]/
+     * Component responsible for keeping record of the TV shows being tracked and the episode files that have been
+     * already found.
      */
     val recorder: EpisodeRecorder
 
     /**
-     * Provider used to obtain the [EpisodeFile]s from each tracked TV show.
+     * Provider used to obtain the episode files from each tracked TV show.
      */
     val provider: TVShowProvider
 

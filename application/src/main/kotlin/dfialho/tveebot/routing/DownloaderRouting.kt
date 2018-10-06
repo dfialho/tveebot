@@ -1,11 +1,11 @@
 package dfialho.tveebot.routing
 
 import dfialho.tveebot.downloader.api.DownloadReference
+import dfialho.tveebot.exceptions.NotFoundException
 import dfialho.tveebot.services.DownloaderService
 import io.ktor.application.call
 import io.ktor.response.respond
 import io.ktor.routing.Routing
-import io.ktor.routing.delete
 import io.ktor.routing.get
 import io.ktor.routing.route
 
@@ -17,26 +17,25 @@ import io.ktor.routing.route
  */
 fun Routing.downloader(service: DownloaderService) = route("downloader") {
 
-    /**
-     * Returns a list containing the status of each currently active download.
-     */
-    get("status") {
-        call.respond(service.getAllStatus())
-    }
+    route("status") {
 
-    /**
-     * Returns the status information about the download identified by the given reference.
-     */
-    get("status/{reference}") {
-        val reference = DownloadReference(call.parameters["reference"] ?: throw IllegalArgumentException())
-        call.respond(service.getStatus(reference))
-    }
+        /**
+         * Returns a list containing the status of each currently active download.
+         */
+        get {
+            call.respond(service.getAllStatus())
+        }
 
-    /**
-     * Requests the downloader to stop and remove the download identified by the given reference.
-     */
-    delete("{reference}") {
-        val reference = DownloadReference(call.parameters["reference"] ?: throw IllegalArgumentException())
-        call.respond(service.removeDownload(reference))
+        /**
+         * Returns the status information about the download identified by the given reference.
+         *
+         * @param reference Reference of the download to obtain the status for.
+         * @throws NotFoundException if no download is found with the specified reference.
+         */
+        get("download/{reference}") {
+            val reference = DownloadReference(call.requiredParameter("reference"))
+
+            call.respond(service.getStatus(reference))
+        }
     }
 }

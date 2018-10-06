@@ -1,5 +1,8 @@
 package dfialho.tveebot.tracker.api
 
+import dfialho.tveebot.tracker.api.models.TVShow
+import dfialho.tveebot.tracker.api.models.TVShowEpisodeFile
+
 /**
  * Entity responsible for keeping track of the episodes found for each TV show being tracked.
  *
@@ -13,13 +16,8 @@ interface EpisodeRecorder {
     fun getTVShows(): List<TVShow>
 
     /**
-     * Returns a list containing the episodes from [tvShow] already found.
-     */
-    fun getEpisodes(tvShow: TVShow): List<EpisodeFile>
-
-    /**
      * Inserts the [episode] into the recorder if it does not exist yet. Otherwise, it updates an existing episode file
      * if an only if [episode] file is more recent than the existing episode file.
      */
-    fun putOrUpdateIfMoreRecent(tvShow: TVShow, episode: EpisodeFile): Boolean
+    fun putOrUpdateIfMoreRecent(episode: TVShowEpisodeFile): Boolean
 }

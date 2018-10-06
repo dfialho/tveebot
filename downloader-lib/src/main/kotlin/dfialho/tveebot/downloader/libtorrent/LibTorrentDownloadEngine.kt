@@ -164,6 +164,7 @@ class LibTorrentDownloadEngine(private val savePath: Path) : AbstractIdleService
             if (alert is TorrentFinishedAlert) {
                 // Notify every listener registered with the engine
                 listeners.forEach { it.notifyFinished(LibTorrentDownloadHandle(this@LibTorrentDownloadEngine, alert.handle())) }
+                // TODO move this responsibility to the downloader service
                 session.remove(alert.handle())
             }
         }

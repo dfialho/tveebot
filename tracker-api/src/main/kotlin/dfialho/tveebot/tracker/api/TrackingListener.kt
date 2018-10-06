@@ -1,5 +1,8 @@
 package dfialho.tveebot.tracker.api
 
+import dfialho.tveebot.tracker.api.models.TVShowEpisodeFile
+import dfialho.tveebot.tracker.api.models.VideoQuality
+
 /**
  * A [TrackingListener] listens for new episodes found by a [TrackerEngine]. When a tracking listener is registered
  * with a [TrackerEngine] and the latter finds a new episode, it notifies the listener, providing information about
@@ -12,8 +15,7 @@ interface TrackingListener {
     /**
      * Invoked by a [TrackerEngine] when it finds a new episode.
      *
-     * @param tvShow The TV show to which the [episode] corresponds.
      * @param episode The newly found episode.
      */
-    fun notify(tvShow: TVShow, episode: EpisodeFile)
+    fun notify(episode: TVShowEpisodeFile, tvShowQuality: VideoQuality)
 }
