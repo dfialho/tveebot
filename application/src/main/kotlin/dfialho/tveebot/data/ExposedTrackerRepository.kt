@@ -30,8 +30,6 @@ import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
 import org.joda.time.DateTime
-import java.util.*
-import kotlin.NoSuchElementException
 
 /**
  * [TrackerRepository] implementation based on the exposed framework.
@@ -42,7 +40,7 @@ import kotlin.NoSuchElementException
 class ExposedTrackerRepository(private val db: Database) : TrackerRepository {
 
     private object TVShows : Table() {
-        val id = uuid("id").primaryKey()
+        val id = varchar("id", length = 36).primaryKey()
         val title = varchar("title", length = 256)
         val tracked = bool("tracked")
         val quality = varchar("quality", length = 32)
@@ -293,10 +291,10 @@ class ExposedTrackerRepository(private val db: Database) : TrackerRepository {
     }
 
     /**
-     * Checks if a TV show with [uuid] exists.
+     * Checks if a TV show with [id] exists.
      */
-    private fun tvShowExists(uuid: UUID): Boolean {
-        return TVShows.select { TVShows.id eq uuid }.count() > 0
+    private fun tvShowExists(id: TVShowID): Boolean {
+        return TVShows.select { TVShows.id eq id }.count() > 0
     }
 
     private fun ResultRow.toTVShowEntity(): TVShowEntity = TVShowEntity(
@@ -361,6 +359,6 @@ class ExposedTrackerRepository(private val db: Database) : TrackerRepository {
     }
 }
 
-private fun throwTVShowNotFoundError(uuid: UUID, extraMessage: String? = null): Nothing {
-    throw NoSuchElementException("TV Show '$uuid' not found" + if (extraMessage == null) "" else ": $extraMessage")
+private fun throwTVShowNotFoundError(id: TVShowID, extraMessage: String? = null): Nothing {
+    throw NoSuchElementException("TV Show '$id' not found" + if (extraMessage == null) "" else ": $extraMessage")
 }

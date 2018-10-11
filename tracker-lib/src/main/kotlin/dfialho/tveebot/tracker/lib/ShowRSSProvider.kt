@@ -32,7 +32,7 @@ class ShowRSSProvider(private val idMapper: TVShowIDMapper) : TVShowProvider {
         .select("option")
         .map {
             TVShow(
-                id = idMapper.getUUID(providerID = it.attr("value")),
+                id = idMapper.getTVShowID(providerID = it.attr("value")),
                 title = it.text()
             )
         }

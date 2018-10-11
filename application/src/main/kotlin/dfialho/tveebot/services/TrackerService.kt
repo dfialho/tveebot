@@ -8,6 +8,7 @@ import dfialho.tveebot.tracker.api.TVShowProvider
 import dfialho.tveebot.tracker.api.TrackerEngine
 import dfialho.tveebot.tracker.api.TrackingListener
 import dfialho.tveebot.tracker.api.models.TVShowEpisodeFile
+import dfialho.tveebot.tracker.api.models.TVShowID
 import dfialho.tveebot.tracker.api.models.VideoQuality
 import dfialho.tveebot.tvShowEntityOf
 import mu.KLogging
@@ -46,31 +47,31 @@ class TrackerService(
     }
 
     /**
-     * Tells this tracker service to start tracking TV show identified by [tvShowUUID]. Downloaded episode files for
+     * Tells this tracker service to start tracking TV show identified by [tvShowID]. Downloaded episode files for
      * this TV show must be of the specified [videoQuality].
      *
-     * @throws IllegalStateException if the TV show with ID [tvShowUUID] is already being tracked.
-     * @throws NoSuchElementException if no TV show is found with id [tvShowUUID].
+     * @throws IllegalStateException if the TV show with ID [tvShowID] is already being tracked.
+     * @throws NoSuchElementException if no TV show is found with id [tvShowID].
      */
-    fun trackTVShow(tvShowUUID: UUID, videoQuality: VideoQuality) {
+    fun trackTVShow(tvShowID: TVShowID, videoQuality: VideoQuality) {
         // FIXME give repository support for transactions with multiple actions
-        repository.setTracked(tvShowUUID, videoQuality)
+        repository.setTracked(tvShowID, videoQuality)
 
-        repository.findTrackedTVShow(tvShowUUID)?.let {
+        repository.findTrackedTVShow(tvShowID)?.let {
             logger.info { "Started tracking TV show: ${it.title}" }
             alertService.raiseAlert(Alerts.StartedTrackingTVShow, it.toTVShow())
         }
     }
 
     /**
-     * Tells this tracker service to stop tracking TV show identified by [tvShowUUID].
+     * Tells this tracker service to stop tracking TV show identified by [tvShowID].
      *
-     * @throws IllegalStateException if the TV show with ID [tvShowUUID] is already being tracked.
-     * @throws NoSuchElementException if no TV show is found with id [tvShowUUID].
+     * @throws IllegalStateException if the TV show with ID [tvShowID] is already being tracked.
+     * @throws NoSuchElementException if no TV show is found with id [tvShowID].
      */
-    fun untrackTVShow(tvShowUUID: UUID) {
-        repository.findTrackedTVShow(tvShowUUID)?.let {
-            repository.setNotTracked(tvShowUUID)
+    fun untrackTVShow(tvShowID: TVShowID) {
+        repository.findTrackedTVShow(tvShowID)?.let {
+            repository.setNotTracked(tvShowID)
 
             logger.info { "Stopped tracking TV show: ${it.title}" }
             alertService.raiseAlert(Alerts.StoppedTrackingTVShow, it.toTVShow())

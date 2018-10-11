@@ -3,6 +3,7 @@ package dfialho.tveebot.services
 import dfialho.tveebot.data.TrackerRepository
 import dfialho.tveebot.data.models.EpisodeEntity
 import dfialho.tveebot.data.models.TVShowEntity
+import dfialho.tveebot.tracker.api.models.TVShowID
 import mu.KLogging
 import java.util.*
 
@@ -35,12 +36,12 @@ class InformationService(private val repository: TrackerRepository) : Service {
      * Returns a map associating each TV show to its episodes. TV shows without any episode are not included in the
      * returned map.
      */
-    fun getAllEpisodesByTVShow(): Map<UUID, List<EpisodeEntity>> = repository.findEpisodesByTVShow().mapKeys { it.key.id }
+    fun getAllEpisodesByTVShow(): Map<TVShowID, List<EpisodeEntity>> = repository.findEpisodesByTVShow().mapKeys { it.key.id }
 
     /**
-     * Returns a list containing every episode from the TV show identified by [tvShowUUID].
+     * Returns a list containing every episode from the TV show identified by [tvShowID].
      *
-     * @throws NoSuchElementException if no TV show is found with id [tvShowUUID].
+     * @throws NoSuchElementException if no TV show is found with id [tvShowID].
      */
-    fun getEpisodesFrom(tvShowUUID: UUID): List<EpisodeEntity> = repository.findEpisodesFrom(tvShowUUID)
+    fun getEpisodesFrom(tvShowID: TVShowID): List<EpisodeEntity> = repository.findEpisodesFrom(tvShowID)
 }

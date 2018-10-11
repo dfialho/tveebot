@@ -21,7 +21,7 @@ import dfialho.tveebot.tracker.api.TVShowIDMapper
 import dfialho.tveebot.tracker.api.TVShowProvider
 import dfialho.tveebot.tracker.api.TrackerEngine
 import dfialho.tveebot.tracker.api.TrackingList
-import dfialho.tveebot.tracker.lib.ExposedTVShowIDMapper
+import dfialho.tveebot.tracker.lib.DirectTVShowIDMapper
 import dfialho.tveebot.tracker.lib.ScheduledTrackerEngine
 import dfialho.tveebot.tracker.lib.ShowRSSProvider
 import io.ktor.application.Application
@@ -60,7 +60,7 @@ fun Application.mainModule() {
         bind<Database>() with singleton { DbSettings.db }
         bind<TrackerRepository>() with singleton { ExposedTrackerRepository(instance()) }
 
-        bind<TVShowIDMapper>() with singleton { ExposedTVShowIDMapper(instance()) }
+        bind<TVShowIDMapper>() with singleton { DirectTVShowIDMapper() }
         bind<TVShowProvider>() with singleton { ShowRSSProvider(instance()) }
         bind<EpisodeLedger>() with singleton { EpisodeLedgerRepository(instance()) }
         bind<TrackingList>() with singleton { TrackingListRepository(instance()) }

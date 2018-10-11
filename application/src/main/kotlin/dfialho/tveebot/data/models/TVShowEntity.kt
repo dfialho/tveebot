@@ -1,7 +1,7 @@
 package dfialho.tveebot.data.models
 
+import dfialho.tveebot.tracker.api.models.TVShowID
 import dfialho.tveebot.tracker.api.models.VideoQuality
-import java.util.*
 
 /**
  * Representation of a TV show entity.
@@ -14,7 +14,7 @@ import java.util.*
  * @author David Fialho (dfialho@protonmail.com)
  */
 data class TVShowEntity(
-    val id: UUID,
+    val id: TVShowID,
     val title: String,
     val quality: VideoQuality = VideoQuality.default(),
     val tracked: Boolean = false

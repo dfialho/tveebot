@@ -1,6 +1,6 @@
 package dfialho.tveebot.tracker.api
 
-import java.util.*
+import dfialho.tveebot.tracker.api.models.TVShowID
 
 /**
  * A [TVShowIDMapper] maps the UUID of each TV show to the ID of that TV show in a specific [TVShowProvider].
@@ -10,19 +10,19 @@ import java.util.*
 interface TVShowIDMapper {
 
     /**
-     * Returns the TV show provider ID for the given [uuid], or null if this mapper does not hold a provider ID for
-     * the given [uuid].
+     * Returns the TV show provider ID for the given [tvShowID], or null if this mapper does not hold a provider ID for
+     * the given [tvShowID].
      */
-    operator fun get(uuid: UUID): String?
+    operator fun get(tvShowID: TVShowID): String?
 
     /**
-     * Sets the [providerID] for the given [uuid].
+     * Sets the [providerID] for the given [tvShowID].
      */
-    operator fun set(uuid: UUID, providerID: String)
+    operator fun set(tvShowID: TVShowID, providerID: String)
 
     /**
-     * Returns the UUID for [providerID]. If an UUID has not been set before, then it generates a new one and returns
-     * that. In that case, also sets the newly generated UUID to [providerID].
+     * Returns the [TVShowID] for [providerID]. If an ID has not been set before, then it generates a new one and returns
+     * that. In that case, also sets the newly generated ID to [providerID].
      */
-    fun getUUID(providerID: String): UUID
+    fun getTVShowID(providerID: String): TVShowID
 }
