@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        kotlinVersion = '1.2.60'
+        kotlinVersion = '1.2.71'
         spekVersion = '2.0.0-rc.1'
         kluentVersion = '1.42'
         guavaVersion = '26.0-jre'
@@ -39,7 +39,6 @@ subprojects {
         mavenCentral()
         jcenter()   // Required by Kluent
         maven { url "https://dl.bintray.com/spekframework/spek-dev" }
-
     }
 
     // Dependencies for Spek 2
