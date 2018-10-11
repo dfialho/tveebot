@@ -15,6 +15,25 @@ data class TVShowEpisodeFile(
     val season: Int get() = episode.season
     val number: Int get() = episode.number
 
+    fun copy(
+        tvShowID: TVShowID = this.tvShowID,
+        tvShowTitle: String = this.tvShowTitle,
+        title: String = this.title,
+        season: Int = this.season,
+        number: Int = this.number,
+        quality: VideoQuality = this.quality,
+        link: String = this.link,
+        publishDate: Instant = this.publishDate
+    ): TVShowEpisodeFile {
+
+        return TVShowEpisodeFile(
+            TVShowEpisode(tvShowID, tvShowTitle, title, season, number),
+            quality,
+            link,
+            publishDate
+        )
+    }
+
     /**
      * Returns a representation of this file as a [TVShowEpisode].
      */

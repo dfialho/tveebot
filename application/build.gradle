@@ -16,7 +16,8 @@ dependencies {
 
 dependencies {
     implementation "org.kodein.di:kodein-di-generic-jvm:$kodeinVersion"
-    runtime "com.h2database:h2:$h2Version"
+    implementation "com.h2database:h2:$h2Version"
+//    implementation "org.h2.api:h2:$h2Version"
 }
 
 dependencies {

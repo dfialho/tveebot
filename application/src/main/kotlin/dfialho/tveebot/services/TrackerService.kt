@@ -9,7 +9,7 @@ import dfialho.tveebot.tracker.api.TrackerEngine
 import dfialho.tveebot.tracker.api.TrackingListener
 import dfialho.tveebot.tracker.api.models.TVShowEpisodeFile
 import dfialho.tveebot.tracker.api.models.VideoQuality
-import dfialho.tveebot.tvShowEntityFrom
+import dfialho.tveebot.tvShowEntityOf
 import mu.KLogging
 import java.util.*
 
@@ -27,7 +27,7 @@ class TrackerService(
         get() = "Tracker Service"
 
     override fun start() = logStart(logger) {
-        repository.putAll(provider.fetchTVShows().map { tvShowEntityFrom(it) })
+        repository.putAll(provider.fetchTVShows().map { tvShowEntityOf(it) })
         logger.trace { "Repository: ${repository.findAllTVShows()}" }
 
         engine.start()

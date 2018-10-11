@@ -19,7 +19,6 @@ buildscript {
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
         classpath 'org.junit.platform:junit-platform-gradle-plugin:1.2.0'   // Required by Spek
-        classpath "org.jetbrains.kotlin:kotlin-allopen:$kotlinVersion"
     }
 }
 
@@ -39,18 +38,19 @@ subprojects {
     repositories {
         mavenCentral()
         jcenter()   // Required by Kluent
-        maven { url "http://dl.bintray.com/jetbrains/spek" }   // Required by Spek 2 until a stable release
         maven { url "https://dl.bintray.com/spekframework/spek-dev" }
+
     }
 
     // Dependencies for Spek 2
     dependencies {
-        implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+        // some version of Kotlin
+        implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
 
-        testImplementation("org.spekframework.spek2:spek-dsl-jvm:$spekVersion") {
+        testImplementation ("org.spekframework.spek2:spek-dsl-jvm:$spekVersion")  {
             exclude group: 'org.jetbrains.kotlin'
         }
-        testRuntimeOnly("org.spekframework.spek2:spek-runner-junit5:$spekVersion") {
+        testRuntimeOnly ("org.spekframework.spek2:spek-runner-junit5:$spekVersion") {
             exclude group: 'org.junit.platform'
             exclude group: 'org.jetbrains.kotlin'
         }
@@ -62,7 +62,6 @@ subprojects {
     dependencies {
         implementation "ch.qos.logback:logback-classic:$logbackVersion"
         implementation "io.github.microutils:kotlin-logging:$loggingVersion"
-        implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
         testImplementation "org.amshove.kluent:kluent:$kluentVersion"
     }
 

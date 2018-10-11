@@ -15,11 +15,16 @@ inline fun TVShowEntity.toTVShow(): TVShow {
 
 @Suppress("NOTHING_TO_INLINE")
 inline fun EpisodeEntity.toEpisodeFile(): EpisodeFile {
-    return EpisodeFile(Episode(title, season, number), quality, link, publishDate)
+    return EpisodeFile(this.toEpisode(), quality, link, publishDate)
 }
 
 @Suppress("NOTHING_TO_INLINE")
-inline fun tvShowEntityFrom(tvShow: TVShow, tracked: Boolean = false): TVShowEntity {
+inline fun EpisodeEntity.toEpisode(): Episode {
+    return Episode(title, season, number)
+}
+
+@Suppress("NOTHING_TO_INLINE")
+inline fun tvShowEntityOf(tvShow: TVShow, tracked: Boolean = false): TVShowEntity {
     return TVShowEntity(tvShow.id, tvShow.title, tvShow.quality, tracked)
 }
 
@@ -33,6 +38,16 @@ inline fun tvShowEpisodeFileOf(tvShow: TVShow, episode: EpisodeFile): TVShowEpis
     return with(episode) {
         TVShowEpisodeFile(tvShowEpisodeOf(tvShow, this.toEpisode()), quality, link, publishDate)
     }
+}
+
+@Suppress("NOTHING_TO_INLINE")
+inline fun tvShowEpisodeFileOf(tvShow: TVShowEntity, episode: EpisodeEntity): TVShowEpisodeFile {
+    return TVShowEpisodeFile(
+        tvShowEpisodeOf(tvShow.toTVShow(), episode.toEpisode()),
+        episode.quality,
+        episode.link,
+        episode.publishDate
+    )
 }
 
 @Suppress("NOTHING_TO_INLINE")

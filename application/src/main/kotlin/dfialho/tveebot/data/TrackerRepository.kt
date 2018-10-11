@@ -6,9 +6,11 @@ import dfialho.tveebot.data.models.TVShowEntity
 import dfialho.tveebot.downloader.api.DownloadReference
 import dfialho.tveebot.tracker.api.TrackerEngine
 import dfialho.tveebot.tracker.api.models.EpisodeFile
+import dfialho.tveebot.tracker.api.models.TVShowEpisodeFile
 import dfialho.tveebot.tracker.api.models.TVShowID
 import dfialho.tveebot.tracker.api.models.VideoQuality
-import dfialho.tveebot.tvShowEntityFrom
+import dfialho.tveebot.tvShowEntityOf
+import dfialho.tveebot.utils.Result
 import java.util.*
 
 /**
@@ -28,7 +30,7 @@ interface TrackerRepository {
      * @throws IllegalArgumentException if the format of some of the parameters is invalid. For instance, the title
      * is too long.
      */
-    fun put(tvShow: TVShowEntity)
+    fun put(tvShow: TVShowEntity): Result
 
     /**
      * Inserts a batch of TV shows into the repository. Those already included in the repository will be ignored.
@@ -36,7 +38,7 @@ interface TrackerRepository {
     fun putAll(tvShows: List<TVShowEntity>)
 
     /**
-     * Returns the [tvShowEntityFrom] identified by [tvShowID].
+     * Returns the [tvShowEntityOf] identified by [tvShowID].
      */
     fun findTrackedTVShow(tvShowID: TVShowID): TVShowEntity?
 
@@ -90,7 +92,23 @@ interface TrackerRepository {
      * @throws IllegalArgumentException if the format of some of the parameters is invalid. For instance, the title
      * is too long.
      */
-    fun put(tvShowID: TVShowID, episode: EpisodeFile)
+    fun put(tvShowID: TVShowID, episode: EpisodeFile): Result
+
+    /**
+     * Inserts the [episode] into the repository, if it does not exist yet. Otherwise it throws an exception.
+     *
+     * @throws TrackerRepositoryException if some error occurs when trying to insert the episode. For instance, the
+     * repository already contains a episode with the same ID.
+     * @throws IllegalArgumentException if the format of some of the parameters is invalid. For instance, the title
+     * is too long.
+     */
+    fun put(episode: TVShowEpisodeFile): Result
+
+    /**
+     * Updates the episode corresponding to the specified [episode] if the specified [predicate]
+     * evaluates to true.
+     */
+    fun updateIf(episode: TVShowEpisodeFile, predicate: (old: EpisodeFile, new: EpisodeFile) -> Boolean): Result
 
     /**
      * Inserts the [episode] into the repository if the [predicate] returns true. It returns true if the [episode] was

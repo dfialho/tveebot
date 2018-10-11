@@ -11,15 +11,11 @@ package dfialho.tveebot.tracker.api
  * A tracker engine is expected to run on its own thread. For that reason, it provides methods to [start] and [stop]
  * the engine.
  *
+ * FIXME
+ *
  * @author David Fialho (dfialho@protonmail.com)
  */
 interface TrackerEngine {
-
-    /**
-     * Component responsible for keeping record of the TV shows being tracked and the episode files that have been
-     * already found.
-     */
-    val recorder: EpisodeRecorder
 
     /**
      * Provider used to obtain the episode files from each tracked TV show.

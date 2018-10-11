@@ -1,11 +1,13 @@
 package dfialho.tveebot.tracker.lib
 
 import com.google.common.util.concurrent.AbstractScheduledService
-import dfialho.tveebot.tracker.api.EpisodeRecorder
+import dfialho.tveebot.tracker.api.EpisodeLedger
 import dfialho.tveebot.tracker.api.TVShowProvider
 import dfialho.tveebot.tracker.api.TrackerEngine
+import dfialho.tveebot.tracker.api.TrackingList
 import dfialho.tveebot.tracker.api.TrackingListener
 import dfialho.tveebot.tracker.api.models.TVShowEpisodeFile
+import dfialho.tveebot.utils.succeeded
 import mu.KLogging
 import java.io.IOException
 import java.util.concurrent.TimeUnit
@@ -17,7 +19,8 @@ import java.util.concurrent.TimeUnit
  */
 class ScheduledTrackerEngine(
     override val provider: TVShowProvider,
-    override val recorder: EpisodeRecorder,
+    private val trackingList: TrackingList,
+    private val episodeLedger: EpisodeLedger,
     private val checkPeriod: Long
 ) : TrackerEngine, AbstractScheduledService() {
 
@@ -34,7 +37,7 @@ class ScheduledTrackerEngine(
     override fun runOneIteration(): Unit = try {
         logger.info { "Checking for new episodes..." }
 
-        for (tvShow in recorder.getTVShows()) {
+        for (tvShow in trackingList) {
 
             val episodes: List<TVShowEpisodeFile> = try {
                 provider.fetchEpisodes(tvShow)
@@ -46,9 +49,7 @@ class ScheduledTrackerEngine(
             logger.trace { "Episodes for '${tvShow.title}': $episodes" }
 
             for (episode in episodes) {
-                val isNewEpisode: Boolean = recorder.putOrUpdateIfMoreRecent(episode)
-
-                if (isNewEpisode) {
+                if (episodeLedger.appendOrUpdate(episode).succeeded) {
                     logger.debug { "New episode: $episode" }
                     listeners.forEach { it.notify(episode, tvShow.quality) }
                 }

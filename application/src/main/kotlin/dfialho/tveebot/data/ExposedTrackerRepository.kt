@@ -4,6 +4,7 @@ import dfialho.tveebot.data.models.EpisodeDownload
 import dfialho.tveebot.data.models.EpisodeEntity
 import dfialho.tveebot.data.models.TVShowEntity
 import dfialho.tveebot.downloader.api.DownloadReference
+import dfialho.tveebot.toEpisodeFile
 import dfialho.tveebot.tracker.api.models.Episode
 import dfialho.tveebot.tracker.api.models.EpisodeFile
 import dfialho.tveebot.tracker.api.models.TVShow
@@ -13,6 +14,7 @@ import dfialho.tveebot.tracker.api.models.VideoQuality
 import dfialho.tveebot.tracker.api.models.toVideoQuality
 import dfialho.tveebot.tracker.lib.EpisodeIDGenerator
 import dfialho.tveebot.tvShowEpisodeFileOf
+import dfialho.tveebot.utils.Result
 import org.jetbrains.exposed.exceptions.ExposedSQLException
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.ResultRow
@@ -69,8 +71,8 @@ class ExposedTrackerRepository(private val db: Database) : TrackerRepository {
         }
     }
 
-    override fun put(tvShow: TVShowEntity): Unit = repositoryTransaction {
-        TVShows.insert {
+    override fun put(tvShow: TVShowEntity): Result = repositoryTransaction {
+        TVShows.insertUnique {
             it[id] = tvShow.id
             it[title] = tvShow.title
             it[tracked] = tvShow.tracked
@@ -151,8 +153,8 @@ class ExposedTrackerRepository(private val db: Database) : TrackerRepository {
         }
     }
 
-    override fun put(tvShowID: TVShowID, episode: EpisodeFile): Unit = repositoryTransaction {
-        Episodes.insert {
+    override fun put(tvShowID: TVShowID, episode: EpisodeFile): Result = repositoryTransaction {
+        Episodes.insertUnique {
             it[id] = episodeIDOf(tvShowID, episode)
             it[this.tvShowID] = tvShowID
             it[season] = episode.season
@@ -161,6 +163,31 @@ class ExposedTrackerRepository(private val db: Database) : TrackerRepository {
             it[title] = episode.title
             it[link] = episode.link
             it[publishDate] = DateTime(episode.publishDate.toEpochMilli())
+        }
+    }
+
+    override fun put(episode: TVShowEpisodeFile): Result = put(episode.tvShowID, episode.toEpisodeFile())
+
+    override fun updateIf(
+        episode: TVShowEpisodeFile,
+        predicate: (old: EpisodeFile, new: EpisodeFile) -> Boolean
+    ): Result = repositoryTransaction {
+
+        val existingEpisode = Episodes
+            .select { Episodes.id eq episodeIDOf(episode) }
+            .map { it.toEpisodeFile() }
+            .singleOrNull()
+
+        if (existingEpisode != null && predicate(existingEpisode, episode.toEpisodeFile())) {
+            Episodes.update({ Episodes.id eq episodeIDOf(episode) }) {
+                it[Episodes.title] = episode.title
+                it[Episodes.link] = episode.link
+                it[Episodes.publishDate] = DateTime(episode.publishDate.toEpochMilli())
+            }
+
+            Result.Success
+        } else {
+            Result.Failure
         }
     }
 
@@ -222,7 +249,7 @@ class ExposedTrackerRepository(private val db: Database) : TrackerRepository {
 
     override fun put(download: EpisodeDownload): Unit = repositoryTransaction {
         Downloads.insert {
-            it[episodeID] = episodeIDOf(download.episode.tvShowID, download.episode)
+            it[episodeID] = episodeIDOf(download.episode)
             it[tvShowID] = download.episode.tvShowID
             it[reference] = download.reference.value
         }
@@ -317,7 +344,7 @@ class ExposedTrackerRepository(private val db: Database) : TrackerRepository {
         try {
             return transaction(db) { body() }
         } catch (e: ExposedSQLException) {
-            throw TrackerRepositoryException("Failed to execute operation", e)
+            throw TrackerRepositoryException("Failed to execute operation", e.cause)
         }
     }
 
@@ -327,7 +354,7 @@ class ExposedTrackerRepository(private val db: Database) : TrackerRepository {
         }
     }
 
-    private fun episodeIDOf(tvShowID: TVShowID, episode: TVShowEpisodeFile): String {
+    private fun episodeIDOf(episode: TVShowEpisodeFile): String {
         return with(episode) {
             EpisodeIDGenerator.getID(tvShowID, season, number, quality)
         }

@@ -1,8 +1,9 @@
 package dfialho.tveebot
 
-import dfialho.tveebot.data.EpisodeRecorderRepository
+import dfialho.tveebot.data.EpisodeLedgerRepository
 import dfialho.tveebot.data.ExposedTrackerRepository
 import dfialho.tveebot.data.TrackerRepository
+import dfialho.tveebot.data.TrackingListRepository
 import dfialho.tveebot.downloader.api.DownloadEngine
 import dfialho.tveebot.downloader.libtorrent.LibTorrentDownloadEngine
 import dfialho.tveebot.routing.downloader
@@ -15,10 +16,11 @@ import dfialho.tveebot.services.InformationService
 import dfialho.tveebot.services.ServiceManager
 import dfialho.tveebot.services.TVeebotService
 import dfialho.tveebot.services.TrackerService
-import dfialho.tveebot.tracker.api.EpisodeRecorder
+import dfialho.tveebot.tracker.api.EpisodeLedger
 import dfialho.tveebot.tracker.api.TVShowIDMapper
 import dfialho.tveebot.tracker.api.TVShowProvider
 import dfialho.tveebot.tracker.api.TrackerEngine
+import dfialho.tveebot.tracker.api.TrackingList
 import dfialho.tveebot.tracker.lib.ExposedTVShowIDMapper
 import dfialho.tveebot.tracker.lib.ScheduledTrackerEngine
 import dfialho.tveebot.tracker.lib.ShowRSSProvider
@@ -57,16 +59,21 @@ fun Application.mainModule() {
     val kodein = Kodein {
         bind<Database>() with singleton { DbSettings.db }
         bind<TrackerRepository>() with singleton { ExposedTrackerRepository(instance()) }
+
         bind<TVShowIDMapper>() with singleton { ExposedTVShowIDMapper(instance()) }
         bind<TVShowProvider>() with singleton { ShowRSSProvider(instance()) }
-        bind<EpisodeRecorder>() with singleton { EpisodeRecorderRepository(instance()) }
+        bind<EpisodeLedger>() with singleton { EpisodeLedgerRepository(instance()) }
+        bind<TrackingList>() with singleton { TrackingListRepository(instance()) }
+
+        bind<TrackerEngine>() with singleton { ScheduledTrackerEngine(instance(), instance(), instance(), TVeebotConfig.checkPeriod) }
         bind<DownloadEngine>() with singleton { LibTorrentDownloadEngine(TVeebotConfig.savePath) }
-        bind<TrackerEngine>() with singleton { ScheduledTrackerEngine(instance(), instance(), TVeebotConfig.checkPeriod) }
+
         bind<AlertService>() with singleton { AlertService() }
         bind<DownloaderService>() with singleton { DownloaderService(instance(), instance(), instance()) }
         bind<TrackerService>() with singleton { TrackerService(instance(), instance(), instance(), instance()) }
         bind<InformationService>() with singleton { InformationService(instance()) }
         bind<TVeebotService>() with singleton { TVeebotService(instance(), instance(), instance()) }
+
         bind<ServiceManager>() with singleton { ServiceManager(instance(), instance(), instance(), instance(), instance()) }
     }
 
