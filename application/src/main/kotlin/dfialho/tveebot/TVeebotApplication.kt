@@ -34,6 +34,7 @@ import io.ktor.application.ApplicationStopPreparing
 import io.ktor.application.ApplicationStopped
 import io.ktor.application.install
 import io.ktor.application.log
+import io.ktor.config.ApplicationConfigurationException
 import io.ktor.features.ContentNegotiation
 import io.ktor.gson.gson
 import io.ktor.routing.routing
@@ -43,27 +44,19 @@ import org.kodein.di.Kodein
 import org.kodein.di.generic.bind
 import org.kodein.di.generic.instance
 import org.kodein.di.generic.singleton
-import java.nio.file.Path
-import java.nio.file.Paths
 import kotlin.concurrent.thread
 
 
-object DbSettings {
-    val db: Database by lazy {
-        Database.connect("jdbc:h2:mem:test;MODE=MYSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE", driver = "org.h2.Driver")
-    }
-}
-
-object TVeebotConfig {
-    val checkPeriod: Long = 10 // seconds
-    val savePath: Path = Paths.get("/home/david/Downloads/tveebot")
-    val libraryDirectory: Path = Paths.get("/home/david/Downloads/library")
-}
-
 fun Application.mainModule() {
+    val config = loadConfig()
 
     val kodein = Kodein {
-        bind<Database>() with singleton { DbSettings.db }
+        bind<Database>() with singleton {
+            Database.connect(
+                url = "jdbc:h2:mem:${config.downloadingDirectory};MODE=MYSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE",
+                driver = "org.h2.Driver"
+            )
+        }
         bind<TrackerRepository>() with singleton { ExposedTrackerRepository(instance()) }
 
         bind<TVShowIDMapper>() with singleton { DirectTVShowIDMapper() }
@@ -72,10 +65,10 @@ fun Application.mainModule() {
         bind<TrackingList>() with singleton { TrackingListRepository(instance()) }
 
         bind<TVShowUsher>() with singleton { SimpleTVShowUsher() }
-        bind<TVShowLibrary>() with singleton { SimpleTVShowLibrary(TVeebotConfig.libraryDirectory, instance()) }
+        bind<TVShowLibrary>() with singleton { SimpleTVShowLibrary(config.libraryDirectory, instance()) }
 
-        bind<TrackerEngine>() with singleton { ScheduledTrackerEngine(instance(), instance(), instance(), TVeebotConfig.checkPeriod) }
-        bind<DownloadEngine>() with singleton { LibTorrentDownloadEngine(TVeebotConfig.savePath) }
+        bind<TrackerEngine>() with singleton { ScheduledTrackerEngine(instance(), instance(), instance(), config.checkPeriod) }
+        bind<DownloadEngine>() with singleton { LibTorrentDownloadEngine(config.downloadingDirectory) }
 
         bind<AlertService>() with singleton { AlertService() }
         bind<TrackerService>() with singleton { TrackerService(instance(), instance(), instance(), instance()) }
@@ -102,6 +95,27 @@ fun Application.mainModule() {
 
     installModule()
     routingModule(serviceManager)
+}
+
+fun Application.loadConfig(): TVeebotConfig {
+
+    try {
+        val config = with(environment.config.config("tveebot")) {
+            TVeebotConfig(
+                checkPeriod = property("checkPeriod").getString().toLong(),
+                downloadingDirectory = java.nio.file.Paths.get(property("downloadingDirectory").getString()),
+                libraryDirectory = java.nio.file.Paths.get(property("libraryDirectory").getString()),
+                databasePath = java.nio.file.Paths.get(property("databasePath").getString())
+            )
+        }
+
+        log.info("Loaded configuration: $config")
+        return config
+
+    } catch (e: ApplicationConfigurationException) {
+        log.error(e.message.orEmpty(), e)
+        throw e
+    }
 }
 
 fun Application.installModule() {
