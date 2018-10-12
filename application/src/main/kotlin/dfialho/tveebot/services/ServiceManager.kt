@@ -10,6 +10,7 @@ package dfialho.tveebot.services
 class ServiceManager(
     val tracker: TrackerService,
     val downloader: DownloaderService,
+    val organizer: OrganizerService,
     val information: InformationService,
     val alerting: AlertService,
     val tveebot: TVeebotService
@@ -18,6 +19,7 @@ class ServiceManager(
         tveebot.start()
         alerting.start()
         information.start()
+        organizer.start()
         downloader.start()
         tracker.start()
     }
@@ -25,6 +27,7 @@ class ServiceManager(
     fun stopAll() {
         tracker.stop()
         downloader.stop()
+        organizer.stop()
         information.stop()
         alerting.stop()
         tveebot.stop()

@@ -1,5 +1,7 @@
 package dfialho.tveebot.downloader.api
 
+import java.nio.file.Path
+
 /**
  * Handle for a single download. It is used to perform actions for the download and to retrieve information about it.
  *
@@ -17,6 +19,11 @@ interface DownloadHandle {
      * false if otherwise. An handle becomes invalid when stopped.
      */
     val isValid: Boolean
+
+    /**
+     * Returns the path where to the downloaded file/directory.
+     */
+    val savePath: Path
 
     /**
      * Obtains the status of the download. Depending on the implementation, this operation might be slow. With that in

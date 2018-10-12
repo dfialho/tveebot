@@ -8,6 +8,7 @@ import dfialho.tveebot.downloader.api.DownloadListener
 import dfialho.tveebot.downloader.api.DownloadReference
 import dfialho.tveebot.downloader.api.DownloadStatus
 import dfialho.tveebot.exceptions.NotFoundException
+import dfialho.tveebot.services.models.FinishedDownloadParameters
 import dfialho.tveebot.toPrettyString
 import dfialho.tveebot.tracker.api.models.TVShowEpisodeFile
 import mu.KLogging
@@ -42,9 +43,14 @@ class DownloaderService(
 
     override fun notifyFinished(handle: DownloadHandle) {
         logger.debug { "Finished downloading: ${handle.reference}" }
+
+        // Extract information from handle before removing download
+        // Afterwards the handle becomes invalid
+        val reference = handle.reference
+        val savePath = handle.savePath
         engine.remove(handle.reference)
 
-        alertService.raiseAlert(Alerts.DownloadFinished, handle.reference)
+        alertService.raiseAlert(Alerts.DownloadFinished, FinishedDownloadParameters(reference, savePath))
     }
 
     /**

@@ -6,6 +6,10 @@ import dfialho.tveebot.data.TrackerRepository
 import dfialho.tveebot.data.TrackingListRepository
 import dfialho.tveebot.downloader.api.DownloadEngine
 import dfialho.tveebot.downloader.libtorrent.LibTorrentDownloadEngine
+import dfialho.tveebot.library.api.TVShowLibrary
+import dfialho.tveebot.library.api.TVShowUsher
+import dfialho.tveebot.library.lib.SimpleTVShowLibrary
+import dfialho.tveebot.library.lib.SimpleTVShowUsher
 import dfialho.tveebot.routing.downloader
 import dfialho.tveebot.routing.info
 import dfialho.tveebot.routing.tracker
@@ -13,6 +17,7 @@ import dfialho.tveebot.routing.tveebot
 import dfialho.tveebot.services.AlertService
 import dfialho.tveebot.services.DownloaderService
 import dfialho.tveebot.services.InformationService
+import dfialho.tveebot.services.OrganizerService
 import dfialho.tveebot.services.ServiceManager
 import dfialho.tveebot.services.TVeebotService
 import dfialho.tveebot.services.TrackerService
@@ -52,6 +57,7 @@ object DbSettings {
 object TVeebotConfig {
     val checkPeriod: Long = 10 // seconds
     val savePath: Path = Paths.get("/home/david/Downloads/tveebot")
+    val libraryDirectory: Path = Paths.get("/home/david/Downloads/library")
 }
 
 fun Application.mainModule() {
@@ -65,16 +71,22 @@ fun Application.mainModule() {
         bind<EpisodeLedger>() with singleton { EpisodeLedgerRepository(instance()) }
         bind<TrackingList>() with singleton { TrackingListRepository(instance()) }
 
+        bind<TVShowUsher>() with singleton { SimpleTVShowUsher() }
+        bind<TVShowLibrary>() with singleton { SimpleTVShowLibrary(TVeebotConfig.libraryDirectory, instance()) }
+
         bind<TrackerEngine>() with singleton { ScheduledTrackerEngine(instance(), instance(), instance(), TVeebotConfig.checkPeriod) }
         bind<DownloadEngine>() with singleton { LibTorrentDownloadEngine(TVeebotConfig.savePath) }
 
         bind<AlertService>() with singleton { AlertService() }
-        bind<DownloaderService>() with singleton { DownloaderService(instance(), instance(), instance()) }
         bind<TrackerService>() with singleton { TrackerService(instance(), instance(), instance(), instance()) }
+        bind<DownloaderService>() with singleton { DownloaderService(instance(), instance(), instance()) }
+        bind<OrganizerService>() with singleton { OrganizerService(instance()) }
         bind<InformationService>() with singleton { InformationService(instance()) }
-        bind<TVeebotService>() with singleton { TVeebotService(instance(), instance(), instance()) }
+        bind<TVeebotService>() with singleton { TVeebotService(instance(), instance(), instance(), instance()) }
 
-        bind<ServiceManager>() with singleton { ServiceManager(instance(), instance(), instance(), instance(), instance()) }
+        bind<ServiceManager>() with singleton {
+            ServiceManager(instance(), instance(), instance(), instance(), instance(), instance())
+        }
     }
 
     val serviceManager by kodein.instance<ServiceManager>()

@@ -12,6 +12,7 @@ repositories {
 dependencies {
     implementation project(':downloader-lib')
     implementation project(':tracker-lib')
+    implementation project(':library-lib')
 }
 
 dependencies {

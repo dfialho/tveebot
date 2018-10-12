@@ -6,6 +6,8 @@ import dfialho.tveebot.downloader.api.DownloadHandle
 import dfialho.tveebot.downloader.api.DownloadReference
 import dfialho.tveebot.downloader.api.DownloadState
 import dfialho.tveebot.downloader.api.DownloadStatus
+import java.nio.file.Path
+import java.nio.file.Paths
 import java.util.*
 
 
@@ -50,6 +52,9 @@ class LibTorrentDownloadHandle(
 
     override val isValid: Boolean
         get() = nativeHandle.isValid
+
+    override val savePath: Path
+        get() = Paths.get(nativeHandle.savePath(), nativeHandle.name())
 
     override fun getStatus(): DownloadStatus = nativeHandle.status().let {
         DownloadStatus(
