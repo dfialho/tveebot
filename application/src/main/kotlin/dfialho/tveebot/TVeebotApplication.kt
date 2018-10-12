@@ -44,6 +44,7 @@ import org.kodein.di.Kodein
 import org.kodein.di.generic.bind
 import org.kodein.di.generic.instance
 import org.kodein.di.generic.singleton
+import java.nio.file.Paths
 import kotlin.concurrent.thread
 
 
@@ -53,7 +54,7 @@ fun Application.mainModule() {
     val kodein = Kodein {
         bind<Database>() with singleton {
             Database.connect(
-                url = "jdbc:h2:mem:${config.downloadingDirectory};MODE=MYSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE",
+                url = "jdbc:h2:${config.databasePath};MODE=MYSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE",
                 driver = "org.h2.Driver"
             )
         }
@@ -103,9 +104,9 @@ fun Application.loadConfig(): TVeebotConfig {
         val config = with(environment.config.config("tveebot")) {
             TVeebotConfig(
                 checkPeriod = property("checkPeriod").getString().toLong(),
-                downloadingDirectory = java.nio.file.Paths.get(property("downloadingDirectory").getString()),
-                libraryDirectory = java.nio.file.Paths.get(property("libraryDirectory").getString()),
-                databasePath = java.nio.file.Paths.get(property("databasePath").getString())
+                downloadingDirectory = Paths.get(property("downloadingDirectory").getString()),
+                libraryDirectory = Paths.get(property("libraryDirectory").getString()),
+                databasePath = Paths.get(property("databasePath").getString())
             )
         }
 
