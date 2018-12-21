@@ -13,12 +13,12 @@ dependencies {
     implementation project(':downloader-lib')
     implementation project(':tracker-lib')
     implementation project(':library-lib')
+    testCompile project(path: ':common-utils', configuration: 'testOutput')
 }
 
 dependencies {
     implementation "org.kodein.di:kodein-di-generic-jvm:$kodeinVersion"
     implementation "com.h2database:h2:$h2Version"
-//    implementation "org.h2.api:h2:$h2Version"
 }
 
 dependencies {

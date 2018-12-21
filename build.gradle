@@ -2,7 +2,6 @@ buildscript {
     ext {
         kotlinVersion = '1.2.71'
         spekVersion = '2.0.0-rc.1'
-        kluentVersion = '1.42'
         guavaVersion = '26.0-jre'
         exposedVersion = '0.10.4'
         ktorVersion = '0.9.5'
@@ -10,6 +9,8 @@ buildscript {
         h2Version = '1.4.197'
         logbackVersion = '1.2.3'
         loggingVersion = '1.5.9'
+        assertkVersion = '0.12'
+        mockkVersion = '1.8.13'
     }
 
     repositories {
@@ -37,13 +38,12 @@ subprojects {
 
     repositories {
         mavenCentral()
-        jcenter()   // Required by Kluent
+        jcenter()   // Required by Ktor and Kodein
         maven { url "https://dl.bintray.com/spekframework/spek-dev" }
     }
 
     // Dependencies for Spek 2
     dependencies {
-        // some version of Kotlin
         implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
 
         testImplementation ("org.spekframework.spek2:spek-dsl-jvm:$spekVersion")  {
@@ -59,9 +59,14 @@ subprojects {
     }
 
     dependencies {
+        testImplementation "com.willowtreeapps.assertk:assertk-jvm:$assertkVersion"
+        testImplementation "io.mockk:mockk:$mockkVersion"
+        testImplementation "junit:junit:4.12"
+    }
+
+    dependencies {
         implementation "ch.qos.logback:logback-classic:$logbackVersion"
         implementation "io.github.microutils:kotlin-logging:$loggingVersion"
-        testImplementation "org.amshove.kluent:kluent:$kluentVersion"
     }
 
     group = 'dfialho.tveebot'

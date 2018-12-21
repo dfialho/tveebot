@@ -24,5 +24,8 @@ interface EpisodeLedger {
      */
     fun appendOrUpdate(episode: TVShowEpisodeFile): Result
 
+    /**
+     * Returns a list containing all episode files currently hold by this ledger.
+     */
     fun toList(): List<TVShowEpisodeFile>
 }

@@ -15,7 +15,8 @@ class EpisodeLedgerRepository(private val repository: TrackerRepository) : Episo
         // is that the "update if more recent" semantics is related to the ledger
         // and should be shared by all users of the episode ledger
 
-        return repository.put(episode).orElse { repository.updateIf(episode) { old, new -> new isMoreRecentThan old } }
+        return repository.put(episode)
+            .orElse { repository.updateIf(episode) { old, new -> new isMoreRecentThan old } }
     }
 
     override fun toList(): List<TVShowEpisodeFile> {

@@ -25,7 +25,7 @@ private val ignoredTokens: Collection<String> = setOf(
  *
  * @throws IllegalArgumentException If the format of [title] is invalid
  */
-internal fun parseEpisodeFilename(title: String): Pair<Episode, VideoQuality> {
+internal fun parseEpisodeTitle(title: String): Pair<Episode, VideoQuality> {
     require(title.isNotBlank()) { "episode full title cannot be blank" }
 
     val tokensWithQuality = title

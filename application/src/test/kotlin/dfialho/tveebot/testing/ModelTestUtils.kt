@@ -18,14 +18,18 @@ fun anyTVShow() = TVShow(
     quality = VideoQuality.HD
 )
 
-fun anyEpisode() = Episode(
+fun anyEpisode(season: Int? = null, number: Int? = null) = Episode(
     title = "Episode ${randomString()}",
-    season = random.nextInt(10),
-    number = random.nextInt(25)
+    season = season ?: random.nextInt(10),
+    number = number ?: random.nextInt(25)
 )
 
-fun anyEpisodeFile(quality: VideoQuality = VideoQuality.default()) = EpisodeFile(
-    episode = anyEpisode(),
+fun anyEpisodeFile(
+    season: Int? = null,
+    number: Int? = null,
+    quality: VideoQuality = VideoQuality.default()
+) = EpisodeFile(
+    episode = anyEpisode(season, number),
     quality = quality,
     link = "magnet://${randomString()}",
     publishDate = Instant.ofEpochMilli(random.nextLong())
@@ -33,10 +37,12 @@ fun anyEpisodeFile(quality: VideoQuality = VideoQuality.default()) = EpisodeFile
 
 fun anyTVShowEpisodeFile(
     tvShow: TVShow = anyTVShow(),
+    season: Int? = null,
+    number: Int? = null,
     quality: VideoQuality = VideoQuality.default()
 ): TVShowEpisodeFile {
 
-    return with(anyEpisodeFile(quality)) {
+    return with(anyEpisodeFile(season, number, quality)) {
         TVShowEpisodeFile(
             episode = TVShowEpisode(
                 tvShow.id,

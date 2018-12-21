@@ -1,17 +1,20 @@
 package dfialho.tveebot.library.lib
 
-import com.nhaarman.mockito_kotlin.mock
+import assertk.assert
+import assertk.assertions.isEqualTo
 import dfialho.tveebot.library.api.TVShowLibrary
 import dfialho.tveebot.library.api.TVShowUsher
 import dfialho.tveebot.tracker.api.models.TVShowEpisode
-import org.amshove.kluent.shouldEqual
+import io.mockk.mockk
 import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
 import java.nio.file.Paths
 
-object SimpleTVShowLibraryTest : Spek({
-
-    val libraryDirectory = Paths.get("library")
+/**
+ * Tests for the [SimpleTVShowLibrary].
+ *
+ * @author David Fialho (dfialho@protonmail.com)
+ */
+class SimpleTVShowLibraryTests : Spek({
 
     listOf(
         TVShowEpisode(
@@ -64,13 +67,13 @@ object SimpleTVShowLibraryTest : Spek({
 
     ).forEach { (episode, expectedPath) ->
 
-        describe("Get location for $episode") {
-            val mockedUsher = mock<TVShowUsher>()
+        test("obtaining location from episode='$episode' should return location='$expectedPath'") {
+            val libraryDirectory = Paths.get("library")
+            val mockedUsher = mockk<TVShowUsher>()
             val library: TVShowLibrary = SimpleTVShowLibrary(libraryDirectory, mockedUsher)
 
-            it("should return $expectedPath") {
-                library.getLocationOf(episode) shouldEqual expectedPath
-            }
+            assert(library.getLocationOf(episode), name = "episode location")
+                .isEqualTo(expectedPath)
         }
     }
 })

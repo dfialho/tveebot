@@ -56,7 +56,7 @@ class ShowRSSProvider(private val idMapper: TVShowIDMapper) : TVShowProvider {
  */
 internal fun RSSFeedItem.parseEpisode(tvShow: TVShow): TVShowEpisodeFile {
     val (episode, quality) = try {
-        parseEpisodeFilename(this.title)
+        parseEpisodeTitle(this.title)
     } catch (e: IllegalArgumentException) {
         throw RSSFeedException("Failed to parse episode information from ${this.title}", e)
     }

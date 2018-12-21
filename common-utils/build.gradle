@@ -5,3 +5,13 @@ ext {
 dependencies {
     implementation "rome:rome:$romeVersion"
 }
+
+
+// Allows test code to be shared with other projects
+configurations {
+    testOutput
+}
+
+dependencies {
+    testOutput sourceSets.test.output
+}
