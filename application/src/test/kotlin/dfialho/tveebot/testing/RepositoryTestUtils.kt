@@ -6,7 +6,8 @@ import org.jetbrains.exposed.sql.Database
 import java.util.UUID.randomUUID
 
 /**
- * Creates a new [TrackerRepository] for testing purposes each time this method is called.
+ * Creates and returns a new [TrackerRepository] for testing purposes each time this method is
+ * called.
  */
 fun newRepository(): TrackerRepository {
     val dbName = randomUUID().toString()

@@ -1,24 +1,25 @@
 package dfialho.tveebot.library.lib
 
+import dfialho.tveebot.library.api.EpisodePackage
 import dfialho.tveebot.library.api.TVShowLibrary
-import dfialho.tveebot.library.api.TVShowUsher
+import dfialho.tveebot.library.api.TVShowOrganizer
 import dfialho.tveebot.tracker.api.models.TVShowEpisode
+import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.Paths
+import java.nio.file.StandardCopyOption
+import com.google.common.io.Files as GFiles
 
-class SimpleTVShowLibrary(private val libraryDirectory: Path, private val usher: TVShowUsher) : TVShowLibrary {
+class SimpleTVShowLibrary(private val libraryDirectory: Path, private val organizer: TVShowOrganizer) : TVShowLibrary {
 
-    override fun store(episode: TVShowEpisode, currentLocation: Path) {
-        usher.store(currentLocation, libraryDirectory.resolve(getLocationOf(episode)))
-    }
+    override fun store(episode: TVShowEpisode, episodePackage: EpisodePackage) {
 
-    override fun getLocationOf(episode: TVShowEpisode): Path {
-        return with(episode) {
-            Paths.get(
-                tvShowTitle,
-                "Season %02d".format(season),
-                "$tvShowTitle - ${season}x%02d - $title".format(number)
-            )
-        }
+        val episodeLocation = organizer.getLocationOf(episode)
+        val extension = GFiles.getFileExtension(episodeLocation.fileName.toString())
+        val destinationSubPath = episodeLocation.resolveSibling("${episodeLocation.fileName}.$extension")
+        val destinationPath = libraryDirectory.resolve(destinationSubPath)
+
+        Files.createDirectories(destinationPath.parent)
+        Files.move(episodeLocation, destinationPath, StandardCopyOption.REPLACE_EXISTING)
+        episodePackage.path.toFile().deleteRecursively()
     }
 }

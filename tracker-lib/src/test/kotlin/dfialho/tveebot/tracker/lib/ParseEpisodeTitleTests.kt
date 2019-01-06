@@ -5,14 +5,14 @@ import assertk.assertAll
 import assertk.assertions.isEqualTo
 import dfialho.tveebot.tracker.api.models.Episode
 import dfialho.tveebot.tracker.api.models.VideoQuality
-import org.spekframework.spek2.Spek
+import io.kotlintest.specs.FunSpec
 
 /**
  * Tests for utility function [parseEpisodeTitle].
  *
  * @author David Fialho (dfialho@protonmail.com)
  */
-class ParseEpisodeTitleTests : Spek({
+class ParseEpisodeTitleTests : FunSpec({
 
     data class Case(
         val fullTitle: String,

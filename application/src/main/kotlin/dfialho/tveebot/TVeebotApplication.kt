@@ -7,9 +7,9 @@ import dfialho.tveebot.data.TrackingListRepository
 import dfialho.tveebot.downloader.api.DownloadEngine
 import dfialho.tveebot.downloader.libtorrent.LibTorrentDownloadEngine
 import dfialho.tveebot.library.api.TVShowLibrary
-import dfialho.tveebot.library.api.TVShowUsher
+import dfialho.tveebot.library.api.TVShowOrganizer
 import dfialho.tveebot.library.lib.SimpleTVShowLibrary
-import dfialho.tveebot.library.lib.SimpleTVShowUsher
+import dfialho.tveebot.library.lib.SimpleTVShowOrganizer
 import dfialho.tveebot.routing.downloader
 import dfialho.tveebot.routing.info
 import dfialho.tveebot.routing.tracker
@@ -65,7 +65,7 @@ fun Application.mainModule() {
         bind<EpisodeLedger>() with singleton { EpisodeLedgerRepository(instance()) }
         bind<TrackingList>() with singleton { TrackingListRepository(instance()) }
 
-        bind<TVShowUsher>() with singleton { SimpleTVShowUsher() }
+        bind<TVShowOrganizer>() with singleton { SimpleTVShowOrganizer() }
         bind<TVShowLibrary>() with singleton { SimpleTVShowLibrary(config.libraryDirectory, instance()) }
 
         bind<TrackerEngine>() with singleton { ScheduledTrackerEngine(instance(), instance(), instance(), config.checkPeriod) }

@@ -2,22 +2,34 @@ package dfialho.tveebot.library.lib
 
 import com.google.common.annotations.VisibleForTesting
 import com.google.common.primitives.Longs
-import dfialho.tveebot.library.api.TVShowUsher
+import dfialho.tveebot.library.api.TVShowOrganizer
+import dfialho.tveebot.tracker.api.models.TVShowEpisode
 import java.io.FileNotFoundException
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.nio.file.StandardCopyOption
 import com.google.common.io.Files as GFiles
 
-class SimpleTVShowUsher : TVShowUsher {
+class SimpleTVShowOrganizer : TVShowOrganizer {
 
-    override fun store(savePath: Path, libraryLocation: Path) {
+    override fun getLocationOf(episode: TVShowEpisode): Path {
+        return with(episode) {
+            Paths.get(
+                tvShowTitle,
+                "Season %02d".format(season),
+                "$tvShowTitle - ${season}x%02d - $title".format(number)
+            )
+        }
+    }
+
+    private fun store(savePath: Path, libraryLocation: Path) {
         val episodePath = findEpisodeFile(savePath)
         val extension = GFiles.getFileExtension(episodePath.fileName.toString())
         val outputPath = Paths.get(libraryLocation.toString() + ".$extension")
 
         Files.createDirectories(outputPath.parent)
-        Files.move(episodePath, outputPath)
+        Files.move(episodePath, outputPath, StandardCopyOption.REPLACE_EXISTING)
         savePath.toFile().deleteRecursively()
     }
 

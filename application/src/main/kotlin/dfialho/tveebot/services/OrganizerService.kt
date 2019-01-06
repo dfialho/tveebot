@@ -1,6 +1,7 @@
 package dfialho.tveebot.services
 
 import dfialho.tveebot.library.api.TVShowLibrary
+import dfialho.tveebot.library.lib.EpisodeDownloadPackage
 import dfialho.tveebot.toPrettyString
 import dfialho.tveebot.tracker.api.models.TVShowEpisodeFile
 import mu.KLogging
@@ -30,11 +31,12 @@ class OrganizerService(private val library: TVShowLibrary) : Service {
         }
     }
 
-    fun store(episode: TVShowEpisodeFile, currentLocation: Path) {
+    fun store(episode: TVShowEpisodeFile, episodeCurrentLocation: Path) {
         executor.submit {
             try {
                 logger.debug { "Storing episode in library: ${episode.toPrettyString()}" }
-                library.store(episode.toTVShowEpisode(), currentLocation)
+                library.store(episode.toTVShowEpisode(), EpisodeDownloadPackage(episodeCurrentLocation))
+
             } catch (e: Throwable) {
                 logger.error(e) { "Failed to store episode in library" }
             }
