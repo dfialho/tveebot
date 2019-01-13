@@ -3,8 +3,6 @@ apply plugin: 'application'
 mainClassName = "io.ktor.server.netty.DevelopmentEngine"
 applicationName = 'tveebot'
 
-kotlin { experimental { coroutines "enable" } }
-
 repositories {
     maven { url "https://dl.bintray.com/kotlin/exposed" }
     maven { url "https://dl.bintray.com/kotlin/ktor" }
