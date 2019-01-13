@@ -24,7 +24,7 @@ class ExposedTVShowIDMapper(private val db: Database) : TVShowIDMapper {
     }
 
     override fun get(tvShowID: TVShowID): String? = transaction(db) {
-        IDs.select { IDs.id eq tvShowID }
+        IDs.select { IDs.id eq tvShowID.value }
             .map { it[IDs.providerID] }
             .firstOrNull()
     }
@@ -32,7 +32,7 @@ class ExposedTVShowIDMapper(private val db: Database) : TVShowIDMapper {
     override fun set(tvShowID: TVShowID, providerID: String) {
         transaction(db) {
             IDs.insert {
-                it[IDs.id] = tvShowID
+                it[IDs.id] = tvShowID.value
                 it[IDs.providerID] = providerID
             }
         }
@@ -42,6 +42,7 @@ class ExposedTVShowIDMapper(private val db: Database) : TVShowIDMapper {
         val tvShowID: TVShowID? = transaction(db) {
             IDs.select { IDs.providerID eq providerID }
                 .map { it[IDs.id] }
+                .map { TVShowID(it) }
                 .firstOrNull()
         }
 

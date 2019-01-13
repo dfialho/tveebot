@@ -24,12 +24,15 @@ object EpisodeIDGenerator {
     }
 
     fun getID(tvShowID: TVShowID, season: Int, number: Int, quality: VideoQuality): EpisodeID {
-        return hashFunction.newHasher()
-            .putString(tvShowID.toString(), Charset.defaultCharset())
+
+        val hashID = hashFunction.newHasher()
+            .putString(tvShowID.value, Charset.defaultCharset())
             .putInt(season)
             .putInt(number)
             .putString(quality.toString(), Charset.defaultCharset())
             .hash()
             .toString()
+
+        return EpisodeID(hashID)
     }
 }

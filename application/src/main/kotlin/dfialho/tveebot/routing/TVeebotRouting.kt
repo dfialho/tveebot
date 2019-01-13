@@ -1,8 +1,8 @@
 package dfialho.tveebot.routing
 
 import dfialho.tveebot.services.TVeebotService
+import dfialho.tveebot.tracker.api.models.TVShowID
 import dfialho.tveebot.tracker.api.models.toVideoQuality
-import dfialho.tveebot.tracker.api.models.tvShowIDFromString
 import io.ktor.application.call
 import io.ktor.routing.Routing
 import io.ktor.routing.post
@@ -18,7 +18,7 @@ import io.ktor.routing.route
 fun Routing.tveebot(service: TVeebotService) = route("tveebot") {
 
     post("tvshow/{id}/update/quality") {
-        val tvShowID = tvShowIDFromString(call.requiredParameter("id"))
+        val tvShowID = TVShowID(call.requiredParameter("id"))
         val quality = call.request.requiredQueryParameter("quality").toVideoQuality()
 
         service.setTVShowVideoQuality(tvShowID, quality)

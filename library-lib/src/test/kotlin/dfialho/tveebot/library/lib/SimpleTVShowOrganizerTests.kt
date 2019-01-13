@@ -4,6 +4,7 @@ import assertk.assert
 import assertk.assertions.isEqualTo
 import dfialho.tveebot.library.api.TVShowOrganizer
 import dfialho.tveebot.tracker.api.models.TVShowEpisode
+import dfialho.tveebot.tracker.api.models.TVShowID
 import io.kotlintest.specs.FunSpec
 import java.nio.file.Paths
 
@@ -16,7 +17,7 @@ class SimpleTVShowOrganizerTests : FunSpec({
 
     listOf(
         TVShowEpisode(
-            tvShowID = "1",
+            tvShowID = TVShowID("1"),
             tvShowTitle = "Show Title",
             title = "Episode Title",
             season = 10,
@@ -24,7 +25,7 @@ class SimpleTVShowOrganizerTests : FunSpec({
         ) to Paths.get("Show Title", "Season 10", "Show Title - 10x12 - Episode Title"),
 
         TVShowEpisode(
-            tvShowID = "1",
+            tvShowID = TVShowID("1"),
             tvShowTitle = "Show Title",
             title = "Episode Title",
             season = 1,
@@ -32,7 +33,7 @@ class SimpleTVShowOrganizerTests : FunSpec({
         ) to Paths.get("Show Title", "Season 01", "Show Title - 1x12 - Episode Title"),
 
         TVShowEpisode(
-            tvShowID = "1",
+            tvShowID = TVShowID("1"),
             tvShowTitle = "Show Title",
             title = "Episode Title",
             season = 1,
@@ -40,7 +41,7 @@ class SimpleTVShowOrganizerTests : FunSpec({
         ) to Paths.get("Show Title", "Season 01", "Show Title - 1x02 - Episode Title"),
 
         TVShowEpisode(
-            tvShowID = "1",
+            tvShowID = TVShowID("1"),
             tvShowTitle = "Show Title",
             title = "Episode Title",
             season = 100,
@@ -48,7 +49,7 @@ class SimpleTVShowOrganizerTests : FunSpec({
         ) to Paths.get("Show Title", "Season 100", "Show Title - 100x02 - Episode Title"),
 
         TVShowEpisode(
-            tvShowID = "1",
+            tvShowID = TVShowID("1"),
             tvShowTitle = "Show Title",
             title = "Episode Title",
             season = 1,
@@ -56,7 +57,7 @@ class SimpleTVShowOrganizerTests : FunSpec({
         ) to Paths.get("Show Title", "Season 01", "Show Title - 1x200 - Episode Title"),
 
         TVShowEpisode(
-            tvShowID = "1",
+            tvShowID = TVShowID("1"),
             tvShowTitle = "Show Title",
             title = "Episode Title",
             season = 123,

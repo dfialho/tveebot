@@ -6,7 +6,7 @@ package dfialho.tveebot.downloader.api
  * @property value Reference represented as a string.
  * @author David Fialho (dfialho@protonmail.com)
  */
-data class DownloadReference(val value: String) {
+inline class DownloadReference(val value: String) {
     override fun toString(): String {
         return value
     }

@@ -1,7 +1,7 @@
 package dfialho.tveebot.routing
 
 import dfialho.tveebot.services.InformationService
-import dfialho.tveebot.tracker.api.models.tvShowIDFromString
+import dfialho.tveebot.tracker.api.models.TVShowID
 import io.ktor.application.call
 import io.ktor.response.respond
 import io.ktor.routing.Routing
@@ -57,7 +57,7 @@ fun Routing.info(service: InformationService) = route("info") {
          * @throws NotFoundException if no TV show is found with the specified ID.
          */
         get("tvshow/{id}") {
-            val tvShowID = tvShowIDFromString(call.requiredParameter("id"))
+            val tvShowID = TVShowID(call.requiredParameter("id"))
 
             call.respond(service.getEpisodesFrom(tvShowID))
         }

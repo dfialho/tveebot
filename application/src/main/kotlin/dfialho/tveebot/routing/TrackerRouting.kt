@@ -1,9 +1,9 @@
 package dfialho.tveebot.routing
 
 import dfialho.tveebot.services.TrackerService
+import dfialho.tveebot.tracker.api.models.TVShowID
 import dfialho.tveebot.tracker.api.models.VideoQuality
 import dfialho.tveebot.tracker.api.models.toVideoQuality
-import dfialho.tveebot.tracker.api.models.tvShowIDFromString
 import io.ktor.application.call
 import io.ktor.response.respondText
 import io.ktor.routing.Routing
@@ -29,7 +29,7 @@ fun Routing.tracker(service: TrackerService) = route("tracker") {
      * @throws NotFoundException if no TV show is found with the specified ID.
      */
     post("track/{id}") {
-        val tvShowID = tvShowIDFromString(call.requiredParameter("id"))
+        val tvShowID = TVShowID(call.requiredParameter("id"))
         val quality = call.request.queryParameters["quality"]?.toVideoQuality() ?: VideoQuality.default()
 
         service.trackTVShow(tvShowID, quality)
@@ -46,7 +46,7 @@ fun Routing.tracker(service: TrackerService) = route("tracker") {
      * @throws NotFoundException if no TV show is found with the specified ID.
      */
     post("untrack/{id}") {
-        val tvShowID = tvShowIDFromString(call.requiredParameter("id"))
+        val tvShowID = TVShowID(call.requiredParameter("id"))
 
         service.untrackTVShow(tvShowID)
         call.respondText { "Ok" }

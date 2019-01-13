@@ -11,7 +11,7 @@ import dfialho.tveebot.tracker.api.models.TVShowID
  */
 class DirectTVShowIDMapper : TVShowIDMapper {
 
-    override fun get(tvShowID: TVShowID): String? = tvShowID
+    override fun get(tvShowID: TVShowID): String? = tvShowID.value
 
     /**
      * This method does nothing. It ignores any provider ID specified here.
@@ -19,5 +19,5 @@ class DirectTVShowIDMapper : TVShowIDMapper {
     override fun set(tvShowID: TVShowID, providerID: String) {
     }
 
-    override fun getTVShowID(providerID: String): TVShowID = providerID
+    override fun getTVShowID(providerID: String): TVShowID = TVShowID(providerID)
 }
