@@ -3,7 +3,7 @@ buildscript {
         kotlinVersion = '1.3.11'
         guavaVersion = '26.0-jre'
         exposedVersion = '0.10.4'
-        ktorVersion = '0.9.5'
+        ktorVersion = '1.1.1'
         kodeinVersion = '5.2.0'
         h2Version = '1.4.197'
         logbackVersion = '1.2.3'

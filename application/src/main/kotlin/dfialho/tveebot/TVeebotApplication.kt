@@ -39,6 +39,7 @@ import io.ktor.features.ContentNegotiation
 import io.ktor.gson.gson
 import io.ktor.routing.routing
 import io.ktor.server.engine.ApplicationEngineEnvironment
+import io.ktor.util.KtorExperimentalAPI
 import org.jetbrains.exposed.sql.Database
 import org.kodein.di.Kodein
 import org.kodein.di.generic.bind
@@ -48,6 +49,7 @@ import java.nio.file.Paths
 import kotlin.concurrent.thread
 
 
+@KtorExperimentalAPI
 fun Application.mainModule() {
     val config = loadConfig()
 
@@ -98,6 +100,7 @@ fun Application.mainModule() {
     routingModule(serviceManager)
 }
 
+@KtorExperimentalAPI
 fun Application.loadConfig(): TVeebotConfig {
 
     try {

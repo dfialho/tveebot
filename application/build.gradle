@@ -1,6 +1,6 @@
 apply plugin: 'application'
 
-mainClassName = "io.ktor.server.netty.DevelopmentEngine"
+mainClassName = "io.ktor.server.netty.EngineMain"
 applicationName = 'tveebot'
 
 repositories {
