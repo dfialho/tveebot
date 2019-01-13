@@ -1,6 +1,7 @@
 apply plugin: 'application'
 
 mainClassName = "io.ktor.server.netty.DevelopmentEngine"
+applicationName = 'tveebot'
 
 kotlin { experimental { coroutines "enable" } }
 
