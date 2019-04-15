@@ -9,6 +9,7 @@ import dfialho.tveebot.tracker.api.models.TVShowEpisodeFile
 import dfialho.tveebot.utils.rssfeed.RSSFeedException
 import dfialho.tveebot.utils.rssfeed.RSSFeedItem
 import dfialho.tveebot.utils.rssfeed.RSSFeedReader
+import mu.KLogging
 import org.jsoup.Jsoup
 import java.net.URL
 
@@ -19,7 +20,7 @@ import java.net.URL
  */
 class ShowRSSProvider(private val idMapper: TVShowIDMapper) : TVShowProvider {
 
-    companion object {
+    companion object : KLogging() {
         private const val SHOWRSS_URL = "https://showrss.info/browse"
     }
 
@@ -42,9 +43,17 @@ class ShowRSSProvider(private val idMapper: TVShowIDMapper) : TVShowProvider {
         val showURL = URL("https://showrss.info/show/$showID.rss")
 
         val rssFeed = feedReader.read(showURL)
-        return rssFeed.items
-            .map { it.parseEpisode(tvShow) }
+        return rssFeed.items.mapNotNull { it.parseEpisodeOrNull(tvShow) }
             .distinctByMostRecent()
+    }
+
+    private fun RSSFeedItem.parseEpisodeOrNull(tvShow: TVShow): TVShowEpisodeFile? {
+        return try {
+            this.parseEpisode(tvShow)
+        } catch (e: RSSFeedException) {
+            logger.info(e) { "Failed to obtain episode information from RSS item: $this" }
+            null
+        }
     }
 }
 
@@ -58,7 +67,7 @@ internal fun RSSFeedItem.parseEpisode(tvShow: TVShow): TVShowEpisodeFile {
     val (episode, quality) = try {
         parseEpisodeTitle(this.title)
     } catch (e: IllegalArgumentException) {
-        throw RSSFeedException("Failed to parse episode information from ${this.title}", e)
+        throw RSSFeedException("Failed to parse episode information from RSS item: $this", e)
     }
 
     return TVShowEpisodeFile(
