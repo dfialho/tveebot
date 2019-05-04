@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        kotlinVersion = '1.3.11'
+        kotlinVersion = '1.3.31'
         guavaVersion = '26.0-jre'
         exposedVersion = '0.10.4'
         ktorVersion = '1.1.1'
