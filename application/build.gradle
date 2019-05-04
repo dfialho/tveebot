@@ -24,3 +24,16 @@ dependencies {
     compile "io.ktor:ktor-server-netty:$ktorVersion"
     compile "io.ktor:ktor-gson:$ktorVersion"
 }
+
+// Dirty hack to ensure the 'conf' directory is included in the classpath by the start script
+// Not using this hack, will result in the classpath to include 'lib/conf' instead of just 'conf'
+// Hack from: https://stackoverflow.com/questions/38416562/gradle-build-file-with-conf-folder-with-properties-not-in-jar-but-on-classpath
+startScripts {  
+    classpath += files('src/dist/XxxAPlaceHolderForAConfxxX')
+    doLast {
+        def windowsScriptFile = file getWindowsScript()
+        def unixScriptFile    = file getUnixScript()
+        windowsScriptFile.text = windowsScriptFile.text.replace('%APP_HOME%\\lib\\XxxAPlaceHolderForAConfxxX', '%APP_HOME%\\conf')
+        unixScriptFile.text  = unixScriptFile.text.replace('$APP_HOME/lib/XxxAPlaceHolderForAConfxxX', '$APP_HOME/conf')
+    }
+}
