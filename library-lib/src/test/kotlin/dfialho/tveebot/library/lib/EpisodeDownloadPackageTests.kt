@@ -3,10 +3,9 @@ package dfialho.tveebot.library.lib
 import assertk.assert
 import assertk.assertions.isEqualTo
 import assertk.assertions.isInstanceOf
-import io.kotlintest.Description
+import io.kotlintest.TestCase
 import io.kotlintest.TestResult
 import io.kotlintest.specs.AnnotationSpec
-import io.kotlintest.specs.Test
 import org.junit.rules.TemporaryFolder
 import java.nio.file.Path
 
@@ -19,14 +18,14 @@ class EpisodeDownloadPackageTests : AnnotationSpec() {
 
     val tmpFolder = TemporaryFolder()
 
-    override fun beforeTest(description: Description) {
-        super.beforeTest(description)
+    override fun beforeTest(testCase: TestCase) {
+        super.beforeTest(testCase)
         println("before each test")
         tmpFolder.create()
     }
 
-    override fun afterTest(description: Description, result: TestResult) {
-        super.afterTest(description, result)
+    override fun afterTest(testCase: TestCase, result: TestResult) {
+        super.afterTest(testCase, result)
         println("after each test")
         tmpFolder.delete()
     }
