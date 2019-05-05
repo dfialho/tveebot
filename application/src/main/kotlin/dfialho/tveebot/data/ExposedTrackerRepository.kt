@@ -1,34 +1,17 @@
 package dfialho.tveebot.data
 
-import dfialho.tveebot.data.models.EpisodeDownload
-import dfialho.tveebot.data.models.EpisodeEntity
-import dfialho.tveebot.data.models.TVShowEntity
+import dfialho.tveebot.application.api.EpisodeDownload
+import dfialho.tveebot.application.api.EpisodeEntity
+import dfialho.tveebot.application.api.TVShowEntity
 import dfialho.tveebot.downloader.api.DownloadReference
 import dfialho.tveebot.toEpisodeFile
-import dfialho.tveebot.tracker.api.models.Episode
-import dfialho.tveebot.tracker.api.models.EpisodeFile
-import dfialho.tveebot.tracker.api.models.ID
-import dfialho.tveebot.tracker.api.models.TVShow
-import dfialho.tveebot.tracker.api.models.TVShowEpisodeFile
-import dfialho.tveebot.tracker.api.models.VideoQuality
-import dfialho.tveebot.tracker.api.models.toVideoQuality
+import dfialho.tveebot.tracker.api.models.*
 import dfialho.tveebot.tracker.lib.EpisodeIDGenerator
 import dfialho.tveebot.tvShowEpisodeFileOf
 import dfialho.tveebot.utils.Result
 import org.jetbrains.exposed.exceptions.ExposedSQLException
-import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.ResultRow
-import org.jetbrains.exposed.sql.SchemaUtils
-import org.jetbrains.exposed.sql.Table
-import org.jetbrains.exposed.sql.and
-import org.jetbrains.exposed.sql.batchInsert
-import org.jetbrains.exposed.sql.deleteAll
-import org.jetbrains.exposed.sql.deleteWhere
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.select
-import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
-import org.jetbrains.exposed.sql.update
 import org.joda.time.DateTime
 
 /**
@@ -297,12 +280,13 @@ class ExposedTrackerRepository(private val db: Database) : TrackerRepository {
         return TVShows.select { TVShows.id eq id.value }.count() > 0
     }
 
-    private fun ResultRow.toTVShowEntity(): TVShowEntity = TVShowEntity(
-        id = ID(this[TVShows.id]),
-        title = this[TVShows.title],
-        quality = this[TVShows.quality].toVideoQuality(),
-        tracked = this[TVShows.tracked]
-    )
+    private fun ResultRow.toTVShowEntity(): TVShowEntity =
+        TVShowEntity(
+            id = ID(this[TVShows.id]),
+            title = this[TVShows.title],
+            quality = this[TVShows.quality].toVideoQuality(),
+            tracked = this[TVShows.tracked]
+        )
 
     private fun ResultRow.toTVShow(): TVShow = TVShow(
         id = ID(this[TVShows.id]),
@@ -310,22 +294,24 @@ class ExposedTrackerRepository(private val db: Database) : TrackerRepository {
         quality = this[TVShows.quality].toVideoQuality()
     )
 
-    private fun ResultRow.toEpisodeDownload(): EpisodeDownload = EpisodeDownload(
-        reference = DownloadReference(this[Downloads.reference]),
-        episode = tvShowEpisodeFileOf(
-            tvShow = this.toTVShow(),
-            episode = this.toEpisodeFile()
+    private fun ResultRow.toEpisodeDownload(): EpisodeDownload =
+        EpisodeDownload(
+            reference = DownloadReference(this[Downloads.reference]),
+            episode = tvShowEpisodeFileOf(
+                tvShow = this.toTVShow(),
+                episode = this.toEpisodeFile()
+            )
         )
-    )
-    private fun ResultRow.toEpisodeEntity(): EpisodeEntity = EpisodeEntity(
-        id = ID(this[Episodes.id]),
-        title = this[Episodes.title],
-        season = this[Episodes.season],
-        number = this[Episodes.number],
-        quality = this[Episodes.quality].toVideoQuality(),
-        link = this[Episodes.link],
-        publishDate = this[Episodes.publishDate].toDate().toInstant()
-    )
+    private fun ResultRow.toEpisodeEntity(): EpisodeEntity =
+        EpisodeEntity(
+            id = ID(this[Episodes.id]),
+            title = this[Episodes.title],
+            season = this[Episodes.season],
+            number = this[Episodes.number],
+            quality = this[Episodes.quality].toVideoQuality(),
+            link = this[Episodes.link],
+            publishDate = this[Episodes.publishDate].toDate().toInstant()
+        )
 
     private fun ResultRow.toEpisodeFile(): EpisodeFile = EpisodeFile(
         episode = Episode(

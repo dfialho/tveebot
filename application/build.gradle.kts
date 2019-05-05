@@ -21,6 +21,7 @@ dependencies {
     implementation(project(":downloader-lib"))
     implementation(project(":tracker-lib"))
     implementation(project(":library-lib"))
+    implementation(project(":application-api"))
 }
 
 dependencies {

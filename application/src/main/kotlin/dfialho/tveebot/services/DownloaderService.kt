@@ -1,12 +1,8 @@
 package dfialho.tveebot.services
 
+import dfialho.tveebot.application.api.EpisodeDownload
 import dfialho.tveebot.data.TrackerRepository
-import dfialho.tveebot.data.models.EpisodeDownload
-import dfialho.tveebot.downloader.api.DownloadEngine
-import dfialho.tveebot.downloader.api.DownloadHandle
-import dfialho.tveebot.downloader.api.DownloadListener
-import dfialho.tveebot.downloader.api.DownloadReference
-import dfialho.tveebot.downloader.api.DownloadStatus
+import dfialho.tveebot.downloader.api.*
 import dfialho.tveebot.exceptions.NotFoundException
 import dfialho.tveebot.services.models.FinishedDownloadParameters
 import dfialho.tveebot.toPrettyString

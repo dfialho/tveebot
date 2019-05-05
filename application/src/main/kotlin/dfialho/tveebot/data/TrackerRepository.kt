@@ -1,8 +1,8 @@
 package dfialho.tveebot.data
 
-import dfialho.tveebot.data.models.EpisodeDownload
-import dfialho.tveebot.data.models.EpisodeEntity
-import dfialho.tveebot.data.models.TVShowEntity
+import dfialho.tveebot.application.api.EpisodeDownload
+import dfialho.tveebot.application.api.EpisodeEntity
+import dfialho.tveebot.application.api.TVShowEntity
 import dfialho.tveebot.downloader.api.DownloadReference
 import dfialho.tveebot.tracker.api.TrackerEngine
 import dfialho.tveebot.tracker.api.models.EpisodeFile

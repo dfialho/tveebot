@@ -1,4 +1,4 @@
-package dfialho.tveebot.data.models
+package dfialho.tveebot.application.api
 
 enum class EpisodeState {
     AVAILABLE,

@@ -1,12 +1,8 @@
 package dfialho.tveebot
 
-import dfialho.tveebot.data.models.EpisodeEntity
-import dfialho.tveebot.data.models.TVShowEntity
-import dfialho.tveebot.tracker.api.models.Episode
-import dfialho.tveebot.tracker.api.models.EpisodeFile
-import dfialho.tveebot.tracker.api.models.TVShow
-import dfialho.tveebot.tracker.api.models.TVShowEpisode
-import dfialho.tveebot.tracker.api.models.TVShowEpisodeFile
+import dfialho.tveebot.application.api.EpisodeEntity
+import dfialho.tveebot.application.api.TVShowEntity
+import dfialho.tveebot.tracker.api.models.*
 
 @Suppress("NOTHING_TO_INLINE")
 inline fun TVShowEntity.toTVShow(): TVShow {

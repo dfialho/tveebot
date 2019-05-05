@@ -1,8 +1,8 @@
 package dfialho.tveebot.services
 
+import dfialho.tveebot.application.api.EpisodeEntity
+import dfialho.tveebot.application.api.TVShowEntity
 import dfialho.tveebot.data.TrackerRepository
-import dfialho.tveebot.data.models.EpisodeEntity
-import dfialho.tveebot.data.models.TVShowEntity
 import dfialho.tveebot.tracker.api.models.ID
 import mu.KLogging
 import java.util.*
