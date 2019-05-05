@@ -39,7 +39,13 @@ dependencies {
 tasks.startScripts {
     classpath = classpath?.plus(files("src/dist/XxxAPlaceHolderForAConfxxX"))
     doLast {
-        windowsScript.writeText(windowsScript.readText().replace("%APP_HOME%\\lib\\XxxAPlaceHolderForAConfxxX", "%APP_HOME%\\conf"))
-        unixScript.writeText(unixScript.readText().replace("\$APP_HOME/lib/XxxAPlaceHolderForAConfxxX", "\$APP_HOME/conf"))
+        windowsScript.writeText(
+            windowsScript.readText().replace("%APP_HOME%\\lib\\XxxAPlaceHolderForAConfxxX", "%APP_HOME%\\conf")
+        )
+        unixScript.writeText(
+            unixScript.readText()
+                .replace("\$APP_HOME/lib/XxxAPlaceHolderForAConfxxX", "\$APP_HOME/conf")
+                .replace("DEFAULT_JVM_OPTS=\"\"", "DEFAULT_JVM_OPTS=\"-Djava.library.path='\$APP_HOME/lib/native'\"")
+        )
     }
 }
