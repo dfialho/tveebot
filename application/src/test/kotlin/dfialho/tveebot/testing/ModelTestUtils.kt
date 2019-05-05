@@ -6,14 +6,14 @@ import dfialho.tveebot.tracker.api.models.TVShow
 import dfialho.tveebot.tracker.api.models.TVShowEpisode
 import dfialho.tveebot.tracker.api.models.TVShowEpisodeFile
 import dfialho.tveebot.tracker.api.models.VideoQuality
-import dfialho.tveebot.tracker.api.models.randomTVShowID
+import dfialho.tveebot.tracker.api.models.randomID
 import java.time.Instant
 import java.util.*
 
 private val random = Random(0)
 
 fun anyTVShow() = TVShow(
-    id = randomTVShowID(),
+    id = randomID(),
     title = "Show ${randomString()}",
     quality = VideoQuality.HD
 )

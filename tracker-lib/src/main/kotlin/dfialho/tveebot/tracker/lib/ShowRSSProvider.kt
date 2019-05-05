@@ -2,7 +2,7 @@ package dfialho.tveebot.tracker.lib
 
 import dfialho.tveebot.tracker.api.TVShowIDMapper
 import dfialho.tveebot.tracker.api.TVShowProvider
-import dfialho.tveebot.tracker.api.models.EpisodeID
+import dfialho.tveebot.tracker.api.models.ID
 import dfialho.tveebot.tracker.api.models.TVShow
 import dfialho.tveebot.tracker.api.models.TVShowEpisode
 import dfialho.tveebot.tracker.api.models.TVShowEpisodeFile
@@ -91,7 +91,7 @@ internal fun RSSFeedItem.parseEpisode(tvShow: TVShow): TVShowEpisodeFile {
  * @author David Fialho (dfialho@protonmail.com)
  */
 private fun Iterable<TVShowEpisodeFile>.distinctByMostRecent(): List<TVShowEpisodeFile> {
-    val distinctEpisodes = mutableMapOf<EpisodeID, TVShowEpisodeFile>()
+    val distinctEpisodes = mutableMapOf<ID, TVShowEpisodeFile>()
 
     for (episodeFile in this) {
 

@@ -7,9 +7,9 @@ import dfialho.tveebot.services.models.NewEpisodeParameters
 import dfialho.tveebot.toEpisodeFile
 import dfialho.tveebot.toPrettyString
 import dfialho.tveebot.toTVShow
+import dfialho.tveebot.tracker.api.models.ID
 import dfialho.tveebot.tracker.api.models.TVShow
 import dfialho.tveebot.tracker.api.models.TVShowEpisodeFile
-import dfialho.tveebot.tracker.api.models.TVShowID
 import dfialho.tveebot.tracker.api.models.VideoQuality
 import dfialho.tveebot.tvShowEpisodeFileOf
 import mu.KLogging
@@ -68,7 +68,7 @@ class TVeebotService(
      *
      * @throws NotFoundException if no TV show is found with the specified [tvShowID].
      */
-    fun setTVShowVideoQuality(tvShowID: TVShowID, newQuality: VideoQuality) {
+    fun setTVShowVideoQuality(tvShowID: ID, newQuality: VideoQuality) {
         val originalTVShow = repository.findTrackedTVShow(tvShowID)
             ?: throw NotFoundException("TV Show with ID '$tvShowID' not found")
 
@@ -104,7 +104,7 @@ class TVeebotService(
         }
     }
 
-    private fun removeDownloadsFrom(tvShowID: TVShowID) {
+    private fun removeDownloadsFrom(tvShowID: ID) {
         val downloads = repository.findDownloadsFrom(tvShowID)
         downloader.removeAll(downloads.map { it.reference })
 

@@ -3,7 +3,7 @@ package dfialho.tveebot.tracker.api.models
 import java.time.Instant
 
 data class TVShowEpisodeFile(
-    val tvShowID: TVShowID,
+    val tvShowID: ID,
     val tvShowTitle: String,
     val title: String,
     val season: Int,

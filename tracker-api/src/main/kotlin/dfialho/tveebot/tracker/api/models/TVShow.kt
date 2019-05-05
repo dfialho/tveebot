@@ -10,7 +10,7 @@ package dfialho.tveebot.tracker.api.models
  * @author David Fialho (dfialho@protonmail.com)
  */
 data class TVShow(
-    val id: TVShowID,
+    val id: ID,
     val title: String,
     val quality: VideoQuality = VideoQuality.default()
 )

@@ -1,6 +1,6 @@
 package dfialho.tveebot.data.models
 
-import dfialho.tveebot.tracker.api.models.TVShowID
+import dfialho.tveebot.tracker.api.models.ID
 import dfialho.tveebot.tracker.api.models.VideoQuality
 
 /**
@@ -14,7 +14,7 @@ import dfialho.tveebot.tracker.api.models.VideoQuality
  * @author David Fialho (dfialho@protonmail.com)
  */
 data class TVShowEntity(
-    val id: TVShowID,
+    val id: ID,
     val title: String,
     val quality: VideoQuality = VideoQuality.default(),
     val tracked: Boolean = false

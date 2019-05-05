@@ -7,8 +7,8 @@ import dfialho.tveebot.toTVShow
 import dfialho.tveebot.tracker.api.TVShowProvider
 import dfialho.tveebot.tracker.api.TrackerEngine
 import dfialho.tveebot.tracker.api.TrackingListener
+import dfialho.tveebot.tracker.api.models.ID
 import dfialho.tveebot.tracker.api.models.TVShowEpisodeFile
-import dfialho.tveebot.tracker.api.models.TVShowID
 import dfialho.tveebot.tracker.api.models.VideoQuality
 import dfialho.tveebot.tvShowEntityOf
 import mu.KLogging
@@ -53,7 +53,7 @@ class TrackerService(
      * @throws IllegalStateException if the TV show with ID [tvShowID] is already being tracked.
      * @throws NoSuchElementException if no TV show is found with id [tvShowID].
      */
-    fun trackTVShow(tvShowID: TVShowID, videoQuality: VideoQuality) {
+    fun trackTVShow(tvShowID: ID, videoQuality: VideoQuality) {
         // FIXME give repository support for transactions with multiple actions
         repository.setTracked(tvShowID, videoQuality)
 
@@ -69,7 +69,7 @@ class TrackerService(
      * @throws IllegalStateException if the TV show with ID [tvShowID] is already being tracked.
      * @throws NoSuchElementException if no TV show is found with id [tvShowID].
      */
-    fun untrackTVShow(tvShowID: TVShowID) {
+    fun untrackTVShow(tvShowID: ID) {
         repository.findTrackedTVShow(tvShowID)?.let {
             repository.setNotTracked(tvShowID)
 

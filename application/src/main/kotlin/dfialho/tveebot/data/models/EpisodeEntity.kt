@@ -1,11 +1,11 @@
 package dfialho.tveebot.data.models
 
-import dfialho.tveebot.tracker.api.models.EpisodeID
+import dfialho.tveebot.tracker.api.models.ID
 import dfialho.tveebot.tracker.api.models.VideoQuality
 import java.time.Instant
 
 data class EpisodeEntity(
-    val id: EpisodeID,
+    val id: ID,
     val season: Int,
     val number: Int,
     val title: String,

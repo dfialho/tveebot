@@ -1,8 +1,8 @@
 package dfialho.tveebot.tracker.lib
 
 import dfialho.tveebot.tracker.api.TVShowIDMapper
-import dfialho.tveebot.tracker.api.models.TVShowID
-import dfialho.tveebot.tracker.api.models.randomTVShowID
+import dfialho.tveebot.tracker.api.models.ID
+import dfialho.tveebot.tracker.api.models.randomID
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.Table
@@ -23,13 +23,13 @@ class ExposedTVShowIDMapper(private val db: Database) : TVShowIDMapper {
         }
     }
 
-    override fun get(tvShowID: TVShowID): String? = transaction(db) {
+    override fun get(tvShowID: ID): String? = transaction(db) {
         IDs.select { IDs.id eq tvShowID.value }
             .map { it[IDs.providerID] }
             .firstOrNull()
     }
 
-    override fun set(tvShowID: TVShowID, providerID: String) {
+    override fun set(tvShowID: ID, providerID: String) {
         transaction(db) {
             IDs.insert {
                 it[IDs.id] = tvShowID.value
@@ -38,14 +38,14 @@ class ExposedTVShowIDMapper(private val db: Database) : TVShowIDMapper {
         }
     }
 
-    override fun getTVShowID(providerID: String): TVShowID {
-        val tvShowID: TVShowID? = transaction(db) {
+    override fun getTVShowID(providerID: String): ID {
+        val tvShowID: ID? = transaction(db) {
             IDs.select { IDs.providerID eq providerID }
                 .map { it[IDs.id] }
-                .map { TVShowID(it) }
+                .map { ID(it) }
                 .firstOrNull()
         }
 
-        return tvShowID ?: randomTVShowID().apply { set(this, providerID) }
+        return tvShowID ?: randomID().apply { set(this, providerID) }
     }
 }

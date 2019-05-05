@@ -6,8 +6,8 @@ import dfialho.tveebot.data.models.TVShowEntity
 import dfialho.tveebot.downloader.api.DownloadReference
 import dfialho.tveebot.tracker.api.TrackerEngine
 import dfialho.tveebot.tracker.api.models.EpisodeFile
+import dfialho.tveebot.tracker.api.models.ID
 import dfialho.tveebot.tracker.api.models.TVShowEpisodeFile
-import dfialho.tveebot.tracker.api.models.TVShowID
 import dfialho.tveebot.tracker.api.models.VideoQuality
 import dfialho.tveebot.tvShowEntityOf
 import dfialho.tveebot.utils.Result
@@ -40,7 +40,7 @@ interface TrackerRepository {
     /**
      * Returns the [tvShowEntityOf] identified by [tvShowID].
      */
-    fun findTrackedTVShow(tvShowID: TVShowID): TVShowEntity?
+    fun findTrackedTVShow(tvShowID: ID): TVShowEntity?
 
     /**
      * Returns a list containing every TV show in the repository.
@@ -64,7 +64,7 @@ interface TrackerRepository {
      * @throws IllegalStateException if the TV show with ID [tvShowID] is already being tracked.
      * @throws NoSuchElementException if no TV show with ID [tvShowID] exists.
      */
-    fun setTracked(tvShowID: TVShowID, quality: VideoQuality)
+    fun setTracked(tvShowID: ID, quality: VideoQuality)
 
     /**
      * Marks the TV show with [tvShowID] as not being tracked. If the TV show was being tracked it will lost all
@@ -74,14 +74,14 @@ interface TrackerRepository {
      * @throws IllegalStateException if the TV show with ID [tvShowID] is already not being tracked.
      * @throws NoSuchElementException if no TV show with ID [tvShowID] exists.
      */
-    fun setNotTracked(tvShowID: TVShowID)
+    fun setNotTracked(tvShowID: ID)
 
     /**
      * Sets the [videoQuality] for the tracked TV show identified by [tvShowID].
      *
      * @throws NoSuchElementException if no TV show with ID [tvShowID] is being tracked
      */
-    fun setTVShowVideoQuality(tvShowID: TVShowID, videoQuality: VideoQuality)
+    fun setTVShowVideoQuality(tvShowID: ID, videoQuality: VideoQuality)
 
     /**
      * Inserts the [episode] into the repository associated with the TV show with [tvShowID], if it does not
@@ -92,7 +92,7 @@ interface TrackerRepository {
      * @throws IllegalArgumentException if the format of some of the parameters is invalid. For instance, the title
      * is too long.
      */
-    fun put(tvShowID: TVShowID, episode: EpisodeFile): Result
+    fun put(tvShowID: ID, episode: EpisodeFile): Result
 
     /**
      * Inserts the [episode] into the repository, if it does not exist yet. Otherwise it throws an exception.
@@ -119,7 +119,7 @@ interface TrackerRepository {
      * @throws IllegalArgumentException if the format of some of the parameters is invalid. For instance, the title
      * is too long.
      */
-    fun putOrUpdateIf(tvShowID: TVShowID, episode: EpisodeFile, predicate: (old: EpisodeFile, new: EpisodeFile) -> Boolean): Boolean
+    fun putOrUpdateIf(tvShowID: ID, episode: EpisodeFile, predicate: (old: EpisodeFile, new: EpisodeFile) -> Boolean): Boolean
 
     /**
      * Retrieves every episode from TV show identified by [tvShowID] available in the repository. If no episode file
@@ -128,10 +128,10 @@ interface TrackerRepository {
      * @throws TrackerRepositoryException if some error occurs when executing this operation.
      * @throws NoSuchElementException if the repository does not contain a TV show with the specified [tvShowID].
      */
-    fun findEpisodesFrom(tvShowID: TVShowID): List<EpisodeEntity>
+    fun findEpisodesFrom(tvShowID: ID): List<EpisodeEntity>
 
 //    TODO
-//    fun findEpisodesFrom(tvShowID: TVShowID, quality: VideoQuality): List<EpisodeEntity>
+//    fun findEpisodesFrom(tvShowID: ID, quality: VideoQuality): List<EpisodeEntity>
 
     /**
      * Retrieves every episode in the repository and groups it by TV show.
@@ -143,7 +143,7 @@ interface TrackerRepository {
      * file is found then this method has no effect. If the episode has downloads associated with it, then those are
      * removed too.
      */
-    fun removeEpisodesFrom(tvShowID: TVShowID)
+    fun removeEpisodesFrom(tvShowID: ID)
 
     /**
      * Inserts the episode [download] into the repository.
@@ -169,7 +169,7 @@ interface TrackerRepository {
      * Returns a list containing every download in the repository corresponding to an episode from the TV show
      * identified by [tvShowID].
      */
-    fun findDownloadsFrom(tvShowID: TVShowID): List<EpisodeDownload>
+    fun findDownloadsFrom(tvShowID: ID): List<EpisodeDownload>
 
     /**
      * Removes the download with the given [reference]. If the repository does not contain a download with [reference],
@@ -186,7 +186,7 @@ interface TrackerRepository {
     /**
      * Removes every download of an episode from the TV show identified by [tvShowID].
      */
-    fun removeAllDownloadsFrom(tvShowID: TVShowID)
+    fun removeAllDownloadsFrom(tvShowID: ID)
 
     /**
      * Remove everything from the repository.
