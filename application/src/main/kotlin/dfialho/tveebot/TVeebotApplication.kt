@@ -65,7 +65,7 @@ fun Application.mainModule() {
         bind<DownloaderService>() with singleton { DownloaderService(instance(), instance(), instance()) }
         bind<OrganizerService>() with singleton { OrganizerService(instance()) }
         bind<InformationService>() with singleton { InformationService(instance()) }
-        bind<TVeebotService>() with singleton { TVeebotService(instance(), instance(), instance(), instance()) }
+        bind<TVeebotService>() with singleton { TVeebotService(instance(), instance(), instance(), instance(), instance()) }
 
         bind<ServiceManager>() with singleton {
             ServiceManager(instance(), instance(), instance(), instance(), instance(), instance())

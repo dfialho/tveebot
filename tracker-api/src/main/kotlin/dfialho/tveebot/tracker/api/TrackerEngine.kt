@@ -34,6 +34,11 @@ interface TrackerEngine {
     fun stop()
 
     /**
+     * Signals the engine to check if there is any new episodes.
+     */
+    fun check()
+
+    /**
      * Adds a new [TrackingListener] which will be notified when a new episode file is found by this tracker.
      */
     fun addListener(listener: TrackingListener)

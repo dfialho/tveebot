@@ -15,6 +15,7 @@ import dfialho.tveebot.tvShowEpisodeFileOf
 import mu.KLogging
 
 class TVeebotService(
+    private val tracker: TrackerService,
     private val downloader: DownloaderService,
     private val organizer: OrganizerService,
     private val repository: TrackerRepository,
@@ -40,7 +41,11 @@ class TVeebotService(
     }
 
     private fun onStartedTrackingTVShow(tvShow: TVShow) {
+        logger.debug { "Starting downloads of episodes already available for '$tvShow'" }
         downloadEpisodesFrom(tvShow)
+
+        logger.debug { "Triggered episode check after starting to track TV show '$tvShow'" }
+        tracker.check()
     }
 
     private fun onStoppedTrackingTVShow(tvShow: TVShow) {

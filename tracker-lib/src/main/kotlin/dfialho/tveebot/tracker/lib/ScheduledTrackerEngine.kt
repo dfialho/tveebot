@@ -31,6 +31,20 @@ class ScheduledTrackerEngine(
     override fun scheduler(): Scheduler = Scheduler.newFixedRateSchedule(1, checkPeriod, TimeUnit.SECONDS)
 
     override fun runOneIteration() {
+       check()
+    }
+
+    override fun start() {
+        startAsync()
+        awaitRunning()
+    }
+
+    override fun stop() {
+        stopAsync()
+        awaitTerminated()
+    }
+
+    override fun check() {
         try {
             logger.debug { "Checking for new episodes..." }
 
@@ -56,16 +70,6 @@ class ScheduledTrackerEngine(
         } catch (e: Exception) {
             logger.error(e) { "Unexpected error occurred while fetching events from provider" }
         }
-    }
-
-    override fun start() {
-        startAsync()
-        awaitRunning()
-    }
-
-    override fun stop() {
-        stopAsync()
-        awaitTerminated()
     }
 
     override fun addListener(listener: TrackingListener) {

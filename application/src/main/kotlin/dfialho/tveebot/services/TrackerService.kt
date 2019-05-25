@@ -79,4 +79,11 @@ class TrackerService(
             alertService.raiseAlert(Alerts.StoppedTrackingTVShow, it.toTVShow())
         }
     }
+
+    /**
+     * Forces the tracker to check for new episodes.
+     */
+    fun check() {
+        engine.check()
+    }
 }
