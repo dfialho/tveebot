@@ -14,29 +14,16 @@ import dfialho.tveebot.routing.downloader
 import dfialho.tveebot.routing.info
 import dfialho.tveebot.routing.tracker
 import dfialho.tveebot.routing.tveebot
-import dfialho.tveebot.services.AlertService
-import dfialho.tveebot.services.DownloaderService
-import dfialho.tveebot.services.InformationService
-import dfialho.tveebot.services.OrganizerService
-import dfialho.tveebot.services.ServiceManager
-import dfialho.tveebot.services.TVeebotService
-import dfialho.tveebot.services.TrackerService
-import dfialho.tveebot.tracker.api.EpisodeLedger
-import dfialho.tveebot.tracker.api.TVShowIDMapper
-import dfialho.tveebot.tracker.api.TVShowProvider
-import dfialho.tveebot.tracker.api.TrackerEngine
-import dfialho.tveebot.tracker.api.TrackingList
+import dfialho.tveebot.services.*
+import dfialho.tveebot.tracker.api.*
 import dfialho.tveebot.tracker.lib.DirectTVShowIDMapper
 import dfialho.tveebot.tracker.lib.ScheduledTrackerEngine
 import dfialho.tveebot.tracker.lib.ShowRSSProvider
-import io.ktor.application.Application
-import io.ktor.application.ApplicationStopPreparing
-import io.ktor.application.ApplicationStopped
-import io.ktor.application.install
-import io.ktor.application.log
+import io.ktor.application.*
 import io.ktor.config.ApplicationConfigurationException
 import io.ktor.features.ContentNegotiation
 import io.ktor.gson.gson
+import io.ktor.routing.route
 import io.ktor.routing.routing
 import io.ktor.server.engine.ApplicationEngineEnvironment
 import io.ktor.util.KtorExperimentalAPI
@@ -133,10 +120,12 @@ fun Application.installModule() {
 
 fun Application.routingModule(serviceManager: ServiceManager) {
     routing {
-        tracker(serviceManager.tracker)
-        downloader(serviceManager.downloader)
-        info(serviceManager.information)
-        tveebot(serviceManager.tveebot)
+        route("api") {
+            tracker(serviceManager.tracker)
+            downloader(serviceManager.downloader)
+            info(serviceManager.information)
+            tveebot(serviceManager.tveebot)
+        }
     }
 }
 

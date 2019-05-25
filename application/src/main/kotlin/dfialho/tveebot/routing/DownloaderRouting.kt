@@ -5,7 +5,7 @@ import dfialho.tveebot.exceptions.NotFoundException
 import dfialho.tveebot.services.DownloaderService
 import io.ktor.application.call
 import io.ktor.response.respond
-import io.ktor.routing.Routing
+import io.ktor.routing.Route
 import io.ktor.routing.get
 import io.ktor.routing.route
 
@@ -15,7 +15,7 @@ import io.ktor.routing.route
  *
  * @author David Fialho (dfialho@protonmail.com)
  */
-fun Routing.downloader(service: DownloaderService) = route("downloader") {
+fun Route.downloader(service: DownloaderService) = route("downloader") {
 
     route("status") {
 

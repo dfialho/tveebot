@@ -6,7 +6,7 @@ import dfialho.tveebot.tracker.api.models.VideoQuality
 import dfialho.tveebot.tracker.api.models.toVideoQuality
 import io.ktor.application.call
 import io.ktor.response.respondText
-import io.ktor.routing.Routing
+import io.ktor.routing.Route
 import io.ktor.routing.post
 import io.ktor.routing.route
 
@@ -16,7 +16,7 @@ import io.ktor.routing.route
  *
  * @author David Fialho (dfialho@protonmail.com)
  */
-fun Routing.tracker(service: TrackerService) = route("tracker") {
+fun Route.tracker(service: TrackerService) = route("tracker") {
 
     /**
      * Requests the tracker to start tracking the TV show identified by the specified ID.
