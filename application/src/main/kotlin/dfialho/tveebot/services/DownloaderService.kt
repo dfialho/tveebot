@@ -30,7 +30,8 @@ class DownloaderService(
             engine.remove(handle.reference)
 
             logger.debug { "Fetching download from repository: $reference" }
-            val download = repository.findDownload(reference) ?: throw IllegalStateException("Cannot find download: $reference")
+            val download =
+                repository.findDownload(reference) ?: throw IllegalStateException("Cannot find download: $reference")
             repository.removeDownload(reference)
             logger.info { "Finished downloading episode: ${download.episode}" }
 
@@ -91,20 +92,26 @@ class DownloaderService(
      * @throws NoSuchElementException If not download with [reference] can be found
      */
     fun remove(reference: DownloadReference) {
-
-        if (!engine.remove(reference)) {
-            throwNotFoundError(reference)
-        }
-
         repository.removeDownload(reference)
+        removeDownload(reference)
     }
 
     /**
      * Removes all downloads in the given references.
      */
     fun removeAll(references: List<DownloadReference>) {
-        references.forEach { engine.remove(it) }
         repository.removeAllDownloads(references)
+        references.forEach { removeDownload(it) }
+    }
+
+    private fun removeDownload(reference: DownloadReference) {
+        val handle = engine.getHandle(reference) ?: throwNotFoundError(reference)
+
+        logger.debug { "Cleanup temporary data from download: $reference" }
+        handle.savePath.toFile().deleteRecursively()
+
+        logger.debug { "Removing download from engine: $reference" }
+        engine.remove(reference)
     }
 }
 
