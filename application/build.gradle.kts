@@ -34,6 +34,11 @@ dependencies {
     compile("io.ktor:ktor-gson:$ktorVersion")
 }
 
+tasks.named<JavaExec>("run") {
+    classpath += files("src/main/dist/conf")
+    systemProperty("java.library.path", "src/main/dist/lib/native")
+}
+
 // Dirty hack to ensure the 'conf' directory is included in the classpath by the start script
 // Not using this hack, will result in the classpath to include 'lib/conf' instead of just 'conf'
 // Hack from: https://stackoverflow.com/questions/38416562/gradle-build-file-with-conf-folder-with-properties-not-in-jar-but-on-classpath
