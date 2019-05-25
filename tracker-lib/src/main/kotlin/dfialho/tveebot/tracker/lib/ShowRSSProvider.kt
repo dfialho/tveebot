@@ -51,7 +51,7 @@ class ShowRSSProvider(private val idMapper: TVShowIDMapper) : TVShowProvider {
         return try {
             this.parseEpisode(tvShow)
         } catch (e: RSSFeedException) {
-            logger.info(e) { "Failed to obtain episode information from RSS item: $this" }
+            logger.warn { "Failed to obtain episode information from RSS item: $this" }
             null
         }
     }
