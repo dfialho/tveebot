@@ -15,16 +15,38 @@ class DownloaderService(
     private val repository: TrackerRepository,
     private val alertService: AlertService
 
-) : Service, DownloadListener {
+) : Service {
 
     companion object : KLogging()
 
-    override val name: String
-        get() = "Downloader Service"
+    private inner class EngineListener : DownloadListener {
+        override fun onFinishedDownload(handle: DownloadHandle) {
+            logger.debug { "Finished downloading: ${handle.reference}" }
+
+            // Extract information from handle before removing download
+            // Afterwards the handle becomes invalid
+            val reference = handle.reference
+            val savePath = handle.savePath
+            engine.remove(handle.reference)
+
+            logger.debug { "Fetching download from repository: $reference" }
+            val download = repository.findDownload(reference) ?: throw IllegalStateException("Cannot find download: $reference")
+            repository.removeDownload(reference)
+            logger.info { "Finished downloading episode: ${download.episode}" }
+
+            val notification = FinishedDownloadNotification(download.episode, savePath)
+            alertService.raiseAlert(Alerts.DownloadFinished, notification)
+            logger.debug { "Notification sent to alert service: $notification" }
+        }
+    }
+
+    private val engineListener = EngineListener()
+
+    override val name: String = DownloaderService::class.simpleName!!
 
     override fun start() = logStart(logger) {
         engine.start()
-        engine.addListener(this)
+        engine.addListener(engineListener)
 
         // Restart every download in the queue
         val episodeDownloads: List<EpisodeDownload> = repository.findAllDownloads()
@@ -34,26 +56,7 @@ class DownloaderService(
 
     override fun stop() = logStop(logger) {
         engine.stop()
-        engine.removeListener(this)
-    }
-
-    override fun onFinishedDownload(handle: DownloadHandle) {
-        logger.debug { "Finished downloading: ${handle.reference}" }
-
-        // Extract information from handle before removing download
-        // Afterwards the handle becomes invalid
-        val reference = handle.reference
-        val savePath = handle.savePath
-        engine.remove(handle.reference)
-
-        logger.debug { "Fetching download from repository: $reference" }
-        val download = repository.findDownload(reference) ?: throw IllegalStateException("Cannot find download: $reference")
-        repository.removeDownload(reference)
-        logger.info { "Finished downloading episode: ${download.episode}" }
-
-        val notification = FinishedDownloadNotification(download.episode, savePath)
-        alertService.raiseAlert(Alerts.DownloadFinished, notification)
-        logger.debug { "Notification sent to alert service: $notification" }
+        engine.removeListener(engineListener)
     }
 
     /**

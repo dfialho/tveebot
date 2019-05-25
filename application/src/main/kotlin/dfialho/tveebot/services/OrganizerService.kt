@@ -12,8 +12,7 @@ import java.util.concurrent.TimeUnit
 class OrganizerService(private val library: TVShowLibrary) : Service {
     companion object : KLogging()
 
-    override val name: String
-        get() = "Organizer Service"
+    override val name: String = OrganizerService::class.simpleName!!
 
     private val executor = Executors.newSingleThreadExecutor()
 

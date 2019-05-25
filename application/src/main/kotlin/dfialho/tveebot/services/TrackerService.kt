@@ -20,30 +20,32 @@ class TrackerService(
     private val repository: TrackerRepository,
     private val alertService: AlertService
 
-) : Service, TrackingListener {
+) : Service {
 
     companion object : KLogging()
 
-    override val name: String
-        get() = "Tracker Service"
+    private inner class EngineListener : TrackingListener {
+        override fun onNewEpisode(episode: TVShowEpisodeFile, tvShowQuality: VideoQuality) {
+            logger.info { "Found new episode: ${episode.toPrettyString()}" }
+            alertService.raiseAlert(Alerts.NewEpisodeFound, NewEpisodeNotification(episode, tvShowQuality))
+        }
+    }
+
+    private val engineListener = EngineListener()
+
+    override val name: String = TrackerService::class.simpleName!!
 
     override fun start() = logStart(logger) {
         repository.putAll(provider.fetchTVShows().map { tvShowEntityOf(it) })
         logger.trace { "Repository: ${repository.findAllTVShows()}" }
 
         engine.start()
-        engine.addListener(this)
+        engine.addListener(engineListener)
     }
 
     override fun stop() = logStop(logger) {
         engine.stop()
-        engine.removeListener(this)
-    }
-
-    // Invoked when the tracker engine finds a new episode
-    override fun onNewEpisode(episode: TVShowEpisodeFile, tvShowQuality: VideoQuality) {
-        logger.info { "Found new episode: ${episode.toPrettyString()}" }
-        alertService.raiseAlert(Alerts.NewEpisodeFound, NewEpisodeNotification(episode, tvShowQuality))
+        engine.removeListener(engineListener)
     }
 
     /**
