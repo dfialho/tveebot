@@ -1,18 +1,30 @@
 <configuration>
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>INFO</level>
+        </filter>
+
         <encoder>
-            <pattern>%d{YYYY-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <pattern>%-5level: %msg%n</pattern>
         </encoder>
     </appender>
 
-    <root level="trace">
-        <appender-ref ref="STDOUT"/>
-    </root>
+    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+        <encoder>
+            <pattern>%d{YYYY-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+
+        <file>log/tveebot.log</file>
+        <append>true</append>
+    </appender>
 
     <logger name="Application" level="DEBUG"/>
     <logger name="org.eclipse.jetty" level="INFO"/>
     <logger name="io.netty" level="INFO"/>
     <logger name="Exposed" level="WARN"/>
-    <logger name="dfialho.tveebot.tracker.lib.ScheduledTrackerEngine" level="INFO"/>
-    <logger name="dfialho.tveebot.services" level="INFO"/>
+
+    <root level="DEBUG">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="FILE"/>
+    </root>
 </configuration>

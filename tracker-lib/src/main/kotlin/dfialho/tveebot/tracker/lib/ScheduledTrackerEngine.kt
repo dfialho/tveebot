@@ -1,11 +1,7 @@
 package dfialho.tveebot.tracker.lib
 
 import com.google.common.util.concurrent.AbstractScheduledService
-import dfialho.tveebot.tracker.api.EpisodeLedger
-import dfialho.tveebot.tracker.api.TVShowProvider
-import dfialho.tveebot.tracker.api.TrackerEngine
-import dfialho.tveebot.tracker.api.TrackingList
-import dfialho.tveebot.tracker.api.TrackingListener
+import dfialho.tveebot.tracker.api.*
 import dfialho.tveebot.tracker.api.models.TVShowEpisodeFile
 import dfialho.tveebot.utils.succeeded
 import mu.KLogging
@@ -34,30 +30,32 @@ class ScheduledTrackerEngine(
     // Use a scheduler which calls [runOneIteration] periodically to check for new episodes
     override fun scheduler(): Scheduler = Scheduler.newFixedRateSchedule(1, checkPeriod, TimeUnit.SECONDS)
 
-    override fun runOneIteration(): Unit = try {
-        logger.info { "Checking for new episodes..." }
+    override fun runOneIteration() {
+        try {
+            logger.debug { "Checking for new episodes..." }
 
-        for (tvShow in trackingList) {
+            for (tvShow in trackingList) {
 
-            val episodes: List<TVShowEpisodeFile> = try {
-                provider.fetchEpisodes(tvShow)
-            } catch (e: IOException) {
-                logger.warn(e) { "Failed to fetch episodes for '${tvShow.title}' from the provider" }
-                continue
-            }
+                val episodes: List<TVShowEpisodeFile> = try {
+                    provider.fetchEpisodes(tvShow)
+                } catch (e: IOException) {
+                    logger.error(e) { "Failed to fetch episodes for '${tvShow.title}' from the provider" }
+                    continue
+                }
 
-            logger.trace { "Episodes for '${tvShow.title}': $episodes" }
+                logger.trace { "Episodes available from TV Show '${tvShow.title}': $episodes" }
 
-            for (episode in episodes) {
-                if (episodeLedger.appendOrUpdate(episode).succeeded) {
-                    logger.debug { "New episode: $episode" }
-                    listeners.forEach { it.notify(episode, tvShow.quality) }
+                for (episode in episodes) {
+                    if (episodeLedger.appendOrUpdate(episode).succeeded) {
+                        logger.debug { "New episode: $episode" }
+                        listeners.forEach { it.onNewEpisode(episode, tvShow.quality) }
+                    }
                 }
             }
-        }
 
-    } catch (e: Exception) {
-        logger.error(e) { "Unexpected error occurred while fetching events from provider" }
+        } catch (e: Exception) {
+            logger.error(e) { "Unexpected error occurred while fetching events from provider" }
+        }
     }
 
     override fun start() {

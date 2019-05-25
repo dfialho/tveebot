@@ -2,8 +2,8 @@ package dfialho.tveebot.services
 
 import dfialho.tveebot.data.TrackerRepository
 import dfialho.tveebot.exceptions.NotFoundException
-import dfialho.tveebot.services.models.FinishedDownloadParameters
-import dfialho.tveebot.services.models.NewEpisodeParameters
+import dfialho.tveebot.services.models.FinishedDownloadNotification
+import dfialho.tveebot.services.models.NewEpisodeNotification
 import dfialho.tveebot.toEpisodeFile
 import dfialho.tveebot.toPrettyString
 import dfialho.tveebot.toTVShow
@@ -47,17 +47,16 @@ class TVeebotService(
         removeDownloadsFrom(tvShow.id)
     }
 
-    private fun onNewEpisodeFound(parameters: NewEpisodeParameters) {
-        downloadEpisode(parameters.episode, parameters.tvShowVideoQuality)
+    private fun onNewEpisodeFound(notification: NewEpisodeNotification) {
+        with(notification) {
+            downloadEpisode(episode, tvShowVideoQuality)
+        }
     }
 
-    private fun onFinishedDownload(parameters: FinishedDownloadParameters) {
-        val download = repository.findDownload(parameters.reference) ?: throw IllegalStateException("Download was already removed")
-
-        logger.info { "Finished downloading: ${download.episode.toPrettyString()}" }
-        repository.removeDownload(download.reference)
-
-        organizer.store(download.episode, parameters.savePath)
+    private fun onFinishedDownload(notification: FinishedDownloadNotification) {
+        with(notification) {
+            organizer.store(episode, savePath)
+        }
     }
 
     /**

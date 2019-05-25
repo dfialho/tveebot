@@ -36,6 +36,7 @@ class OrganizerService(private val library: TVShowLibrary) : Service {
             try {
                 logger.debug { "Storing episode in library: ${episode.toPrettyString()}" }
                 library.store(episode.toTVShowEpisode(), EpisodeDownloadPackage(episodeCurrentLocation))
+                logger.info { "Stored episode ${episode.toPrettyString()} in library" }
 
             } catch (e: Throwable) {
                 logger.error(e) { "Failed to store episode in library" }

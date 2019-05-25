@@ -1,11 +1,7 @@
 package dfialho.tveebot.downloader.libtorrent
 
+import com.frostwire.jlibtorrent.*
 import com.frostwire.jlibtorrent.AddTorrentParams.parseMagnetUri
-import com.frostwire.jlibtorrent.AlertListener
-import com.frostwire.jlibtorrent.SessionManager
-import com.frostwire.jlibtorrent.Sha1Hash
-import com.frostwire.jlibtorrent.TorrentHandle
-import com.frostwire.jlibtorrent.TorrentInfo
 import com.frostwire.jlibtorrent.alerts.Alert
 import com.frostwire.jlibtorrent.alerts.AlertType
 import com.frostwire.jlibtorrent.alerts.TorrentFinishedAlert
@@ -163,7 +159,7 @@ class LibTorrentDownloadEngine(private val savePath: Path) : AbstractIdleService
             // Monitoring only finished downloads
             if (alert is TorrentFinishedAlert) {
                 // Notify every listener registered with the engine
-                listeners.forEach { it.notifyFinished(LibTorrentDownloadHandle(this@LibTorrentDownloadEngine, alert.handle())) }
+                listeners.forEach { it.onFinishedDownload(LibTorrentDownloadHandle(this@LibTorrentDownloadEngine, alert.handle())) }
             }
         }
     }

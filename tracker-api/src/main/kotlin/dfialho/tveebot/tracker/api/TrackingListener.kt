@@ -17,5 +17,5 @@ interface TrackingListener {
      *
      * @param episode The newly found episode.
      */
-    fun notify(episode: TVShowEpisodeFile, tvShowQuality: VideoQuality)
+    fun onNewEpisode(episode: TVShowEpisodeFile, tvShowQuality: VideoQuality)
 }

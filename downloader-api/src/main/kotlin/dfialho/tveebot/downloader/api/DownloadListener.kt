@@ -11,5 +11,5 @@ interface DownloadListener {
     /**
      * Invoked with the [handle] of a download when that download has finished downloading.
      */
-    fun notifyFinished(handle: DownloadHandle)
+    fun onFinishedDownload(handle: DownloadHandle)
 }

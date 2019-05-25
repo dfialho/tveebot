@@ -18,10 +18,10 @@ class AlertService : Service {
     override fun stop() = logStop(logger)
 
     fun <T> subscribe(alert: Alert<T>, service: Service, handler: AlertHandler<T>) {
-        handlers.computeIfAbsent(alert) { arrayListOf() }
+        handlers.computeIfAbsent(alert) { mutableListOf() }
             .add(AlertRegistration(service, handler))
 
-        logger.debug { "Service '$service' subscribed to " }
+        logger.debug { "Service '${service.name}' subscribed to '${alert.name}'" }
     }
 
     fun <T> unsubscribe(alert: Alert<T>, handlingService: Service) {
@@ -49,5 +49,5 @@ class AlertService : Service {
 
 typealias AlertHandler<T> = Service.(T) -> Unit
 
-class Alert<T>
+class Alert<T>(val name: String)
 

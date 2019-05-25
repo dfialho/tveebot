@@ -1,9 +1,9 @@
 package dfialho.tveebot.services.models
 
 import dfialho.tveebot.tracker.api.models.TVShowEpisodeFile
-import dfialho.tveebot.tracker.api.models.VideoQuality
+import java.nio.file.Path
 
-data class NewEpisodeParameters(
+data class FinishedDownloadNotification(
     val episode: TVShowEpisodeFile,
-    val tvShowVideoQuality: VideoQuality
+    val savePath: Path
 )

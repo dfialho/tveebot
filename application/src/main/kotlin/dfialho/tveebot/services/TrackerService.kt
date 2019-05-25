@@ -1,7 +1,7 @@
 package dfialho.tveebot.services
 
 import dfialho.tveebot.data.TrackerRepository
-import dfialho.tveebot.services.models.NewEpisodeParameters
+import dfialho.tveebot.services.models.NewEpisodeNotification
 import dfialho.tveebot.toPrettyString
 import dfialho.tveebot.toTVShow
 import dfialho.tveebot.tracker.api.TVShowProvider
@@ -41,9 +41,9 @@ class TrackerService(
     }
 
     // Invoked when the tracker engine finds a new episode
-    override fun notify(episode: TVShowEpisodeFile, tvShowQuality: VideoQuality) {
+    override fun onNewEpisode(episode: TVShowEpisodeFile, tvShowQuality: VideoQuality) {
         logger.info { "Found new episode: ${episode.toPrettyString()}" }
-        alertService.raiseAlert(Alerts.NewEpisodeFound, NewEpisodeParameters(episode, tvShowQuality))
+        alertService.raiseAlert(Alerts.NewEpisodeFound, NewEpisodeNotification(episode, tvShowQuality))
     }
 
     /**

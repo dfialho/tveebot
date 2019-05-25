@@ -4,7 +4,7 @@ import dfialho.tveebot.application.api.EpisodeDownload
 import dfialho.tveebot.data.TrackerRepository
 import dfialho.tveebot.downloader.api.*
 import dfialho.tveebot.exceptions.NotFoundException
-import dfialho.tveebot.services.models.FinishedDownloadParameters
+import dfialho.tveebot.services.models.FinishedDownloadNotification
 import dfialho.tveebot.toPrettyString
 import dfialho.tveebot.tracker.api.models.TVShowEpisodeFile
 import mu.KLogging
@@ -37,7 +37,7 @@ class DownloaderService(
         engine.removeListener(this)
     }
 
-    override fun notifyFinished(handle: DownloadHandle) {
+    override fun onFinishedDownload(handle: DownloadHandle) {
         logger.debug { "Finished downloading: ${handle.reference}" }
 
         // Extract information from handle before removing download
@@ -46,7 +46,14 @@ class DownloaderService(
         val savePath = handle.savePath
         engine.remove(handle.reference)
 
-        alertService.raiseAlert(Alerts.DownloadFinished, FinishedDownloadParameters(reference, savePath))
+        logger.debug { "Fetching download from repository: $reference" }
+        val download = repository.findDownload(reference) ?: throw IllegalStateException("Cannot find download: $reference")
+        repository.removeDownload(reference)
+        logger.info { "Finished downloading episode: ${download.episode}" }
+
+        val notification = FinishedDownloadNotification(download.episode, savePath)
+        alertService.raiseAlert(Alerts.DownloadFinished, notification)
+        logger.debug { "Notification sent to alert service: $notification" }
     }
 
     /**
