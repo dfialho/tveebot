@@ -6,8 +6,6 @@ import dfialho.tveebot.tracker.api.models.ID
 
 interface DownloadPool {
 
-    fun listUnstarted(): List<EpisodeFile>
-
     fun put(reference: DownloadReference, episodeFile: EpisodeFile)
 
     fun listByTVShow(tvShowID: ID): List<Pair<DownloadReference, EpisodeFile>>

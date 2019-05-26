@@ -16,20 +16,14 @@ class ServiceManager(
     val tveebot: TVeebotService
 ) {
     fun startAll() {
-        tveebot.start()
         alerting.start()
+        tveebot.start()
         information.start()
-        organizer.start()
-        downloader.start()
-        tracker.start()
     }
 
     fun stopAll() {
-        tracker.stop()
-        downloader.stop()
-        organizer.stop()
         information.stop()
-        alerting.stop()
         tveebot.stop()
+        alerting.stop()
     }
 }

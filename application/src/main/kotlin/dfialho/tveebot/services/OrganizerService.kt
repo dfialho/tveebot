@@ -10,7 +10,10 @@ import java.nio.file.Path
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
-class OrganizerService(private val library: TVShowLibrary, private val alertService: AlertService) : Service {
+class OrganizerService(
+    private val library: TVShowLibrary,
+    private val alertService: AlertService
+) : Service {
     companion object : KLogging()
 
     override val name: String = OrganizerService::class.simpleName!!

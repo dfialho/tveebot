@@ -42,9 +42,6 @@ class DownloaderService(
     override fun start() = logStart(logger) {
         engine.start()
         engine.addListener(engineListener)
-
-        logger.debug { "Restarting downloads of episodes being downloaded before the last shutdown" }
-        downloadPool.listUnstarted().forEach { download(it) }
     }
 
     override fun stop() = logStop(logger) {

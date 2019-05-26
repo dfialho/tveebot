@@ -3,7 +3,6 @@ package dfialho.tveebot.services
 import dfialho.tveebot.application.api.EpisodeState
 import dfialho.tveebot.data.TrackerRepository
 import dfialho.tveebot.episodeFileOf
-import dfialho.tveebot.exceptions.NotFoundException
 import dfialho.tveebot.services.models.DownloadNotification
 import dfialho.tveebot.services.models.NewEpisodeNotification
 import dfialho.tveebot.services.models.StoreNotification
@@ -34,9 +33,23 @@ class TVeebotService(
         alertService.subscribe(Alerts.DownloadStopped, this) { onStoppedDownload(it) }
         alertService.subscribe(Alerts.DownloadFinished, this) { onFinishedDownload(it) }
         alertService.subscribe(Alerts.EpisodeStored, this) { onEpisodeStored(it) }
+
+        organizer.start()
+        downloader.start()
+
+        logger.debug { "Restarting downloads of episodes being downloaded before the last shutdown" }
+        repository.findTrackedTVShows().forEach {
+            downloadEpisodesFrom(it.toTVShow())
+        }
+
+        tracker.start()
     }
 
     override fun stop() = logStop(logger) {
+        tracker.stop()
+        downloader.stop()
+        organizer.stop()
+
         alertService.unsubscribe(Alerts.StartedTrackingTVShow, this)
         alertService.unsubscribe(Alerts.StoppedTrackingTVShow, this)
         alertService.unsubscribe(Alerts.NewEpisodeFound, this)
@@ -44,33 +57,6 @@ class TVeebotService(
         alertService.unsubscribe(Alerts.DownloadStarted, this)
         alertService.unsubscribe(Alerts.DownloadStopped, this)
         alertService.unsubscribe(Alerts.EpisodeStored, this)
-    }
-
-    /**
-     * Sets the video quality of the TV show identified by [tvShowID] to [newQuality].
-     *
-     * If [newQuality] corresponds to the same quality of the specified TV show, then this
-     * method has not effect.
-     *
-     * @throws NotFoundException if no TV show is found with the specified [tvShowID].
-     */
-    fun setTVShowVideoQuality(tvShowID: ID, newQuality: VideoQuality) {
-        val originalTVShow = repository.findTrackedTVShow(tvShowID)
-            ?: throw NotFoundException("TV Show with ID '$tvShowID' not found")
-
-        repository.setTVShowVideoQuality(tvShowID, newQuality)
-
-        if (originalTVShow.quality != newQuality) {
-            with(originalTVShow) {
-                logger.info { "Changed video quality of '$title' from $quality to $newQuality" }
-            }
-
-            removeDownloadsFrom(tvShowID)
-            downloadEpisodesFrom(originalTVShow.copy(quality = newQuality).toTVShow())
-
-        } else {
-            logger.info { "Video quality of '${originalTVShow.title}' was not changed" }
-        }
     }
 
     private fun onStartedTrackingTVShow(tvShow: TVShow) {
@@ -109,8 +95,6 @@ class TVeebotService(
 
     private fun onFinishedDownload(notification: DownloadNotification): Unit = with(notification) {
         logger.info { "Finished downloading episode: ${notification.episodeFile.toPrettyString()}" }
-        repository.setEpisodeState(notification.episodeFile, EpisodeState.DOWNLOADED)
-
         organizer.store(episodeFile, savePath)
     }
 
