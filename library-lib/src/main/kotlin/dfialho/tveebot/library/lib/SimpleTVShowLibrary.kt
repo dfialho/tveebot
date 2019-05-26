@@ -14,7 +14,7 @@ class SimpleTVShowLibrary(private val libraryDirectory: Path, private val organi
 
     companion object : KLogging()
 
-    override fun store(episode: Episode, episodePackage: EpisodePackage) {
+    override fun store(episode: Episode, episodePackage: EpisodePackage): Path {
 
         val episodeLocation = organizer.getLocationOf(episode)
         val episodePath = episodePackage.getEpisode()
@@ -28,5 +28,7 @@ class SimpleTVShowLibrary(private val libraryDirectory: Path, private val organi
 
         logger.debug { "Cleanup episode package: ${episodePackage.path}" }
         episodePackage.path.toFile().deleteRecursively()
+
+        return destinationPath
     }
 }

@@ -30,9 +30,8 @@ class DownloaderService(
             val reference = handle.reference
             val savePath = handle.savePath
             engine.remove(handle.reference)
-
-            val episodeFile = downloadPool.remove(reference) ?: throw IllegalStateException("Cannot find download: $reference")
-            logger.info { "Finished downloading episode: ${episodeFile.toPrettyString()}" }
+            val episodeFile = downloadPool.remove(reference)
+                ?: throw IllegalStateException("Cannot find download with reference: $reference")
 
             alertService.raiseAlert(Alerts.DownloadFinished, FinishedDownloadNotification(episodeFile, savePath))
         }
@@ -45,8 +44,7 @@ class DownloaderService(
         engine.addListener(engineListener)
 
         logger.debug { "Restarting downloads of episodes being downloaded before the last shutdown" }
-        downloadPool.reload(engine)
-
+        downloadPool.listUnstarted().forEach { download(it) }
     }
 
     override fun stop() = logStop(logger) {
@@ -59,9 +57,9 @@ class DownloaderService(
      */
     fun download(episodeFile: EpisodeFile) {
         val handle = engine.add(episodeFile.link)
-        downloadPool.put(handle.reference, episodeFile)
+        logger.debug { "Started downloading episode: ${episodeFile.toPrettyString()}" }
 
-        logger.debug { "Downloading episodeFile: ${episodeFile.toPrettyString()} with reference ${handle.reference}" }
+        downloadPool.put(handle.reference, episodeFile)
     }
 
     /**
@@ -102,7 +100,7 @@ class DownloaderService(
     fun removeByTVShow(tvShowID: ID) {
         downloadPool.listByTVShow(tvShowID).forEach { (reference, episodeFile) ->
             remove(reference)
-            logger.debug { "Stopped downloading: ${episodeFile.toPrettyString()}" }
+            logger.debug { "Stopped downloading episode: ${episodeFile.toPrettyString()}" }
         }
     }
 }

@@ -11,7 +11,7 @@ import dfialho.tveebot.library.api.TVShowOrganizer
 import dfialho.tveebot.library.lib.SimpleTVShowLibrary
 import dfialho.tveebot.library.lib.SimpleTVShowOrganizer
 import dfialho.tveebot.repositories.DownloadPool
-import dfialho.tveebot.repositories.impl.DownloadPoolImpl
+import dfialho.tveebot.repositories.impl.PersistentDownloadPool
 import dfialho.tveebot.routing.downloader
 import dfialho.tveebot.routing.info
 import dfialho.tveebot.routing.tracker
@@ -55,7 +55,7 @@ fun Application.mainModule() {
         bind<TVShowProvider>() with singleton { ShowRSSProvider(instance()) }
         bind<EpisodeLedger>() with singleton { EpisodeLedgerRepository(instance()) }
         bind<TrackingList>() with singleton { TrackingListRepository(instance()) }
-        bind<DownloadPool>() with singleton { DownloadPoolImpl(instance()) }
+        bind<DownloadPool>() with singleton { PersistentDownloadPool(instance()) }
 
         bind<TVShowOrganizer>() with singleton { SimpleTVShowOrganizer() }
         bind<TVShowLibrary>() with singleton { SimpleTVShowLibrary(config.libraryDirectory, instance()) }

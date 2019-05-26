@@ -1,15 +1,12 @@
 package dfialho.tveebot.repositories
 
-import dfialho.tveebot.downloader.api.DownloadEngine
 import dfialho.tveebot.downloader.api.DownloadReference
 import dfialho.tveebot.tracker.api.models.EpisodeFile
 import dfialho.tveebot.tracker.api.models.ID
 
 interface DownloadPool {
 
-    fun reload(engine: DownloadEngine)
-
-    fun get(reference: DownloadReference): EpisodeFile?
+    fun listUnstarted(): List<EpisodeFile>
 
     fun put(reference: DownloadReference, episodeFile: EpisodeFile)
 

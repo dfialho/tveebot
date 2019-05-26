@@ -63,6 +63,7 @@ class TVeebotService(
     }
 
     private fun onFinishedDownload(notification: FinishedDownloadNotification): Unit = with(notification) {
+        logger.info { "Finished downloading episode: ${notification.episode.toPrettyString()}" }
         organizer.store(episode, savePath)
     }
 
