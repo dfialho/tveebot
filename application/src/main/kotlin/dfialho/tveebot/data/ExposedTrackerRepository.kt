@@ -1,10 +1,13 @@
 package dfialho.tveebot.data
 
 import dfialho.tveebot.application.api.EpisodeEntity
+import dfialho.tveebot.application.api.EpisodeState
 import dfialho.tveebot.application.api.TVShowEntity
+import dfialho.tveebot.toPrettyString
 import dfialho.tveebot.tracker.api.models.*
 import dfialho.tveebot.tracker.lib.EpisodeIDGenerator
 import dfialho.tveebot.utils.Result
+import mu.KLogging
 import org.jetbrains.exposed.exceptions.ExposedSQLException
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -17,6 +20,8 @@ import org.joda.time.DateTime
  * @author David Fialho (dfialho@protonmail.com)
  */
 class ExposedTrackerRepository(private val db: Database) : TrackerRepository {
+
+    companion object : KLogging()
 
     private object TVShows : Table() {
         val id = varchar("id", length = 36).primaryKey()
@@ -34,6 +39,7 @@ class ExposedTrackerRepository(private val db: Database) : TrackerRepository {
         val title = varchar("title", length = 256)
         val link = varchar("link", length = 1024)
         val publishDate = datetime("published_date")
+        val state = enumeration("state", EpisodeState::class.java).default(EpisodeState.AVAILABLE)
     }
 
     init {
@@ -127,7 +133,7 @@ class ExposedTrackerRepository(private val db: Database) : TrackerRepository {
     override fun put(episodeFile: EpisodeFile): Result = repositoryTransaction {
 
         Episodes.insertUnique {
-            it[id] = episodeIDOf(episodeFile).value
+            it[id] = episodeFile.id
             it[tvShowID] = episodeFile.tvShow.id.value
             it[season] = episodeFile.episode.season
             it[number] = episodeFile.episode.number
@@ -144,12 +150,12 @@ class ExposedTrackerRepository(private val db: Database) : TrackerRepository {
     ): Result = repositoryTransaction {
 
         val existingEpisode = Episodes.innerJoin(TVShows, { tvShowID }, { id })
-            .select { Episodes.id eq episodeIDOf(episodeFile).value }
+            .select { Episodes.id eq episodeFile.id }
             .map { it.toEpisodeFile() }
             .singleOrNull()
 
         if (existingEpisode != null && predicate(existingEpisode, episodeFile)) {
-            Episodes.update({ Episodes.id eq episodeIDOf(episodeFile).value }) {
+            Episodes.update({ Episodes.id eq episodeFile.id }) {
                 it[title] = episodeFile.episode.title
                 it[link] = episodeFile.link
                 it[publishDate] = DateTime(episodeFile.publishDate.toEpochMilli())
@@ -186,6 +192,15 @@ class ExposedTrackerRepository(private val db: Database) : TrackerRepository {
 
     override fun removeEpisodesFrom(tvShowID: ID): Unit = repositoryTransaction {
         Episodes.deleteWhere { Episodes.tvShowID eq tvShowID.value }
+    }
+
+    override fun setEpisodeState(episodeFile: EpisodeFile, state: EpisodeState): Unit = repositoryTransaction {
+
+        Episodes.update({ Episodes.id eq episodeFile.id }) {
+            it[this.state] = state
+        }
+
+        logger.debug { "Updated state of episode '${episodeFile.toPrettyString()}' to '$state'" }
     }
 
     override fun clearAll(): Unit = repositoryTransaction {
@@ -241,13 +256,12 @@ class ExposedTrackerRepository(private val db: Database) : TrackerRepository {
             throw TrackerRepositoryException("Failed to execute operation", e.cause)
         }
     }
-
-    private fun episodeIDOf(episodeFile: EpisodeFile): ID {
-        return with(episodeFile) {
-            EpisodeIDGenerator.getID(episode.tvShow.id, episode.season, episode.number, quality)
-        }
-    }
 }
+
+private val EpisodeFile.id: String
+    get() {
+        return EpisodeIDGenerator.getID(episode.tvShow.id, episode.season, episode.number, quality).value
+    }
 
 private fun throwTVShowNotFoundError(id: ID, extraMessage: String? = null): Nothing {
     throw NoSuchElementException("TV Show '$id' not found" + if (extraMessage == null) "" else ": $extraMessage")

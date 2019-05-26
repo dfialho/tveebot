@@ -1,6 +1,7 @@
 package dfialho.tveebot.data
 
 import dfialho.tveebot.application.api.EpisodeEntity
+import dfialho.tveebot.application.api.EpisodeState
 import dfialho.tveebot.application.api.TVShowEntity
 import dfialho.tveebot.tracker.api.TrackerEngine
 import dfialho.tveebot.tracker.api.models.EpisodeFile
@@ -115,6 +116,8 @@ interface TrackerRepository {
      * removed too.
      */
     fun removeEpisodesFrom(tvShowID: ID)
+
+    fun setEpisodeState(episodeFile: EpisodeFile, state: EpisodeState)
 
     /**
      * Remove everything from the repository.

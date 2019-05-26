@@ -66,7 +66,7 @@ fun Application.mainModule() {
         bind<AlertService>() with singleton { AlertService() }
         bind<TrackerService>() with singleton { TrackerService(instance(), instance(), instance(), instance()) }
         bind<DownloaderService>() with singleton { DownloaderService(instance(), instance(), instance()) }
-        bind<OrganizerService>() with singleton { OrganizerService(instance()) }
+        bind<OrganizerService>() with singleton { OrganizerService(instance(), instance()) }
         bind<InformationService>() with singleton { InformationService(instance()) }
         bind<TVeebotService>() with singleton { TVeebotService(instance(), instance(), instance(), instance(), instance()) }
 

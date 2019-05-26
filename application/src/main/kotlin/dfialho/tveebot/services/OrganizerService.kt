@@ -2,6 +2,7 @@ package dfialho.tveebot.services
 
 import dfialho.tveebot.library.api.TVShowLibrary
 import dfialho.tveebot.library.lib.EpisodeDownloadPackage
+import dfialho.tveebot.services.models.StoreNotification
 import dfialho.tveebot.toPrettyString
 import dfialho.tveebot.tracker.api.models.EpisodeFile
 import mu.KLogging
@@ -9,7 +10,7 @@ import java.nio.file.Path
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
-class OrganizerService(private val library: TVShowLibrary) : Service {
+class OrganizerService(private val library: TVShowLibrary, private val alertService: AlertService) : Service {
     companion object : KLogging()
 
     override val name: String = OrganizerService::class.simpleName!!
@@ -33,12 +34,13 @@ class OrganizerService(private val library: TVShowLibrary) : Service {
     fun store(episodeFile: EpisodeFile, fileLocation: Path) {
         executor.submit {
             try {
-                logger.debug { "Storing episodeFile in library: ${episodeFile.toPrettyString()}" }
-                library.store(episodeFile.episode, EpisodeDownloadPackage(fileLocation))
-                logger.info { "Stored episodeFile ${episodeFile.toPrettyString()} in library" }
+                logger.debug { "Storing episode in library: ${episodeFile.toPrettyString()}" }
+                val storePath = library.store(episodeFile.episode, EpisodeDownloadPackage(fileLocation))
+
+                alertService.raiseAlert(Alerts.EpisodeStored, StoreNotification(episodeFile, storePath))
 
             } catch (e: Throwable) {
-                logger.error(e) { "Failed to store episodeFile in library" }
+                logger.error(e) { "Failed to store episode in library: ${episodeFile.toPrettyString()}" }
             }
         }
     }

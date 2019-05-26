@@ -3,7 +3,7 @@ package dfialho.tveebot.services
 import dfialho.tveebot.downloader.api.*
 import dfialho.tveebot.exceptions.NotFoundException
 import dfialho.tveebot.repositories.DownloadPool
-import dfialho.tveebot.services.models.FinishedDownloadNotification
+import dfialho.tveebot.services.models.DownloadNotification
 import dfialho.tveebot.toPrettyString
 import dfialho.tveebot.tracker.api.models.EpisodeFile
 import dfialho.tveebot.tracker.api.models.ID
@@ -33,7 +33,7 @@ class DownloaderService(
             val episodeFile = downloadPool.remove(reference)
                 ?: throw IllegalStateException("Cannot find download with reference: $reference")
 
-            alertService.raiseAlert(Alerts.DownloadFinished, FinishedDownloadNotification(episodeFile, savePath))
+            alertService.raiseAlert(Alerts.DownloadFinished, DownloadNotification(episodeFile, savePath))
         }
     }
 
@@ -57,9 +57,10 @@ class DownloaderService(
      */
     fun download(episodeFile: EpisodeFile) {
         val handle = engine.add(episodeFile.link)
-        logger.debug { "Started downloading episode: ${episodeFile.toPrettyString()}" }
+        logger.debug { "Started downloading episode '${episodeFile.toPrettyString()}' with reference '${handle.reference}'" }
 
         downloadPool.put(handle.reference, episodeFile)
+        alertService.raiseAlert(Alerts.DownloadStarted, DownloadNotification(episodeFile, handle.savePath))
     }
 
     /**
