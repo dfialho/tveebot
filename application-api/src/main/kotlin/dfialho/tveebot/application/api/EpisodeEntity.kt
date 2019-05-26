@@ -12,5 +12,5 @@ data class EpisodeEntity(
     val link: String,
     val publishDate: Instant,
     val quality: VideoQuality = VideoQuality.default(),
-    val state: EpisodeState = EpisodeState.AVAILABLE
+    val state: EpisodeState
 )

@@ -221,7 +221,8 @@ class ExposedTrackerRepository(private val db: Database) : TrackerRepository {
             number = this[Episodes.number],
             quality = this[Episodes.quality].toVideoQuality(),
             link = this[Episodes.link],
-            publishDate = this[Episodes.publishDate].toDate().toInstant()
+            publishDate = this[Episodes.publishDate].toDate().toInstant(),
+            state = this[Episodes.state]
         )
 
     private fun ResultRow.toEpisodeFile(): EpisodeFile = EpisodeFile(
