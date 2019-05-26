@@ -100,8 +100,14 @@ class DownloaderService(
      */
     fun removeByTVShow(tvShowID: ID) {
         downloadPool.listByTVShow(tvShowID).forEach { (reference, episodeFile) ->
-            remove(reference)
-            logger.debug { "Stopped downloading episode: ${episodeFile.toPrettyString()}" }
+            engine.getHandle(reference)?.let { handle ->
+                // Store the save path before removing the download because afterwards it becomes invalid
+                val savePath = handle.savePath
+                remove(reference)
+
+                logger.debug { "Stopped downloading episode: ${episodeFile.toPrettyString()}" }
+                alertService.raiseAlert(Alerts.DownloadStopped, DownloadNotification(episodeFile, savePath))
+            }
         }
     }
 }

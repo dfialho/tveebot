@@ -120,18 +120,13 @@ class TVeebotService(
     }
 
     private fun downloadEpisodesFrom(tvShow: TVShow) {
-        val trackedTVShow = repository.findTrackedTVShow(tvShow.id)
 
-        if (trackedTVShow == null) {
-            logger.warn {
-                "TV Show '${tvShow.toPrettyString()}' was expected to be tracked but it is not. " +
-                        "Will not download any available episodes from this TV Show."
-            }
-            return
-        }
-
-        for (episode in repository.findEpisodesFrom(tvShow.id)) {
-            downloadEpisode(episodeFileOf(tvShow, episode), trackedTVShow.quality)
+        repository.findTrackedTVShow(tvShow.id)?.let { trackedTVShow ->
+            repository.findEpisodesFrom(trackedTVShow.id).asSequence()
+                .filter { it.state == EpisodeState.AVAILABLE || it.state == EpisodeState.DOWNLOADING }
+                .filter { it.quality == trackedTVShow.quality }
+                .map { episodeFileOf(trackedTVShow, it) }
+                .forEach { downloadEpisode(it, trackedTVShow.quality) }
         }
     }
 

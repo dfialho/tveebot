@@ -15,7 +15,6 @@ import dfialho.tveebot.repositories.impl.PersistentDownloadPool
 import dfialho.tveebot.routing.downloader
 import dfialho.tveebot.routing.info
 import dfialho.tveebot.routing.tracker
-import dfialho.tveebot.routing.tveebot
 import dfialho.tveebot.services.*
 import dfialho.tveebot.tracker.api.*
 import dfialho.tveebot.tracker.lib.DirectTVShowIDMapper
@@ -127,7 +126,6 @@ fun Application.routingModule(serviceManager: ServiceManager) {
             tracker(serviceManager.tracker)
             downloader(serviceManager.downloader)
             info(serviceManager.information)
-            tveebot(serviceManager.tveebot)
         }
     }
 }

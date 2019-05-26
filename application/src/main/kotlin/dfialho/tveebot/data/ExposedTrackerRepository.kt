@@ -92,31 +92,21 @@ class ExposedTrackerRepository(private val db: Database) : TrackerRepository {
     }
 
     override fun setTracked(tvShowID: ID, quality: VideoQuality): Unit = repositoryTransaction {
-        val updateCount = TVShows.update({ (TVShows.id eq tvShowID.value) and (TVShows.tracked eq false) }) {
-            it[tracked] = true
+        setTracked(tvShowID, quality, tracked = true)
+    }
+
+    override fun setNotTracked(tvShowID: ID): Unit = repositoryTransaction {
+        setTracked(tvShowID, VideoQuality.SD, tracked = false)
+    }
+
+    private fun setTracked(tvShowID: ID, quality: VideoQuality, tracked: Boolean): Unit = repositoryTransaction {
+        val updateCount = TVShows.update({ (TVShows.id eq tvShowID.value) }) {
+            it[this.tracked] = tracked
             it[this.quality] = quality.toString()
         }
 
         if (updateCount == 0) {
-            if (tvShowExists(tvShowID)) {
-                throw IllegalStateException("TV Show '$tvShowID' is already being tracked")
-            } else {
-                throwTVShowNotFoundError(tvShowID)
-            }
-        }
-    }
-
-    override fun setNotTracked(tvShowID: ID): Unit = repositoryTransaction {
-        val updateCount = TVShows.update({ (TVShows.id eq tvShowID.value) and (TVShows.tracked eq true) }) {
-            it[tracked] = false
-        }
-
-        if (updateCount == 0) {
-            if (tvShowExists(tvShowID)) {
-                throw IllegalStateException("TV Show '$tvShowID' is not being tracked")
-            } else {
-                throwTVShowNotFoundError(tvShowID)
-            }
+            throwTVShowNotFoundError(tvShowID)
         }
     }
 

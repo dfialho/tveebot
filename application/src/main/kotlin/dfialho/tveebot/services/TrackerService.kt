@@ -56,6 +56,9 @@ class TrackerService(
      * @throws NoSuchElementException if no TV show is found with id [tvShowID].
      */
     fun trackTVShow(tvShowID: ID, videoQuality: VideoQuality) {
+
+        untrackTVShow(tvShowID)
+
         // FIXME give repository support for transactions with multiple actions
         repository.setTracked(tvShowID, videoQuality)
 
