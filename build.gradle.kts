@@ -17,7 +17,7 @@ subprojects {
     apply(plugin = "idea")
     
     group = "dfialho.tveebot"
-    version = "0.3-SNAPSHOT"
+    version = "0.4"
 
     repositories {
         mavenLocal()
