@@ -1,10 +1,12 @@
 package dfialho.tveebot
 
-import dfialho.tveebot.tracker.api.models.TVShowEpisodeFile
+import dfialho.tveebot.tracker.api.models.EpisodeFile
+import dfialho.tveebot.tracker.api.models.TVShow
 
-/**
- * Returns a pretty string representation of the episode.
- */
-fun TVShowEpisodeFile.toPrettyString(): String {
-    return "$tvShowTitle - ${season}x%02d - $title ($quality)".format(number)
+fun EpisodeFile.toPrettyString(): String {
+    return "${episode.tvShow.title} - ${episode.season}x%02d - $episode.title ($quality)".format(episode.number)
+}
+
+fun TVShow.toPrettyString(): String {
+    return "[$id] $title"
 }

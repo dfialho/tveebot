@@ -39,7 +39,7 @@ fun Route.tracker(service: TrackerService) = route("tracker") {
 
     /**
      * Requests the tacker to stop tracking the TV show identified by the specified ID. Every
-     * current episode being downloaded will be stopped. If the TV show corresponding to the
+     * current episodeFile being downloaded will be stopped. If the TV show corresponding to the
      * given ID is currently not being tracked, then this call will have no effect.
      *
      * @param id ID of the TV show to stop tracking.

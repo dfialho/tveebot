@@ -3,22 +3,17 @@ package dfialho.tveebot.tracker.lib
 import com.google.common.hash.Hashing
 import dfialho.tveebot.tracker.api.models.EpisodeFile
 import dfialho.tveebot.tracker.api.models.ID
-import dfialho.tveebot.tracker.api.models.TVShow
-import dfialho.tveebot.tracker.api.models.TVShowEpisodeFile
 import dfialho.tveebot.tracker.api.models.VideoQuality
+import dfialho.tveebot.tracker.api.models.tvShow
 import java.nio.charset.Charset
 
 object EpisodeIDGenerator {
 
     private val hashFunction = Hashing.sha256()
 
-    fun getID(tvShow: TVShow, episode: EpisodeFile): ID {
-        return getID(tvShow.id, episode.season, episode.number, episode.quality)
-    }
-
-    fun getID(tvShowEpisode: TVShowEpisodeFile): ID {
-        return with(tvShowEpisode) {
-            getID(tvShowID, season, number, quality)
+    fun getID(episodeFile: EpisodeFile): ID {
+        return with(episodeFile) {
+            getID(tvShow.id, episode.season, episode.number, quality)
         }
     }
 

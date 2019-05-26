@@ -2,7 +2,7 @@ package dfialho.tveebot.tracker.lib
 
 import com.google.common.util.concurrent.AbstractScheduledService
 import dfialho.tveebot.tracker.api.*
-import dfialho.tveebot.tracker.api.models.TVShowEpisodeFile
+import dfialho.tveebot.tracker.api.models.EpisodeFile
 import dfialho.tveebot.utils.succeeded
 import mu.KLogging
 import java.io.IOException
@@ -50,7 +50,7 @@ class ScheduledTrackerEngine(
 
             for (tvShow in trackingList) {
 
-                val episodes: List<TVShowEpisodeFile> = try {
+                val episodes: List<EpisodeFile> = try {
                     provider.fetchEpisodes(tvShow)
                 } catch (e: IOException) {
                     logger.error(e) { "Failed to fetch episodes for '${tvShow.title}' from the provider" }
@@ -62,7 +62,7 @@ class ScheduledTrackerEngine(
                 for (episode in episodes) {
                     if (episodeLedger.appendOrUpdate(episode).succeeded) {
                         logger.debug { "New episode: $episode" }
-                        listeners.forEach { it.onNewEpisode(episode, tvShow.quality) }
+                        listeners.forEach { it.onNewEpisode(episode) }
                     }
                 }
             }

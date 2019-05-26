@@ -1,9 +1,7 @@
 package dfialho.tveebot.services.models
 
-import dfialho.tveebot.tracker.api.models.TVShowEpisodeFile
-import dfialho.tveebot.tracker.api.models.VideoQuality
+import dfialho.tveebot.tracker.api.models.EpisodeFile
 
 data class NewEpisodeNotification(
-    val episode: TVShowEpisodeFile,
-    val tvShowVideoQuality: VideoQuality
+    val episodeFile: EpisodeFile
 )

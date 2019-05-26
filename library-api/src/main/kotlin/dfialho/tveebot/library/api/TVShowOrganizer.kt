@@ -1,8 +1,8 @@
 package dfialho.tveebot.library.api
 
-import dfialho.tveebot.tracker.api.models.TVShowEpisode
+import dfialho.tveebot.tracker.api.models.Episode
 import java.nio.file.Path
 
 interface TVShowOrganizer {
-    fun getLocationOf(episode: TVShowEpisode): Path
+    fun getLocationOf(episode: Episode): Path
 }

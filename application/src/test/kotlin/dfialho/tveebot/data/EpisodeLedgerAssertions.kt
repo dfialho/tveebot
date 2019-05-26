@@ -7,7 +7,7 @@ import assertk.assertions.doesNotContain
 import assertk.assertions.support.expected
 import assertk.assertions.support.show
 import dfialho.tveebot.tracker.api.EpisodeLedger
-import dfialho.tveebot.tracker.api.models.TVShowEpisodeFile
+import dfialho.tveebot.tracker.api.models.EpisodeFile
 
 /**
  * Asserts the collection contains only the expected [elements], in any order. The collection cannot
@@ -37,7 +37,7 @@ fun <E, T : Collection<E>> Assert<T>.containsOnly(vararg elements: E) {
  * Asserts the ledger contains all the expected episodes, in any order. The ledger may also contain
  * additional episodes.
  */
-fun Assert<EpisodeLedger>.containsAll(vararg episodes: TVShowEpisodeFile) {
+fun Assert<EpisodeLedger>.containsAll(vararg episodes: EpisodeFile) {
     assert(actual.toList()).containsAll(*episodes)
 }
 
@@ -45,7 +45,7 @@ fun Assert<EpisodeLedger>.containsAll(vararg episodes: TVShowEpisodeFile) {
  * Asserts the ledger contains all the expected episodes, in any order. The ledger may also contain
  * additional episodes.
  */
-fun Assert<EpisodeLedger>.containsAll(episodes: Iterable<TVShowEpisodeFile>) {
+fun Assert<EpisodeLedger>.containsAll(episodes: Iterable<EpisodeFile>) {
     assert(actual.toList()).containsAll(*episodes.toList().toTypedArray())
 }
 
@@ -53,21 +53,21 @@ fun Assert<EpisodeLedger>.containsAll(episodes: Iterable<TVShowEpisodeFile>) {
  * Asserts the ledger contains only the expected episodes, in any order. The ledger cannot contain
  * additional episodes.
  */
-fun Assert<EpisodeLedger>.containsOnly(vararg episodes: TVShowEpisodeFile) {
+fun Assert<EpisodeLedger>.containsOnly(vararg episodes: EpisodeFile) {
     assert(actual.toList()).containsOnly(*episodes)
 }
 
 /**
- * Asserts the ledger contains the expected episode, using in.
+ * Asserts the ledger contains the expected episodeFile, using in.
  */
-fun Assert<EpisodeLedger>.contains(episode: TVShowEpisodeFile) {
+fun Assert<EpisodeLedger>.contains(episode: EpisodeFile) {
     assert(actual.toList()).contains(episode)
 }
 
 /**
- * Asserts the ledger does not contain the expected episode, using !in.
+ * Asserts the ledger does not contain the expected episodeFile, using !in.
  */
-fun Assert<EpisodeLedger>.doesNotContain(episode: TVShowEpisodeFile) {
+fun Assert<EpisodeLedger>.doesNotContain(episode: EpisodeFile) {
     assert(actual.toList()).doesNotContain(episode)
 }
 

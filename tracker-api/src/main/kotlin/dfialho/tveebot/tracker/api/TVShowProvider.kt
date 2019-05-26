@@ -1,7 +1,7 @@
 package dfialho.tveebot.tracker.api
 
+import dfialho.tveebot.tracker.api.models.EpisodeFile
 import dfialho.tveebot.tracker.api.models.TVShow
-import dfialho.tveebot.tracker.api.models.TVShowEpisodeFile
 import java.io.IOException
 
 /**
@@ -29,5 +29,5 @@ interface TVShowProvider {
      *
      * @throws IOException if an error occurs when trying to reach the provider
      */
-    fun fetchEpisodes(tvShow: TVShow): List<TVShowEpisodeFile>
+    fun fetchEpisodes(tvShow: TVShow): List<EpisodeFile>
 }

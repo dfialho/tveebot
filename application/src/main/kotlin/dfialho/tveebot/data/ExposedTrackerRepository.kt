@@ -1,13 +1,9 @@
 package dfialho.tveebot.data
 
-import dfialho.tveebot.application.api.EpisodeDownload
 import dfialho.tveebot.application.api.EpisodeEntity
 import dfialho.tveebot.application.api.TVShowEntity
-import dfialho.tveebot.downloader.api.DownloadReference
-import dfialho.tveebot.toEpisodeFile
 import dfialho.tveebot.tracker.api.models.*
 import dfialho.tveebot.tracker.lib.EpisodeIDGenerator
-import dfialho.tveebot.tvShowEpisodeFileOf
 import dfialho.tveebot.utils.Result
 import org.jetbrains.exposed.exceptions.ExposedSQLException
 import org.jetbrains.exposed.sql.*
@@ -40,15 +36,9 @@ class ExposedTrackerRepository(private val db: Database) : TrackerRepository {
         val publishDate = datetime("published_date")
     }
 
-    private object Downloads : Table() {
-        val reference = varchar("reference", length = 256).primaryKey()
-        val episodeID = reference("episode_id", Episodes.id)
-        val tvShowID = reference("tvshow_id", Episodes.tvShowID)
-    }
-
     init {
         repositoryTransaction {
-            SchemaUtils.create(TVShows, Episodes, Downloads)
+            SchemaUtils.create(TVShows, Episodes)
         }
     }
 
@@ -134,69 +124,40 @@ class ExposedTrackerRepository(private val db: Database) : TrackerRepository {
         }
     }
 
-    override fun put(tvShowID: ID, episode: EpisodeFile): Result = repositoryTransaction {
+    override fun put(episodeFile: EpisodeFile): Result = repositoryTransaction {
+
         Episodes.insertUnique {
-            it[id] = episodeIDOf(tvShowID, episode).value
-            it[this.tvShowID] = tvShowID.value
-            it[season] = episode.season
-            it[number] = episode.number
-            it[quality] = episode.quality.toString()
-            it[title] = episode.title
-            it[link] = episode.link
-            it[publishDate] = DateTime(episode.publishDate.toEpochMilli())
+            it[id] = episodeIDOf(episodeFile).value
+            it[tvShowID] = episodeFile.tvShow.id.value
+            it[season] = episodeFile.episode.season
+            it[number] = episodeFile.episode.number
+            it[quality] = episodeFile.quality.toString()
+            it[title] = episodeFile.episode.title
+            it[link] = episodeFile.link
+            it[publishDate] = DateTime(episodeFile.publishDate.toEpochMilli())
         }
     }
 
-    override fun put(episode: TVShowEpisodeFile): Result = put(episode.tvShowID, episode.toEpisodeFile())
-
     override fun updateIf(
-        episode: TVShowEpisodeFile,
+        episodeFile: EpisodeFile,
         predicate: (old: EpisodeFile, new: EpisodeFile) -> Boolean
     ): Result = repositoryTransaction {
 
-        val existingEpisode = Episodes
-            .select { Episodes.id eq episodeIDOf(episode).value }
+        val existingEpisode = Episodes.innerJoin(TVShows, { tvShowID }, { id })
+            .select { Episodes.id eq episodeIDOf(episodeFile).value }
             .map { it.toEpisodeFile() }
             .singleOrNull()
 
-        if (existingEpisode != null && predicate(existingEpisode, episode.toEpisodeFile())) {
-            Episodes.update({ Episodes.id eq episodeIDOf(episode).value }) {
-                it[Episodes.title] = episode.title
-                it[Episodes.link] = episode.link
-                it[Episodes.publishDate] = DateTime(episode.publishDate.toEpochMilli())
+        if (existingEpisode != null && predicate(existingEpisode, episodeFile)) {
+            Episodes.update({ Episodes.id eq episodeIDOf(episodeFile).value }) {
+                it[title] = episodeFile.episode.title
+                it[link] = episodeFile.link
+                it[publishDate] = DateTime(episodeFile.publishDate.toEpochMilli())
             }
 
             Result.Success
         } else {
             Result.Failure
-        }
-    }
-
-    override fun putOrUpdateIf(
-        tvShowID: ID,
-        episode: EpisodeFile,
-        predicate: (old: EpisodeFile, new: EpisodeFile) -> Boolean
-    ): Boolean = repositoryTransaction {
-
-        val existingEpisode = Episodes
-            .select { Episodes.id eq episodeIDOf(tvShowID, episode).value }
-            .map { it.toEpisodeFile() }
-            .singleOrNull()
-
-        when {
-            existingEpisode == null -> {
-                put(tvShowID, episode)
-                true
-            }
-            predicate(existingEpisode, episode) -> {
-                Episodes.update({ Episodes.id eq episodeIDOf(tvShowID, episode).value }) {
-                    it[Episodes.title] = episode.title
-                    it[Episodes.link] = episode.link
-                    it[Episodes.publishDate] = DateTime(episode.publishDate.toEpochMilli())
-                }
-                true
-            }
-            else -> false
         }
     }
 
@@ -224,51 +185,10 @@ class ExposedTrackerRepository(private val db: Database) : TrackerRepository {
     }
 
     override fun removeEpisodesFrom(tvShowID: ID): Unit = repositoryTransaction {
-        Downloads.deleteWhere { Downloads.tvShowID eq tvShowID.value }
         Episodes.deleteWhere { Episodes.tvShowID eq tvShowID.value }
     }
 
-    override fun put(download: EpisodeDownload): Unit = repositoryTransaction {
-        Downloads.insert {
-            it[episodeID] = episodeIDOf(download.episode).value
-            it[tvShowID] = download.episode.tvShowID.value
-            it[reference] = download.reference.value
-        }
-    }
-
-    override fun findDownload(reference: DownloadReference): EpisodeDownload? = repositoryTransaction {
-        (Downloads innerJoin Episodes innerJoin TVShows)
-            .select { Downloads.reference eq reference.value }
-            .map { it.toEpisodeDownload() }
-            .singleOrNull()
-    }
-
-    override fun findAllDownloads(): List<EpisodeDownload> = repositoryTransaction {
-        (Downloads innerJoin Episodes innerJoin TVShows)
-            .selectAll()
-            .map { it.toEpisodeDownload() }
-    }
-
-    override fun findDownloadsFrom(tvShowID: ID): List<EpisodeDownload> = repositoryTransaction {
-        (Downloads innerJoin Episodes innerJoin TVShows)
-            .select { (Downloads.tvShowID eq tvShowID.value) }
-            .map { it.toEpisodeDownload() }
-    }
-
-    override fun removeDownload(reference: DownloadReference): Unit = repositoryTransaction {
-        Downloads.deleteWhere { Downloads.reference eq reference.value }
-    }
-
-    override fun removeAllDownloads(references: List<DownloadReference>): Unit = repositoryTransaction {
-        Downloads.deleteWhere { Downloads.reference inList references.map { it.value } }
-    }
-
-    override fun removeAllDownloadsFrom(tvShowID: ID): Unit = repositoryTransaction {
-        Downloads.deleteWhere { Downloads.tvShowID eq tvShowID.value }
-    }
-
     override fun clearAll(): Unit = repositoryTransaction {
-        Downloads.deleteAll()
         Episodes.deleteAll()
         TVShows.deleteAll()
     }
@@ -288,20 +208,6 @@ class ExposedTrackerRepository(private val db: Database) : TrackerRepository {
             tracked = this[TVShows.tracked]
         )
 
-    private fun ResultRow.toTVShow(): TVShow = TVShow(
-        id = ID(this[TVShows.id]),
-        title = this[TVShows.title],
-        quality = this[TVShows.quality].toVideoQuality()
-    )
-
-    private fun ResultRow.toEpisodeDownload(): EpisodeDownload =
-        EpisodeDownload(
-            reference = DownloadReference(this[Downloads.reference]),
-            episode = tvShowEpisodeFileOf(
-                tvShow = this.toTVShow(),
-                episode = this.toEpisodeFile()
-            )
-        )
     private fun ResultRow.toEpisodeEntity(): EpisodeEntity =
         EpisodeEntity(
             id = ID(this[Episodes.id]),
@@ -315,6 +221,10 @@ class ExposedTrackerRepository(private val db: Database) : TrackerRepository {
 
     private fun ResultRow.toEpisodeFile(): EpisodeFile = EpisodeFile(
         episode = Episode(
+            tvShow = TVShow(
+                id = ID(this[TVShows.id]),
+                title = this[TVShows.title]
+            ),
             title = this[Episodes.title],
             season = this[Episodes.season],
             number = this[Episodes.number]
@@ -332,15 +242,9 @@ class ExposedTrackerRepository(private val db: Database) : TrackerRepository {
         }
     }
 
-    private fun episodeIDOf(tvShowID: ID, episode: EpisodeFile): ID {
-        return with(episode) {
-            EpisodeIDGenerator.getID(tvShowID, season, number, quality)
-        }
-    }
-
-    private fun episodeIDOf(episode: TVShowEpisodeFile): ID {
-        return with(episode) {
-            EpisodeIDGenerator.getID(tvShowID, season, number, quality)
+    private fun episodeIDOf(episodeFile: EpisodeFile): ID {
+        return with(episodeFile) {
+            EpisodeIDGenerator.getID(episode.tvShow.id, episode.season, episode.number, quality)
         }
     }
 }

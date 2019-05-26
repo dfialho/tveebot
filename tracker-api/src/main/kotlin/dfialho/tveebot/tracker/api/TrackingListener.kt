@@ -1,7 +1,6 @@
 package dfialho.tveebot.tracker.api
 
-import dfialho.tveebot.tracker.api.models.TVShowEpisodeFile
-import dfialho.tveebot.tracker.api.models.VideoQuality
+import dfialho.tveebot.tracker.api.models.EpisodeFile
 
 /**
  * A [TrackingListener] listens for new episodes found by a [TrackerEngine]. When a tracking listener is registered
@@ -13,9 +12,9 @@ import dfialho.tveebot.tracker.api.models.VideoQuality
 interface TrackingListener {
 
     /**
-     * Invoked by a [TrackerEngine] when it finds a new episode.
+     * Invoked by a [TrackerEngine] when it finds a new episode file.
      *
-     * @param episode The newly found episode.
+     * @param episode The newly found episode file.
      */
-    fun onNewEpisode(episode: TVShowEpisodeFile, tvShowQuality: VideoQuality)
+    fun onNewEpisode(episode: EpisodeFile)
 }

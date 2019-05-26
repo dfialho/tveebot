@@ -1,17 +1,16 @@
 package dfialho.tveebot.services
 
 import dfialho.tveebot.data.TrackerRepository
+import dfialho.tveebot.episodeFileOf
 import dfialho.tveebot.exceptions.NotFoundException
 import dfialho.tveebot.services.models.FinishedDownloadNotification
 import dfialho.tveebot.services.models.NewEpisodeNotification
-import dfialho.tveebot.toEpisodeFile
 import dfialho.tveebot.toPrettyString
 import dfialho.tveebot.toTVShow
+import dfialho.tveebot.tracker.api.models.EpisodeFile
 import dfialho.tveebot.tracker.api.models.ID
 import dfialho.tveebot.tracker.api.models.TVShow
-import dfialho.tveebot.tracker.api.models.TVShowEpisodeFile
 import dfialho.tveebot.tracker.api.models.VideoQuality
-import dfialho.tveebot.tvShowEpisodeFileOf
 import mu.KLogging
 
 class TVeebotService(
@@ -23,8 +22,7 @@ class TVeebotService(
 ) : Service {
     companion object : KLogging()
 
-    override val name: String
-        get() = "TVeebot Service"
+    override val name: String = TVeebotService::class.simpleName!!
 
     override fun start() = logStart(logger) {
         alertService.subscribe(Alerts.StartedTrackingTVShow, this) { onStartedTrackingTVShow(it) }
@@ -41,27 +39,31 @@ class TVeebotService(
     }
 
     private fun onStartedTrackingTVShow(tvShow: TVShow) {
-        logger.debug { "Starting downloads of episodes already available for '$tvShow'" }
+        logger.debug { "Start downloading episodes already available for '${tvShow.toPrettyString()}'" }
         downloadEpisodesFrom(tvShow)
 
-        logger.debug { "Triggered episode check after starting to track TV show '$tvShow'" }
+        logger.debug { "Triggered episode check after starting to track TV show '${tvShow.toPrettyString()}'" }
         tracker.check()
     }
 
     private fun onStoppedTrackingTVShow(tvShow: TVShow) {
         removeDownloadsFrom(tvShow.id)
+        logger.info { "Stopped downloading episode from TV Show: ${tvShow.toPrettyString()}" }
     }
 
-    private fun onNewEpisodeFound(notification: NewEpisodeNotification) {
-        with(notification) {
-            downloadEpisode(episode, tvShowVideoQuality)
+    private fun onNewEpisodeFound(notification: NewEpisodeNotification): Unit = with(notification) {
+        val tvShow = repository.findTrackedTVShow(episodeFile.episode.tvShow.id)
+
+        if (tvShow == null) {
+            logger.info { "Skipping episode file '${episodeFile.toPrettyString()}' because respective TV Show is not being tracked" }
+            return
         }
+
+        downloadEpisode(episodeFile, tvShow.quality)
     }
 
-    private fun onFinishedDownload(notification: FinishedDownloadNotification) {
-        with(notification) {
-            organizer.store(episode, savePath)
-        }
+    private fun onFinishedDownload(notification: FinishedDownloadNotification): Unit = with(notification) {
+        organizer.store(episode, savePath)
     }
 
     /**
@@ -91,29 +93,32 @@ class TVeebotService(
         }
     }
 
-    private fun downloadEpisode(episode: TVShowEpisodeFile, tvShowVideoQuality: VideoQuality) {
-        // Enforce that only episode files of a specified video quality are downloaded
-        if (episode.quality == tvShowVideoQuality) {
-            downloader.download(episode)
-            logger.info { "Started downloading: ${episode.toPrettyString()}" }
+    private fun downloadEpisodesFrom(tvShow: TVShow) {
+        val trackedTVShow = repository.findTrackedTVShow(tvShow.id)
+
+        if (trackedTVShow == null) {
+            logger.warn {
+                "TV Show '${tvShow.toPrettyString()}' was expected to be tracked but it is not. " +
+                        "Will not download any available episodes from this TV Show."
+            }
+            return
+        }
+
+        for (episode in repository.findEpisodesFrom(tvShow.id)) {
+            downloadEpisode(episodeFileOf(tvShow, episode), trackedTVShow.quality)
         }
     }
 
-    private fun downloadEpisodesFrom(tvShow: TVShow) {
-        for (episode in repository.findEpisodesFrom(tvShow.id)) {
-            downloadEpisode(
-                episode = tvShowEpisodeFileOf(tvShow, episode.toEpisodeFile()),
-                tvShowVideoQuality = tvShow.quality
-            )
+    private fun downloadEpisode(episodeFile: EpisodeFile, tvShowQuality: VideoQuality) {
+
+        // Enforce that only episodeFile files of a specified video quality are downloaded
+        if (episodeFile.quality == tvShowQuality) {
+            downloader.download(episodeFile)
+            logger.info { "Started downloading: ${episodeFile.toPrettyString()}" }
         }
     }
 
     private fun removeDownloadsFrom(tvShowID: ID) {
-        val downloads = repository.findDownloadsFrom(tvShowID)
-        downloader.removeAll(downloads.map { it.reference })
-
-        for ((_, episode) in downloads) {
-            logger.info { "Stopped downloading: ${episode.toPrettyString()}" }
-        }
+        downloader.removeByTVShow(tvShowID)
     }
 }

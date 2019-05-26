@@ -3,7 +3,7 @@ package dfialho.tveebot.library.lib
 import dfialho.tveebot.library.api.EpisodePackage
 import dfialho.tveebot.library.api.TVShowLibrary
 import dfialho.tveebot.library.api.TVShowOrganizer
-import dfialho.tveebot.tracker.api.models.TVShowEpisode
+import dfialho.tveebot.tracker.api.models.Episode
 import mu.KLogging
 import java.nio.file.Files
 import java.nio.file.Path
@@ -14,7 +14,7 @@ class SimpleTVShowLibrary(private val libraryDirectory: Path, private val organi
 
     companion object : KLogging()
 
-    override fun store(episode: TVShowEpisode, episodePackage: EpisodePackage) {
+    override fun store(episode: Episode, episodePackage: EpisodePackage) {
 
         val episodeLocation = organizer.getLocationOf(episode)
         val episodePath = episodePackage.getEpisode()

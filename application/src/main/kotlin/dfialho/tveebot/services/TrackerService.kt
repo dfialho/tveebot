@@ -7,8 +7,8 @@ import dfialho.tveebot.toTVShow
 import dfialho.tveebot.tracker.api.TVShowProvider
 import dfialho.tveebot.tracker.api.TrackerEngine
 import dfialho.tveebot.tracker.api.TrackingListener
+import dfialho.tveebot.tracker.api.models.EpisodeFile
 import dfialho.tveebot.tracker.api.models.ID
-import dfialho.tveebot.tracker.api.models.TVShowEpisodeFile
 import dfialho.tveebot.tracker.api.models.VideoQuality
 import dfialho.tveebot.tvShowEntityOf
 import mu.KLogging
@@ -25,9 +25,9 @@ class TrackerService(
     companion object : KLogging()
 
     private inner class EngineListener : TrackingListener {
-        override fun onNewEpisode(episode: TVShowEpisodeFile, tvShowQuality: VideoQuality) {
-            logger.info { "Found new episode: ${episode.toPrettyString()}" }
-            alertService.raiseAlert(Alerts.NewEpisodeFound, NewEpisodeNotification(episode, tvShowQuality))
+        override fun onNewEpisode(episode: EpisodeFile) {
+            logger.info { "Found new episodeFile: ${episode.toPrettyString()}" }
+            alertService.raiseAlert(Alerts.NewEpisodeFound, NewEpisodeNotification(episode))
         }
     }
 
@@ -49,7 +49,7 @@ class TrackerService(
     }
 
     /**
-     * Tells this tracker service to start tracking TV show identified by [tvShowID]. Downloaded episode files for
+     * Tells this tracker service to start tracking TV show identified by [tvShowID]. Downloaded episodeFile files for
      * this TV show must be of the specified [videoQuality].
      *
      * @throws IllegalStateException if the TV show with ID [tvShowID] is already being tracked.

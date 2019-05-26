@@ -1,9 +1,7 @@
 package dfialho.tveebot.tracker.lib
 
 import assertk.assert
-import assertk.assertAll
 import assertk.assertions.isEqualTo
-import dfialho.tveebot.tracker.api.models.Episode
 import dfialho.tveebot.tracker.api.models.VideoQuality
 import io.kotlintest.specs.FunSpec
 
@@ -16,110 +14,178 @@ class ParseEpisodeTitleTests : FunSpec({
 
     data class Case(
         val fullTitle: String,
-        val expectedEpisode: Episode,
-        val expectedQuality: VideoQuality
+        val expectedEpisode: RawEpisode
     )
 
     listOf(
         Case(
             fullTitle = "Castle 1x02 Crossfire",
-            expectedEpisode = Episode(title = "Crossfire", season = 1, number = 2),
-            expectedQuality = VideoQuality.SD
+            expectedEpisode = RawEpisode(
+                title = "Crossfire",
+                season = 1,
+                number = 2,
+                quality = VideoQuality.SD
+            )
         ),
         Case(
             fullTitle = "Castle 1x23 Crossfire",
-            expectedEpisode = Episode(title = "Crossfire", season = 1, number = 23),
-            expectedQuality = VideoQuality.SD
+            expectedEpisode = RawEpisode(
+                title = "Crossfire",
+                season = 1,
+                number = 23,
+                quality = VideoQuality.SD
+            )
         ),
         Case(
             fullTitle = "Castle 12x23 Crossfire",
-            expectedEpisode = Episode(title = "Crossfire", season = 12, number = 23),
-            expectedQuality = VideoQuality.SD
+            expectedEpisode = RawEpisode(
+                title = "Crossfire",
+                season = 12,
+                number = 23,
+                quality = VideoQuality.SD
+            )
         ),
         Case(
             fullTitle = "Castle 1x23 Nice Crossfire",
-            expectedEpisode = Episode(title = "Nice Crossfire", season = 1, number = 23),
-            expectedQuality = VideoQuality.SD
+            expectedEpisode = RawEpisode(
+                title = "Nice Crossfire",
+                season = 1,
+                number = 23,
+                quality = VideoQuality.SD
+            )
         ),
         Case(
             fullTitle = "Castle 1x23",
-            expectedEpisode = Episode(title = "", season = 1, number = 23),
-            expectedQuality = VideoQuality.SD
+            expectedEpisode = RawEpisode(
+                title = "",
+                season = 1,
+                number = 23,
+                quality = VideoQuality.SD
+            )
         ),
         Case(
             fullTitle = "Prison Break 1x23 Nice Crossfire",
-            expectedEpisode = Episode(title = "Nice Crossfire", season = 1, number = 23),
-            expectedQuality = VideoQuality.SD
+            expectedEpisode = RawEpisode(
+                title = "Nice Crossfire",
+                season = 1,
+                number = 23,
+                quality = VideoQuality.SD
+            )
         ),
         Case(
             fullTitle = "Prison Break 12x23 Nice Crossfire",
-            expectedEpisode = Episode(title = "Nice Crossfire", season = 12, number = 23),
-            expectedQuality = VideoQuality.SD
+            expectedEpisode = RawEpisode(
+                title = "Nice Crossfire",
+                season = 12,
+                number = 23,
+                quality = VideoQuality.SD
+            )
         ),
         Case(
             fullTitle = "Castle (2009) 1x23 Nice Crossfire",
-            expectedEpisode = Episode(title = "Nice Crossfire", season = 1, number = 23),
-            expectedQuality = VideoQuality.SD
+            expectedEpisode = RawEpisode(
+                title = "Nice Crossfire",
+                season = 1,
+                number = 23,
+                quality = VideoQuality.SD
+            )
         ),
         Case(
             fullTitle = "Marvel's Agents of S.H.I.E.L.D 1x23 Fun & Games",
-            expectedEpisode = Episode(title = "Fun & Games", season = 1, number = 23),
-            expectedQuality = VideoQuality.SD
+            expectedEpisode = RawEpisode(
+                title = "Fun & Games",
+                season = 1,
+                number = 23,
+                quality = VideoQuality.SD
+            )
         ),
         Case(
             fullTitle = "   Castle    12x23  Nice  Crossfire    ",
-            expectedEpisode = Episode(title = "Nice Crossfire", season = 12, number = 23),
-            expectedQuality = VideoQuality.SD
+            expectedEpisode = RawEpisode(
+                title = "Nice Crossfire",
+                season = 12,
+                number = 23,
+                quality = VideoQuality.SD
+            )
         ),
         Case(
             fullTitle = "Castle 12x23     ",
-            expectedEpisode = Episode(title = "", season = 12, number = 23),
-            expectedQuality = VideoQuality.SD
+            expectedEpisode = RawEpisode(
+                title = "",
+                season = 12,
+                number = 23,
+                quality = VideoQuality.SD
+            )
         ),
         Case(
             fullTitle = "Prison Break 12x23 Nice Crossfire 480p",
-            expectedEpisode = Episode(title = "Nice Crossfire", season = 12, number = 23),
-            expectedQuality = VideoQuality.SD
+            expectedEpisode = RawEpisode(
+                title = "Nice Crossfire",
+                season = 12,
+                number = 23,
+                quality = VideoQuality.SD
+            )
         ),
         Case(
             fullTitle = "Prison Break 12x23 Nice Crossfire 720p",
-            expectedEpisode = Episode(title = "Nice Crossfire", season = 12, number = 23),
-            expectedQuality = VideoQuality.HD
+            expectedEpisode = RawEpisode(
+                title = "Nice Crossfire",
+                season = 12,
+                number = 23,
+                quality = VideoQuality.HD
+            )
         ),
         Case(
             fullTitle = "Prison Break 12x23 Nice Crossfire 1080p",
-            expectedEpisode = Episode(title = "Nice Crossfire", season = 12, number = 23),
-            expectedQuality = VideoQuality.FULL_HD
+            expectedEpisode = RawEpisode(
+                title = "Nice Crossfire",
+                season = 12,
+                number = 23,
+                quality = VideoQuality.FULL_HD
+            )
         ),
         Case(
             fullTitle = "Prison Break 12x23 Nice Crossfire 480p 1080p",
-            expectedEpisode = Episode(title = "Nice Crossfire 480p", season = 12, number = 23),
-            expectedQuality = VideoQuality.FULL_HD
+            expectedEpisode = RawEpisode(
+                title = "Nice Crossfire 480p",
+                season = 12,
+                number = 23,
+                quality = VideoQuality.FULL_HD
+            )
         ),
         Case(
             fullTitle = "Prison Break 12x23 1080p",
-            expectedEpisode = Episode(title = "", season = 12, number = 23),
-            expectedQuality = VideoQuality.FULL_HD
+            expectedEpisode = RawEpisode(
+                title = "",
+                season = 12,
+                number = 23,
+                quality = VideoQuality.FULL_HD
+            )
         ),
         Case(
             fullTitle = "12x23 Nice Crossfire",
-            expectedEpisode = Episode(title = "Nice Crossfire", season = 12, number = 23),
-            expectedQuality = VideoQuality.SD
+            expectedEpisode = RawEpisode(
+                title = "Nice Crossfire",
+                season = 12,
+                number = 23,
+                quality = VideoQuality.SD
+            )
         ),
         Case(
             fullTitle = "12x23",
-            expectedEpisode = Episode(title = "", season = 12, number = 23),
-            expectedQuality = VideoQuality.SD
+            expectedEpisode = RawEpisode(
+                title = "",
+                season = 12,
+                number = 23,
+                quality = VideoQuality.SD
+            )
         )
-    ).forEach { (fullTitle, expectedEpisode, expectedQuality) ->
+    ).forEach { (fullTitle, expectedEpisode) ->
 
-        test("parsing title='$fullTitle' should return episode='$expectedEpisode' with quality='$expectedQuality'") {
-            val (episode, quality) = parseEpisodeTitle(fullTitle)
+        test("parsing title='$fullTitle' should return episode='$expectedEpisode'") {
+            val parsedEpisode = parseEpisodeTitle(fullTitle)
 
-            assertAll {
-                assert(episode).isEqualTo(expectedEpisode)
-                assert(quality).isEqualTo(expectedQuality)
-            }
+            assert(parsedEpisode).isEqualTo(expectedEpisode)
         }
     }
 })

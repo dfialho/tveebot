@@ -5,12 +5,8 @@ package dfialho.tveebot.tracker.api.models
  *
  * @property title Title of the TV show.
  * @property id Identifier of the TV show. This is unique for each TV Show.
- * @property quality Defines the video [quality] with which episodes of this TV show should be downloaded.
- *
- * @author David Fialho (dfialho@protonmail.com)
  */
 data class TVShow(
     val id: ID,
-    val title: String,
-    val quality: VideoQuality = VideoQuality.default()
+    val title: String
 )

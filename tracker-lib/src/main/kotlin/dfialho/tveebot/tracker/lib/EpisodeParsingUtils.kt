@@ -1,6 +1,5 @@
 package dfialho.tveebot.tracker.lib
 
-import dfialho.tveebot.tracker.api.models.Episode
 import dfialho.tveebot.tracker.api.models.VideoQuality
 import dfialho.tveebot.tracker.api.models.toVideoQualityOrNull
 import java.util.regex.Pattern
@@ -20,12 +19,19 @@ private val ignoredTokens: Collection<String> = setOf(
     "REPACK"
 )
 
+internal data class RawEpisode(
+    val title: String,
+    val season: Int,
+    val number: Int,
+    val quality: VideoQuality
+)
+
 /**
  * Parses the episode full [title] and returns the episode and the video quality.
  *
  * @throws IllegalArgumentException If the format of [title] is invalid
  */
-internal fun parseEpisodeTitle(title: String): Pair<Episode, VideoQuality> {
+internal fun parseEpisodeTitle(title: String): RawEpisode {
     require(title.isNotBlank()) { "episode full title cannot be blank" }
 
     val tokensWithQuality = title
@@ -54,13 +60,12 @@ internal fun parseEpisodeTitle(title: String): Pair<Episode, VideoQuality> {
     // Parse the episode number token - should be something like "12x23"
     val seasonAndNumber: List<String> = tokens[episodeNumberTokenIndex].split('x')
 
-    val episode = Episode(
+    return RawEpisode(
         season = seasonAndNumber.first().toInt(),
         number = seasonAndNumber.last().toInt(),
+        quality = quality,
 
         // The title of the episode corresponds to everything after the episode number token
         title = tokens.subList(episodeNumberTokenIndex + 1, tokens.lastIndex + 1).joinToString(" ")
     )
-
-    return Pair(episode, quality)
 }

@@ -1,6 +1,6 @@
 package dfialho.tveebot.tracker.api
 
-import dfialho.tveebot.tracker.api.models.TVShowEpisodeFile
+import dfialho.tveebot.tracker.api.models.EpisodeFile
 import dfialho.tveebot.utils.Result
 
 /**
@@ -22,10 +22,10 @@ interface EpisodeLedger {
      * @return [Result.Success] if an episode was either updated or appended to the ledger, or a
      * [Result.Failure] if otherwise.
      */
-    fun appendOrUpdate(episode: TVShowEpisodeFile): Result
+    fun appendOrUpdate(episode: EpisodeFile): Result
 
     /**
      * Returns a list containing all episode files currently hold by this ledger.
      */
-    fun toList(): List<TVShowEpisodeFile>
+    fun toList(): List<EpisodeFile>
 }

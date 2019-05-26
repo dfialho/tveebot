@@ -3,7 +3,7 @@ package dfialho.tveebot.library.lib
 import com.google.common.annotations.VisibleForTesting
 import com.google.common.primitives.Longs
 import dfialho.tveebot.library.api.TVShowOrganizer
-import dfialho.tveebot.tracker.api.models.TVShowEpisode
+import dfialho.tveebot.tracker.api.models.Episode
 import java.io.FileNotFoundException
 import java.nio.file.Files
 import java.nio.file.Path
@@ -13,20 +13,14 @@ import com.google.common.io.Files as GFiles
 
 class SimpleTVShowOrganizer : TVShowOrganizer {
 
-    override fun getLocationOf(episode: TVShowEpisode): Path {
-        return with(episode) {
-            Paths.get(
-                tvShowTitle,
-                "Season %02d".format(season),
-                "$tvShowTitle - ${season}x%02d - $title".format(number)
-            )
-        }
+    override fun getLocationOf(episode: Episode): Path = with(episode) {
+        Paths.get(tvShow.title, "Season %02d".format(season), "${tvShow.title} - ${season}x%02d - $title".format(number))
     }
 
     private fun store(savePath: Path, libraryLocation: Path) {
         val episodePath = findEpisodeFile(savePath)
         val extension = GFiles.getFileExtension(episodePath.fileName.toString())
-        val outputPath = Paths.get(libraryLocation.toString() + ".$extension")
+        val outputPath = Paths.get("$libraryLocation.$extension")
 
         Files.createDirectories(outputPath.parent)
         Files.move(episodePath, outputPath, StandardCopyOption.REPLACE_EXISTING)

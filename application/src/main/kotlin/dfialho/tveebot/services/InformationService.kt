@@ -33,13 +33,13 @@ class InformationService(private val repository: TrackerRepository) : Service {
     fun getNotTrackedTVShows(): List<TVShowEntity> = repository.findNotTrackedTVShows()
 
     /**
-     * Returns a map associating each TV show to its episodes. TV shows without any episode are not included in the
+     * Returns a map associating each TV show to its episodes. TV shows without any episodeFile are not included in the
      * returned map.
      */
     fun getAllEpisodesByTVShow(): Map<ID, List<EpisodeEntity>> = repository.findEpisodesByTVShow().mapKeys { it.key.id }
 
     /**
-     * Returns a list containing every episode from the TV show identified by [tvShowID].
+     * Returns a list containing every episodeFile from the TV show identified by [tvShowID].
      *
      * @throws NoSuchElementException if no TV show is found with id [tvShowID].
      */

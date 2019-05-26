@@ -2,10 +2,10 @@ package dfialho.tveebot.tracker.lib
 
 import dfialho.tveebot.tracker.api.TVShowIDMapper
 import dfialho.tveebot.tracker.api.TVShowProvider
+import dfialho.tveebot.tracker.api.models.Episode
+import dfialho.tveebot.tracker.api.models.EpisodeFile
 import dfialho.tveebot.tracker.api.models.ID
 import dfialho.tveebot.tracker.api.models.TVShow
-import dfialho.tveebot.tracker.api.models.TVShowEpisode
-import dfialho.tveebot.tracker.api.models.TVShowEpisodeFile
 import dfialho.tveebot.utils.rssfeed.RSSFeedException
 import dfialho.tveebot.utils.rssfeed.RSSFeedItem
 import dfialho.tveebot.utils.rssfeed.RSSFeedReader
@@ -38,7 +38,7 @@ class ShowRSSProvider(private val idMapper: TVShowIDMapper) : TVShowProvider {
             )
         }
 
-    override fun fetchEpisodes(tvShow: TVShow): List<TVShowEpisodeFile> {
+    override fun fetchEpisodes(tvShow: TVShow): List<EpisodeFile> {
         val showID: String = idMapper[tvShow.id] ?: throw IllegalArgumentException("Not found: $tvShow")
         val showURL = URL("https://showrss.info/show/$showID.rss")
 
@@ -47,7 +47,7 @@ class ShowRSSProvider(private val idMapper: TVShowIDMapper) : TVShowProvider {
             .distinctByMostRecent()
     }
 
-    private fun RSSFeedItem.parseEpisodeOrNull(tvShow: TVShow): TVShowEpisodeFile? {
+    private fun RSSFeedItem.parseEpisodeOrNull(tvShow: TVShow): EpisodeFile? {
         return try {
             this.parseEpisode(tvShow)
         } catch (e: RSSFeedException) {
@@ -58,27 +58,26 @@ class ShowRSSProvider(private val idMapper: TVShowIDMapper) : TVShowProvider {
 }
 
 /**
- * Converts this [RSSFeedItem] into an [TVShowEpisodeFile] and returns the result.
+ * Converts this [RSSFeedItem] into an [EpisodeFile] and returns the result.
  *
  * @throws RSSFeedException if it fails to find the episode information from the feed
  * @author David Fialho (dfialho@protonmail.com)
  */
-internal fun RSSFeedItem.parseEpisode(tvShow: TVShow): TVShowEpisodeFile {
-    val (episode, quality) = try {
+internal fun RSSFeedItem.parseEpisode(tvShow: TVShow): EpisodeFile {
+    val episode = try {
         parseEpisodeTitle(this.title)
     } catch (e: IllegalArgumentException) {
         throw RSSFeedException("Failed to parse episode information from RSS item: $this", e)
     }
 
-    return TVShowEpisodeFile(
-        TVShowEpisode(
-            tvShowID = tvShow.id,
-            tvShowTitle = tvShow.title,
-            title = episode.title,
+    return EpisodeFile(
+        episode = Episode(
+            tvShow = tvShow,
             season = episode.season,
-            number = episode.number
+            number = episode.number,
+            title = episode.title
         ),
-        quality = quality,
+        quality = episode.quality,
         link = this.link,
         publishDate = this.publishedDate
     )
@@ -90,8 +89,8 @@ internal fun RSSFeedItem.parseEpisode(tvShow: TVShow): TVShowEpisodeFile {
  *
  * @author David Fialho (dfialho@protonmail.com)
  */
-private fun Iterable<TVShowEpisodeFile>.distinctByMostRecent(): List<TVShowEpisodeFile> {
-    val distinctEpisodes = mutableMapOf<ID, TVShowEpisodeFile>()
+private fun Iterable<EpisodeFile>.distinctByMostRecent(): List<EpisodeFile> {
+    val distinctEpisodes = mutableMapOf<ID, EpisodeFile>()
 
     for (episodeFile in this) {
 
