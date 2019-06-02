@@ -31,6 +31,8 @@ private object Downloads : Table() {
     val tvShowID = reference("tvshow_id", Episodes.tvShowID)
 }
 
+const val DB_EXTENSION = ".mv.db"
+
 fun main(args: Array<String>) {
 
     if (args.size != 1) {
@@ -42,10 +44,11 @@ fun main(args: Array<String>) {
 
     if (Files.exists(dbPath)) {
         System.err.println("Repository path not found: $dbPath")
+        System.exit(1)
     }
 
     val db = Database.connect(
-        url = "jdbc:h2:$dbPath;MODE=MYSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=TRUE",
+        url = "jdbc:h2:${removeDbExtension(dbPath.toString())};MODE=MYSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=TRUE",
         driver = "org.h2.Driver"
     )
 
@@ -71,5 +74,13 @@ fun main(args: Array<String>) {
         }
 
         SchemaUtils.drop(Downloads)
+    }
+}
+
+private fun removeDbExtension(path: String): String {
+    return if (path.endsWith(DB_EXTENSION)) {
+        path.dropLast(DB_EXTENSION.length)
+    } else {
+        path
     }
 }
