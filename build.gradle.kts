@@ -10,14 +10,20 @@ val kotlintestVersion: String by project
 
 plugins {
     kotlin("jvm") version "1.3.30" apply false
+    id("fr.brouillard.oss.gradle.jgitver") version "0.8.0"
 }
 
 subprojects {
     apply(plugin = "org.jetbrains.kotlin.jvm")
     apply(plugin = "idea")
-    
+    apply(plugin = "fr.brouillard.oss.gradle.jgitver")
+
     group = "dfialho.tveebot"
-    version = "0.5-SNAPSHOT"
+
+    jgitver {
+        nonQualifierBranches = "develop"
+        mavenLike(true)
+    }
 
     repositories {
         mavenLocal()
