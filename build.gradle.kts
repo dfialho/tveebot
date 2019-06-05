@@ -39,22 +39,17 @@ subprojects {
 
     dependencies {
         "testImplementation"("io.kotlintest:kotlintest-runner-junit5:$kotlintestVersion")
+        "testImplementation"("org.junit.jupiter:junit-jupiter-api:$junitVersion")
+        "testRuntime"("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
         "testImplementation"("com.willowtreeapps.assertk:assertk-jvm:$assertkVersion")
         "testImplementation"("io.mockk:mockk:$mockkVersion")
-        "testImplementation"("junit:junit:$junitVersion")
     }
 
     tasks.withType<KotlinCompile> {
         kotlinOptions.jvmTarget = "1.8"
     }
 
-    val compileKotlin: KotlinCompile by tasks
-    compileKotlin.kotlinOptions {
-        jvmTarget = "1.8"
-    }
-
-    val compileTestKotlin: KotlinCompile by tasks
-    compileTestKotlin.kotlinOptions {
-        jvmTarget = "1.8"
+    tasks.withType<Test> {
+        useJUnitPlatform { }
     }
 }

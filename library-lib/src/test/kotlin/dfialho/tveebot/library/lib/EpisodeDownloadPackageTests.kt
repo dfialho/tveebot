@@ -3,65 +3,50 @@ package dfialho.tveebot.library.lib
 import assertk.assert
 import assertk.assertions.isEqualTo
 import assertk.assertions.isInstanceOf
-import io.kotlintest.TestCase
-import io.kotlintest.TestResult
-import io.kotlintest.specs.AnnotationSpec
-import org.junit.rules.TemporaryFolder
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
+import java.nio.file.Files
 import java.nio.file.Path
+
 
 /**
  * Tests for the [EpisodeDownloadPackage].
  *
  * @author David Fialho (dfialho@protonmail.com)
  */
-class EpisodeDownloadPackageTests : AnnotationSpec() {
+class EpisodeDownloadPackageTests {
 
-    val tmpFolder = TemporaryFolder()
+    @Test
+    fun `episode from file corresponds to the file path`(@TempDir downloadDirectory: Path) {
+        val videoFilePath = Files.createFile(downloadDirectory.resolve("video.mp4"))
+        val episodePackage = EpisodeDownloadPackage(videoFilePath)
 
-    override fun beforeTest(testCase: TestCase) {
-        super.beforeTest(testCase)
-        println("before each test")
-        tmpFolder.create()
-    }
-
-    override fun afterTest(testCase: TestCase, result: TestResult) {
-        super.afterTest(testCase, result)
-        println("after each test")
-        tmpFolder.delete()
+        assert(episodePackage.getEpisode()).isEqualTo(videoFilePath)
     }
 
     @Test
-    fun `episode from file corresponds to the file path`() {
-        tmpFolder.create()
-        val filePath = tmpFolder.newFile().toPath()
-        val episodePackage = EpisodeDownloadPackage(filePath)
+    fun `episode from directory containing a single video file corresponds to that video file`(@TempDir downloadDirectory: Path) {
+        val videoFilePath = Files.createFile(downloadDirectory.resolve("video.mp4"))
 
-        assert(episodePackage.getEpisode()).isEqualTo(filePath)
-    }
-
-    @Test
-    fun `episode from directory containing a single video file corresponds to that video file`() {
-        val downloadDirectory: Path = tmpFolder.root.toPath()
-        val videoFilePath = tmpFolder.newFile().toPath()
         val episodePackage = EpisodeDownloadPackage(downloadDirectory)
 
         assert(episodePackage.getEpisode()).isEqualTo(videoFilePath)
     }
 
     @Test
-    fun `episode from directory containing a multiple video file corresponds to largest video file`() {
-        val downloadDirectory: Path = tmpFolder.root.toPath()
-        tmpFolder.newFile()
-        val largerFile = tmpFolder.newFile()
-        largerFile.writeText("Some text to make file bigger")
+    fun `episode from directory containing a multiple video file corresponds to largest video file`(@TempDir downloadDirectory: Path) {
+
+        val smallFile = downloadDirectory.resolve("small-file")
+        smallFile.toFile().writeText("Small")
+        val largeFile = downloadDirectory.resolve("large-file")
+        largeFile.toFile().writeText("Some text to make file bigger")
         val episodePackage = EpisodeDownloadPackage(downloadDirectory)
 
-        assert(episodePackage.getEpisode()).isEqualTo(largerFile.toPath())
+        assert(episodePackage.getEpisode()).isEqualTo(largeFile)
     }
 
     @Test
-    fun `episode from empty directory throws IllegalStateException`() {
-        val downloadDirectory: Path = tmpFolder.root.toPath()
+    fun `episode from empty directory throws IllegalStateException`(@TempDir downloadDirectory: Path) {;
         val episodePackage = EpisodeDownloadPackage(downloadDirectory)
 
         assert {
@@ -72,8 +57,8 @@ class EpisodeDownloadPackageTests : AnnotationSpec() {
     }
 
     @Test
-    fun `episode from non-existing path throws IllegalStateException`() {
-        val downloadDirectory: Path = tmpFolder.root.toPath().resolve("fake")
+    fun `episode from non-existing path throws IllegalStateException`(@TempDir tempDir: Path) {
+        val downloadDirectory: Path = tempDir.resolve("fake")
         val episodePackage = EpisodeDownloadPackage(downloadDirectory)
 
         assert {
