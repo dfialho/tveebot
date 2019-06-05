@@ -1,12 +1,12 @@
 package dfialho.tveebot.services
 
+import dfialho.tveebot.application.api.ID
 import dfialho.tveebot.downloader.api.*
 import dfialho.tveebot.exceptions.NotFoundException
 import dfialho.tveebot.repositories.DownloadPool
 import dfialho.tveebot.services.models.DownloadNotification
 import dfialho.tveebot.toPrettyString
 import dfialho.tveebot.tracker.api.models.EpisodeFile
-import dfialho.tveebot.tracker.api.models.ID
 import mu.KLogging
 import java.util.*
 

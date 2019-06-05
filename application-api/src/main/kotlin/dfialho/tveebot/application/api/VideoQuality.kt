@@ -1,4 +1,4 @@
-package dfialho.tveebot.tracker.api.models
+package dfialho.tveebot.application.api
 
 /**
  * Representation for the quality of video files.
@@ -7,7 +7,7 @@ package dfialho.tveebot.tracker.api.models
  * @author David Fialho (dfialho@protonmail.com)
  */
 enum class VideoQuality(private val identifier: String) {
-    FULL_HD("1080p"),
+    FHD("1080p"),
     HD("720p"),
     SD("480p");
 

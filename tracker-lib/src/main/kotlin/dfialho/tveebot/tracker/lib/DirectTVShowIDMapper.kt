@@ -1,7 +1,7 @@
 package dfialho.tveebot.tracker.lib
 
+import dfialho.tveebot.application.api.ID
 import dfialho.tveebot.tracker.api.TVShowIDMapper
-import dfialho.tveebot.tracker.api.models.ID
 
 /**
  * Implementation of [TVShowIDMapper] that does not do any special mapping. For a given ID it returns always that same
@@ -19,5 +19,6 @@ class DirectTVShowIDMapper : TVShowIDMapper {
     override fun set(tvShowID: ID, providerID: String) {
     }
 
-    override fun getTVShowID(providerID: String): ID = ID(providerID)
+    override fun getTVShowID(providerID: String): ID =
+        ID(providerID)
 }

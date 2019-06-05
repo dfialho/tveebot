@@ -1,9 +1,9 @@
 package dfialho.tveebot.repositories.impl
 
+import dfialho.tveebot.application.api.ID
 import dfialho.tveebot.downloader.api.DownloadReference
 import dfialho.tveebot.repositories.DownloadPool
 import dfialho.tveebot.tracker.api.models.EpisodeFile
-import dfialho.tveebot.tracker.api.models.ID
 import dfialho.tveebot.tracker.api.models.tvShow
 import mu.KLogging
 

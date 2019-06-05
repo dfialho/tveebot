@@ -1,9 +1,9 @@
 package dfialho.tveebot.routing
 
+import dfialho.tveebot.application.api.ID
+import dfialho.tveebot.application.api.VideoQuality
+import dfialho.tveebot.application.api.toVideoQuality
 import dfialho.tveebot.services.TrackerService
-import dfialho.tveebot.tracker.api.models.ID
-import dfialho.tveebot.tracker.api.models.VideoQuality
-import dfialho.tveebot.tracker.api.models.toVideoQuality
 import io.ktor.application.call
 import io.ktor.response.respondText
 import io.ktor.routing.Route

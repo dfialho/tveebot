@@ -1,9 +1,9 @@
 package dfialho.tveebot.tracker.lib
 
 import com.google.common.hash.Hashing
+import dfialho.tveebot.application.api.ID
+import dfialho.tveebot.application.api.VideoQuality
 import dfialho.tveebot.tracker.api.models.EpisodeFile
-import dfialho.tveebot.tracker.api.models.ID
-import dfialho.tveebot.tracker.api.models.VideoQuality
 import dfialho.tveebot.tracker.api.models.tvShow
 import java.nio.charset.Charset
 

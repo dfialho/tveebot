@@ -1,7 +1,7 @@
 package dfialho.tveebot.routing
 
+import dfialho.tveebot.application.api.ID
 import dfialho.tveebot.services.InformationService
-import dfialho.tveebot.tracker.api.models.ID
 import io.ktor.application.call
 import io.ktor.response.respond
 import io.ktor.routing.Route
@@ -22,21 +22,21 @@ fun Route.info(service: InformationService) = route("info") {
          * Returns a list containing all TV shows available.
          */
         get {
-            call.respond(service.getAllTVShows())
+            call.respond(service.listAllTVShows())
         }
 
         /**
          * Returns a list containing only the TV shows that are currently being tracked.
          */
         get("tracked") {
-            call.respond(service.getTrackedTVShows())
+            call.respond(service.listTrackedTVShows())
         }
 
         /**
          * Returns a list containing only the TV shows that are not currently being tracked.
          */
         get("not-tracked") {
-            call.respond(service.getNotTrackedTVShows())
+            call.respond(service.listNonTrackedTVShows())
         }
     }
 
@@ -47,7 +47,7 @@ fun Route.info(service: InformationService) = route("info") {
          * particular TV show.
          */
         get {
-            call.respond(service.getAllEpisodesByTVShow())
+            call.respond(service.listEpisodesByTVShow())
         }
 
         /**

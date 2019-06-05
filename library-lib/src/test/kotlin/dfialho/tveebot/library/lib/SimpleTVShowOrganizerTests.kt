@@ -2,9 +2,9 @@ package dfialho.tveebot.library.lib
 
 import assertk.assert
 import assertk.assertions.isEqualTo
+import dfialho.tveebot.application.api.ID
 import dfialho.tveebot.library.api.TVShowOrganizer
 import dfialho.tveebot.tracker.api.models.Episode
-import dfialho.tveebot.tracker.api.models.ID
 import dfialho.tveebot.tracker.api.models.TVShow
 import io.kotlintest.specs.FunSpec
 import java.nio.file.Paths

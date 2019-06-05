@@ -2,10 +2,10 @@ package dfialho.tveebot
 
 import dfialho.tveebot.application.api.EpisodeEntity
 import dfialho.tveebot.application.api.TVShowEntity
+import dfialho.tveebot.application.api.VideoQuality
 import dfialho.tveebot.tracker.api.models.Episode
 import dfialho.tveebot.tracker.api.models.EpisodeFile
 import dfialho.tveebot.tracker.api.models.TVShow
-import dfialho.tveebot.tracker.api.models.VideoQuality
 
 @Suppress("NOTHING_TO_INLINE")
 inline fun TVShowEntity.toTVShow(): TVShow {

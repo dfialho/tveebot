@@ -1,6 +1,8 @@
 package dfialho.tveebot.services
 
 import dfialho.tveebot.application.api.EpisodeState
+import dfialho.tveebot.application.api.ID
+import dfialho.tveebot.application.api.VideoQuality
 import dfialho.tveebot.data.TrackerRepository
 import dfialho.tveebot.episodeFileOf
 import dfialho.tveebot.services.models.DownloadNotification
@@ -9,9 +11,7 @@ import dfialho.tveebot.services.models.StoreNotification
 import dfialho.tveebot.toPrettyString
 import dfialho.tveebot.toTVShow
 import dfialho.tveebot.tracker.api.models.EpisodeFile
-import dfialho.tveebot.tracker.api.models.ID
 import dfialho.tveebot.tracker.api.models.TVShow
-import dfialho.tveebot.tracker.api.models.VideoQuality
 import mu.KLogging
 
 class TVeebotService(

@@ -1,6 +1,10 @@
 package dfialho.tveebot.testing
 
-import dfialho.tveebot.tracker.api.models.*
+import dfialho.tveebot.application.api.VideoQuality
+import dfialho.tveebot.application.api.randomID
+import dfialho.tveebot.tracker.api.models.Episode
+import dfialho.tveebot.tracker.api.models.EpisodeFile
+import dfialho.tveebot.tracker.api.models.TVShow
 import java.time.Instant
 import java.util.*
 

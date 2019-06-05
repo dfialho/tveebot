@@ -1,8 +1,8 @@
 package dfialho.tveebot.repositories
 
+import dfialho.tveebot.application.api.ID
 import dfialho.tveebot.downloader.api.DownloadReference
 import dfialho.tveebot.tracker.api.models.EpisodeFile
-import dfialho.tveebot.tracker.api.models.ID
 
 interface DownloadPool {
 

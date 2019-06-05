@@ -2,12 +2,12 @@ package dfialho.tveebot.data
 
 import assertk.assert
 import assertk.assertions.isEqualTo
+import dfialho.tveebot.application.api.VideoQuality
 import dfialho.tveebot.testing.anyEpisodeFile
 import dfialho.tveebot.testing.anyTVShow
 import dfialho.tveebot.testing.newRepository
 import dfialho.tveebot.tracker.api.EpisodeLedger
 import dfialho.tveebot.tracker.api.models.TVShow
-import dfialho.tveebot.tracker.api.models.VideoQuality
 import dfialho.tveebot.tvShowEntityOf
 import dfialho.tveebot.utils.Result
 import io.kotlintest.specs.BehaviorSpec
@@ -37,7 +37,7 @@ class EpisodeLedgerRepositoryTests : BehaviorSpec({
         val trackedTVShow = anyTVShow()
         val ledger = newEpisodeLedger(trackedTVShow)
         val originalEpisode = anyEpisodeFile(trackedTVShow, quality = VideoQuality.HD)
-        val newEpisode = originalEpisode.copy(quality = VideoQuality.FULL_HD)
+        val newEpisode = originalEpisode.copy(quality = VideoQuality.FHD)
 
         ledger.appendOrUpdate(originalEpisode)
 

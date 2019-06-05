@@ -1,13 +1,9 @@
 package dfialho.tveebot.tracker.lib
 
+import dfialho.tveebot.application.api.ID
+import dfialho.tveebot.application.api.randomID
 import dfialho.tveebot.tracker.api.TVShowIDMapper
-import dfialho.tveebot.tracker.api.models.ID
-import dfialho.tveebot.tracker.api.models.randomID
-import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.SchemaUtils
-import org.jetbrains.exposed.sql.Table
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class ExposedTVShowIDMapper(private val db: Database) : TVShowIDMapper {

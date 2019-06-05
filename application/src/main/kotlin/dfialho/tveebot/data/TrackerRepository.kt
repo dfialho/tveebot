@@ -1,18 +1,14 @@
 package dfialho.tveebot.data
 
-import dfialho.tveebot.application.api.EpisodeEntity
-import dfialho.tveebot.application.api.EpisodeState
-import dfialho.tveebot.application.api.TVShowEntity
+import dfialho.tveebot.application.api.*
 import dfialho.tveebot.tracker.api.TrackerEngine
 import dfialho.tveebot.tracker.api.models.EpisodeFile
-import dfialho.tveebot.tracker.api.models.ID
-import dfialho.tveebot.tracker.api.models.VideoQuality
 import dfialho.tveebot.utils.Result
 import java.util.*
 
 /**
  * A tracker repository holds state information required by a [TrackerEngine] to track a set of TV show episodes. It
- * exposes a set of methods to add information to the repository, such as, [TVShowA]s and [EpisodeEntity]s. As well as
+ * exposes a set of methods to add information to the repository, such as, [TVShow]s and [EpisodeEntity]s. As well as
  * methods to retrieve this same information from it.
  *
  * @author David Fialho (dfialho@protonmail.com)

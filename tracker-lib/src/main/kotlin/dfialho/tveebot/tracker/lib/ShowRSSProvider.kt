@@ -1,10 +1,10 @@
 package dfialho.tveebot.tracker.lib
 
+import dfialho.tveebot.application.api.ID
 import dfialho.tveebot.tracker.api.TVShowIDMapper
 import dfialho.tveebot.tracker.api.TVShowProvider
 import dfialho.tveebot.tracker.api.models.Episode
 import dfialho.tveebot.tracker.api.models.EpisodeFile
-import dfialho.tveebot.tracker.api.models.ID
 import dfialho.tveebot.tracker.api.models.TVShow
 import dfialho.tveebot.utils.rssfeed.RSSFeedException
 import dfialho.tveebot.utils.rssfeed.RSSFeedItem

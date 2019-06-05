@@ -1,5 +1,6 @@
 package dfialho.tveebot.tracker.api.models
 
+import dfialho.tveebot.application.api.VideoQuality
 import java.time.Instant
 
 data class EpisodeFile(

@@ -1,6 +1,6 @@
 package dfialho.tveebot.tracker.api
 
-import dfialho.tveebot.tracker.api.models.ID
+import dfialho.tveebot.application.api.ID
 
 /**
  * A [TVShowIDMapper] maps the UUID of each TV show to the ID of that TV show in a specific [TVShowProvider].

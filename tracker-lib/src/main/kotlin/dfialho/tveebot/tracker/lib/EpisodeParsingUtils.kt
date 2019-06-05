@@ -1,7 +1,7 @@
 package dfialho.tveebot.tracker.lib
 
-import dfialho.tveebot.tracker.api.models.VideoQuality
-import dfialho.tveebot.tracker.api.models.toVideoQualityOrNull
+import dfialho.tveebot.application.api.VideoQuality
+import dfialho.tveebot.application.api.toVideoQualityOrNull
 import java.util.regex.Pattern
 
 /**

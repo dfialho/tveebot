@@ -1,5 +1,7 @@
 package dfialho.tveebot.tracker.api.models
 
+import dfialho.tveebot.application.api.ID
+
 /**
  * Representation of a TV show.
  *

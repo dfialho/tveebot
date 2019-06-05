@@ -1,5 +1,7 @@
 package dfialho.tveebot.services
 
+import dfialho.tveebot.application.api.ID
+import dfialho.tveebot.application.api.VideoQuality
 import dfialho.tveebot.data.TrackerRepository
 import dfialho.tveebot.services.models.NewEpisodeNotification
 import dfialho.tveebot.toPrettyString
@@ -8,8 +10,6 @@ import dfialho.tveebot.tracker.api.TVShowProvider
 import dfialho.tveebot.tracker.api.TrackerEngine
 import dfialho.tveebot.tracker.api.TrackingListener
 import dfialho.tveebot.tracker.api.models.EpisodeFile
-import dfialho.tveebot.tracker.api.models.ID
-import dfialho.tveebot.tracker.api.models.VideoQuality
 import dfialho.tveebot.tvShowEntityOf
 import mu.KLogging
 import java.util.*

@@ -1,4 +1,4 @@
-package dfialho.tveebot.tracker.api.models
+package dfialho.tveebot.application.api
 
 import java.util.*
 

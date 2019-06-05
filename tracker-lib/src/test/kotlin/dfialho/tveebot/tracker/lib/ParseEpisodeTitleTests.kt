@@ -2,7 +2,7 @@ package dfialho.tveebot.tracker.lib
 
 import assertk.assert
 import assertk.assertions.isEqualTo
-import dfialho.tveebot.tracker.api.models.VideoQuality
+import dfialho.tveebot.application.api.VideoQuality
 import io.kotlintest.specs.FunSpec
 
 /**
@@ -141,7 +141,7 @@ class ParseEpisodeTitleTests : FunSpec({
                 title = "Nice Crossfire",
                 season = 12,
                 number = 23,
-                quality = VideoQuality.FULL_HD
+                quality = VideoQuality.FHD
             )
         ),
         Case(
@@ -150,7 +150,7 @@ class ParseEpisodeTitleTests : FunSpec({
                 title = "Nice Crossfire 480p",
                 season = 12,
                 number = 23,
-                quality = VideoQuality.FULL_HD
+                quality = VideoQuality.FHD
             )
         ),
         Case(
@@ -159,7 +159,7 @@ class ParseEpisodeTitleTests : FunSpec({
                 title = "",
                 season = 12,
                 number = 23,
-                quality = VideoQuality.FULL_HD
+                quality = VideoQuality.FHD
             )
         ),
         Case(

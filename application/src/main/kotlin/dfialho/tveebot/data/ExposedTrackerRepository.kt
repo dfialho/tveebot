@@ -1,10 +1,11 @@
 package dfialho.tveebot.data
 
-import dfialho.tveebot.application.api.EpisodeEntity
-import dfialho.tveebot.application.api.EpisodeState
-import dfialho.tveebot.application.api.TVShowEntity
+import dfialho.tveebot.application.api.*
 import dfialho.tveebot.toPrettyString
-import dfialho.tveebot.tracker.api.models.*
+import dfialho.tveebot.tracker.api.models.Episode
+import dfialho.tveebot.tracker.api.models.EpisodeFile
+import dfialho.tveebot.tracker.api.models.TVShow
+import dfialho.tveebot.tracker.api.models.tvShow
 import dfialho.tveebot.tracker.lib.EpisodeIDGenerator
 import dfialho.tveebot.utils.Result
 import mu.KLogging
