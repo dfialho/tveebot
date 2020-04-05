@@ -1,6 +1,5 @@
 package dfialho.tveebot.app.events
 
-import dfialho.tveebot.app.services.Service
 import mu.KLogging
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.reflect.KClass
@@ -10,18 +9,15 @@ class EventBus {
 
     private val handlers: MutableMap<KClass<out Event>, MutableList<EventRegistration>> = ConcurrentHashMap()
 
-    private data class EventRegistration(val service: Service, val handler: (Event) -> Unit)
+    private data class EventRegistration(val service: Any, val handler: (Event) -> Unit)
 
-    fun <T : Event> subscribe(eventType: KClass<out T>, service: Service, handler: (Event) -> Unit) {
+    fun <T : Event> subscribe(service: Any, eventType: KClass<out T>, handler: (Event) -> Unit) {
         handlers.computeIfAbsent(eventType) { mutableListOf() }
             .add(EventRegistration(service, handler))
-
-        logger.debug { "Service '${service.name}' subscribed to '${eventType.simpleName}'" }
     }
 
-    fun <T : Event> unsubscribe(eventType: KClass<out T>, handlingService: Service) {
+    fun <T : Event> unsubscribe(handlingService: Any, eventType: KClass<out T>) {
         handlers[eventType]?.removeIf { it.service === handlingService }
-        logger.debug { "Service '${handlingService.name}' unsubscribed from '${eventType.simpleName}'" }
     }
 
     fun <T : Event> fire(event: T) {
@@ -30,4 +26,17 @@ class EventBus {
             registration.handler(event)
         }
     }
+}
+
+inline fun <reified E : Event> Any.subscribe(eventBus: EventBus, noinline handler: (E) -> Unit) {
+    @Suppress("UNCHECKED_CAST")
+    eventBus.subscribe(this, E::class, handler as (Event) -> Unit)
+}
+
+inline fun <reified E : Event> Any.unsubscribe(eventBus: EventBus) {
+    eventBus.unsubscribe(this, E::class)
+}
+
+inline fun <reified E : Event> fire(eventBus: EventBus, event: E) {
+    eventBus.fire(event)
 }

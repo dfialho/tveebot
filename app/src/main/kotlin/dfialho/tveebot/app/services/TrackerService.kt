@@ -22,7 +22,7 @@ class TrackerService(
     private val engineListener: TrackingListener = object : TrackingListener {
         override fun onNewEpisode(file: EpisodeFile) {
             logger.info { "Found new episode file: $file" }
-            fire(eventBus, Event.VideoFileFound(file))
+            fire(eventBus, Event.EpisodeFileFound(file))
         }
     }
 
@@ -46,6 +46,7 @@ class TrackerService(
                 ?: throw IllegalStateException("No TV show found with id $tvShowId")
 
             upsert(tvShow.copy(tracked = true, videoQuality = videoQuality))
+            engine.register(tvShow.tvShow)
             logger.info { "Started tracking ${tvShow.tvShow} with video quality $videoQuality" }
         }
     }
@@ -55,6 +56,7 @@ class TrackerService(
         repository.transaction {
             findTVShow(tvShowId, tracked = true)?.let { tvShow ->
                 update(tvShow.copy(tracked = false))
+                engine.unregister(tvShow.tvShow.id)
                 logger.info { "Stopped tracking ${tvShow.tvShow}" }
             }
         }

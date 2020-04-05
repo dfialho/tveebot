@@ -1,5 +1,7 @@
 package dfialho.tveebot.tracker.api
 
+import dfialho.tveebot.app.api.models.TVShow
+
 /**
  * A [TrackerEngine] tracks a set of TV shows marked as "tracked" in the [recorder]. To track these TV shows
  * it uses a [provider], from which it retrieves the episode information about each tracked TV show.
@@ -30,6 +32,10 @@ interface TrackerEngine {
      * no side-effects.
      */
     fun stop()
+
+    fun register(tvShow: TVShow)
+
+    fun unregister(tvShowId: String)
 
     /**
      * Signals the engine to check if there is any new episodes.

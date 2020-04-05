@@ -25,7 +25,7 @@ class DownloaderService(
         engine.start()
         engine.addListener(engineListener)
 
-        subscribe<Event.VideoFileFound>(eventBus) {
+        subscribe<Event.EpisodeFileFound>(eventBus) {
             download(it.episode)
         }
     }
