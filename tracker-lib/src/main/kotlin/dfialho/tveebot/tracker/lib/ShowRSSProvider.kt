@@ -27,14 +27,18 @@ class ShowRSSProvider(private val videoFileParser: VideoFileParser) : TVShowProv
      */
     private val feedReader = RSSFeedReader()
 
-    override fun fetchTVShows(): List<TVShow> = Jsoup.connect(SHOWRSS_URL).get()
-        .select("option")
-        .map {
-            TVShow(
-                id = it.attr("value"),
-                title = it.text()
-            )
-        }
+    override fun fetchTVShow(tvShowId: String): TVShow? {
+
+        return Jsoup.connect("$SHOWRSS_URL/$tvShowId").get()
+            .select("option")
+            .map {
+                TVShow(
+                    id = it.attr("value"),
+                    title = it.text()
+                )
+            }
+            .firstOrNull()
+    }
 
     override fun fetchEpisodes(tvShow: TVShow): List<EpisodeFile> {
         val showURL = URL("https://showrss.info/show/${tvShow.id}.rss")

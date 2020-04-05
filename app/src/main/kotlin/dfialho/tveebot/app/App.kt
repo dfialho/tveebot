@@ -18,9 +18,18 @@ fun Application.app() {
 
     val kodein = Kodein {
 
-        bind<TrackerService>() with singleton { TrackerService(instance(), instance()) }
+        bind<TrackerService>() with singleton { TrackerService(instance(), instance(), instance()) }
         bind<DownloaderService>() with singleton { DownloaderService(instance(), instance()) }
         bind<OrganizerService>() with singleton { OrganizerService(instance(), instance()) }
+        bind<ServiceManager>() with singleton {
+            ServiceManager(
+                instance(),
+                instance(),
+                instance(),
+                instance(),
+                instance()
+            )
+        }
     }
 
     val serviceManager by kodein.instance<ServiceManager>()

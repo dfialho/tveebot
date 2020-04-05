@@ -25,7 +25,7 @@ class DownloaderService(
         engine.start()
         engine.addListener(engineListener)
 
-        subscribe<Event.EpisodeFound>(eventBus) {
+        subscribe<Event.VideoFileFound>(eventBus) {
             download(it.episode)
         }
     }
@@ -33,7 +33,6 @@ class DownloaderService(
     override fun stop() {
         logger.debug { "Stopping download engine..." }
         engine.stop()
-
         engine.removeListener(engineListener)
     }
 

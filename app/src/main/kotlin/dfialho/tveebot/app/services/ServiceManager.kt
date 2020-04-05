@@ -1,5 +1,7 @@
 package dfialho.tveebot.app.services
 
+import dfialho.tveebot.app.events.EventBus
+import dfialho.tveebot.app.repositories.TVeebotRepository
 import mu.KLogging
 
 /**
@@ -10,7 +12,9 @@ import mu.KLogging
 class ServiceManager(
     private val trackerService: TrackerService,
     private val downloaderService: DownloaderService,
-    private val organizerService: OrganizerService
+    private val organizerService: OrganizerService,
+    private val repository: TVeebotRepository,
+    private val eventBus: EventBus
 ) {
     companion object : KLogging()
 
