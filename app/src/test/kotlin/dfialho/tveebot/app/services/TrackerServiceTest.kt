@@ -11,10 +11,15 @@ import dfialho.tveebot.app.events.Event
 import dfialho.tveebot.app.events.EventBus
 import dfialho.tveebot.app.events.subscribe
 import dfialho.tveebot.app.newRepository
-import dfialho.tveebot.app.repositories.EpisodeLedgerRepository
+import dfialho.tveebot.app.repositories.TVeebotRepository
 import dfialho.tveebot.tracker.api.TVShowProvider
+import dfialho.tveebot.tracker.api.TrackerEngine
 import dfialho.tveebot.tracker.lib.ScheduledTrackerEngine
 import io.kotlintest.specs.BehaviorSpec
+import org.kodein.di.Kodein
+import org.kodein.di.generic.bind
+import org.kodein.di.generic.instance
+import org.kodein.di.generic.singleton
 import java.time.Duration
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -23,7 +28,6 @@ import java.util.concurrent.TimeUnit
 class TrackerServiceTest : BehaviorSpec({
 
     Given("a tv show with 2 new episode files") {
-
         val tvShow = ProvidedTVShow(
             anyTVShow(),
             episodeFiles = listOf(
@@ -31,15 +35,9 @@ class TrackerServiceTest : BehaviorSpec({
                 anyEpisodeFile()
             )
         )
-
-        val provider = fakeTVShowProvider(tvShow)
-
-        val repository = newRepository()
-        val episodeLedger = EpisodeLedgerRepository(repository)
-        val checkPeriod = Duration.ofMillis(10)
-        val engine = ScheduledTrackerEngine(provider, episodeLedger, checkPeriod)
-        val eventBus = EventBus()
-        val service = TrackerService(engine, repository, eventBus)
+        val services = services(tvShow)
+        val eventBus by services.instance<EventBus>()
+        val service by services.instance<TrackerService>()
         service.start()
 
         val latch = CountDownLatch(tvShow.episodeFiles.size)
@@ -53,13 +51,36 @@ class TrackerServiceTest : BehaviorSpec({
             service.register(tvShow.tvShow.id, VideoQuality.default())
 
             Then("eventually an ${Event.EpisodeFileFound::class.simpleName} event is fired for each episode file") {
-                latch.await(checkPeriod.toMillis() * 2 + 1000, TimeUnit.MILLISECONDS)
+                latch.await(1000, TimeUnit.MILLISECONDS)
                 assert(firedEvents)
-                    .hasSize(2)
+                    .hasSize(tvShow.episodeFiles.size)
+            }
+        }
+
+        When("it starts being tracked") {
+            service.register(tvShow.tvShow.id, VideoQuality.default())
+
+            Then("eventually an ${Event.EpisodeFileFound::class.simpleName} event is fired for each episode file") {
+                latch.await(1000, TimeUnit.MILLISECONDS)
+                assert(firedEvents)
+                    .hasSize(tvShow.episodeFiles.size)
             }
         }
     }
 })
+
+private fun services(tvShow: ProvidedTVShow) = Kodein {
+    import(servicesModule)
+    bind<TVeebotRepository>(overrides = true) with instance(newRepository())
+    bind<TVShowProvider>(overrides = true) with instance(fakeTVShowProvider(tvShow))
+    bind<TrackerEngine>(overrides = true) with singleton {
+        ScheduledTrackerEngine(
+            instance(),
+            instance(),
+            Duration.ofMillis(10)
+        )
+    }
+}
 
 data class ProvidedTVShow(val tvShow: TVShow, val episodeFiles: List<EpisodeFile>)
 
