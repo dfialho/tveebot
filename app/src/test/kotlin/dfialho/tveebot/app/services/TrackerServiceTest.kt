@@ -92,7 +92,7 @@ class TrackerServiceTest : BehaviorSpec({
 })
 
 private fun services(tvShowProvider: TVShowProvider) = Kodein {
-    import(servicesModule)
+    import(trackerModule)
     bind<TVeebotRepository>(overrides = true) with instance(newRepository())
     bind<TVShowProvider>(overrides = true) with instance(tvShowProvider)
     bind<TrackerEngine>(overrides = true) with singleton {
