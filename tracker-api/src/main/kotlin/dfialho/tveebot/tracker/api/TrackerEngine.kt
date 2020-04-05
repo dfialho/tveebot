@@ -12,8 +12,6 @@ package dfialho.tveebot.tracker.api
  * the engine.
  *
  * FIXME
- *
- * @author David Fialho (dfialho@protonmail.com)
  */
 interface TrackerEngine {
 

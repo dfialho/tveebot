@@ -1,3 +1,3 @@
 dependencies {
-    compile(project(":tracker-api"))
+    compile(project(":app-api"))
 }

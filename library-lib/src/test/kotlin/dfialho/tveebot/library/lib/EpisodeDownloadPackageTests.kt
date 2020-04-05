@@ -11,8 +11,6 @@ import java.nio.file.Path
 
 /**
  * Tests for the [EpisodeDownloadPackage].
- *
- * @author David Fialho (dfialho@protonmail.com)
  */
 class EpisodeDownloadPackageTests {
 

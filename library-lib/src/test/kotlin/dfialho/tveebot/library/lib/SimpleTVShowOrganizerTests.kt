@@ -11,8 +11,6 @@ import java.nio.file.Paths
 
 /**
  * Tests for the [SimpleTVShowOrganizer].
- *
- * @author David Fialho (dfialho@protonmail.com)
  */
 class SimpleTVShowOrganizerTests : FunSpec({
 

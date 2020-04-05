@@ -6,8 +6,6 @@ import java.nio.file.Path
  * An episode package is an abstraction for a container that holds an episode file. A simple example
  * of such a package is a directory which may contain multiple files, and one of those is an episode
  * video file.
- *
- * @author David Fialho (dfialho@protonmail.com)
  */
 interface EpisodePackage {
 

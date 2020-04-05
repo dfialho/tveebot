@@ -1,6 +1,6 @@
 package dfialho.tveebot.library.api
 
-import dfialho.tveebot.tracker.api.models.Episode
+import dfialho.tveebot.app.api.models.Episode
 import java.nio.file.Path
 
 interface TVShowOrganizer {

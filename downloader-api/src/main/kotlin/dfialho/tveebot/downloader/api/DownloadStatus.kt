@@ -2,8 +2,6 @@ package dfialho.tveebot.downloader.api
 
 /**
  * Data class to hold information about a download.
- *
- * @author David Fialho (dfialho@protonmail.com)
  */
 data class DownloadStatus(
 

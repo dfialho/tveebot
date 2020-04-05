@@ -4,8 +4,6 @@ import java.nio.file.Path
 
 /**
  * The [DownloadEngine] is responsible for performing the actual downloads, providing an interface to manage them.
- *
- * @author David Fialho (dfialho@protonmail.com)
  */
 interface DownloadEngine {
 

@@ -19,8 +19,6 @@ import java.nio.file.Path
  * file, this file can be directly downloaded, which means the episode file is the actual [path],
  * or it can be downloaded inside a directory containing other files. In that case [path] would be
  * a directory.
- *
- * @author David Fialho (dfialho@protonmail.com)
  */
 class EpisodeDownloadPackage(override val path: Path) : EpisodePackage {
 

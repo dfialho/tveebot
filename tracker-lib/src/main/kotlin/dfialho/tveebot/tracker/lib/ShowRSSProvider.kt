@@ -1,11 +1,11 @@
 package dfialho.tveebot.tracker.lib
 
-import dfialho.tveebot.application.api.ID
-import dfialho.tveebot.tracker.api.TVShowIDMapper
+import dfialho.tveebot.app.api.models.Episode
+import dfialho.tveebot.app.api.models.EpisodeFile
+import dfialho.tveebot.app.api.models.TVShow
+import dfialho.tveebot.app.api.models.VideoFile
 import dfialho.tveebot.tracker.api.TVShowProvider
-import dfialho.tveebot.tracker.api.models.Episode
-import dfialho.tveebot.tracker.api.models.EpisodeFile
-import dfialho.tveebot.tracker.api.models.TVShow
+import dfialho.tveebot.tracker.api.VideoFileParser
 import dfialho.tveebot.utils.rssfeed.RSSFeedException
 import dfialho.tveebot.utils.rssfeed.RSSFeedItem
 import dfialho.tveebot.utils.rssfeed.RSSFeedReader
@@ -15,10 +15,8 @@ import java.net.URL
 
 /**
  * [TVShowProvider] backed by the "showrss.info" website.
- *
- * @author David Fialho (dfialho@protonmail.com)
  */
-class ShowRSSProvider(private val idMapper: TVShowIDMapper) : TVShowProvider {
+class ShowRSSProvider(private val videoFileParser: VideoFileParser) : TVShowProvider {
 
     companion object : KLogging() {
         private const val SHOWRSS_URL = "https://showrss.info/browse"
@@ -33,77 +31,46 @@ class ShowRSSProvider(private val idMapper: TVShowIDMapper) : TVShowProvider {
         .select("option")
         .map {
             TVShow(
-                id = idMapper.getTVShowID(providerID = it.attr("value")),
+                id = it.attr("value"),
                 title = it.text()
             )
         }
 
     override fun fetchEpisodes(tvShow: TVShow): List<EpisodeFile> {
-        val showID: String = idMapper[tvShow.id] ?: throw IllegalArgumentException("Not found: $tvShow")
-        val showURL = URL("https://showrss.info/show/$showID.rss")
+        val showURL = URL("https://showrss.info/show/${tvShow.id}.rss")
 
         val rssFeed = feedReader.read(showURL)
-        return rssFeed.items.mapNotNull { it.parseEpisodeOrNull(tvShow) }
-            .distinctByMostRecent()
+        return rssFeed.items.mapNotNull { parseEpisodeOrNull(it, tvShow) }
     }
 
-    private fun RSSFeedItem.parseEpisodeOrNull(tvShow: TVShow): EpisodeFile? {
+    private fun parseEpisodeOrNull(item: RSSFeedItem, tvShow: TVShow): EpisodeFile? {
+
         return try {
-            this.parseEpisode(tvShow)
+            parseEpisode(item, tvShow)
         } catch (e: RSSFeedException) {
             logger.warn { "Failed to obtain episode information from RSS item: $this" }
             null
         }
     }
-}
 
-/**
- * Converts this [RSSFeedItem] into an [EpisodeFile] and returns the result.
- *
- * @throws RSSFeedException if it fails to find the episode information from the feed
- * @author David Fialho (dfialho@protonmail.com)
- */
-internal fun RSSFeedItem.parseEpisode(tvShow: TVShow): EpisodeFile {
-    val episode = try {
-        parseEpisodeTitle(this.title)
-    } catch (e: IllegalArgumentException) {
-        throw RSSFeedException("Failed to parse episode information from RSS item: $this", e)
-    }
+    /**
+     * Converts this [RSSFeedItem] into an [EpisodeFile] and returns the result.
+     *
+     * @throws RSSFeedException if it fails to find the episode information from the feed
+     * @author David Fialho (dfialho@protonmail.com)
+     */
+    private fun parseEpisode(item: RSSFeedItem, tvShow: TVShow): EpisodeFile {
 
-    return EpisodeFile(
-        episode = Episode(
-            tvShow = tvShow,
-            season = episode.season,
-            number = episode.number,
-            title = episode.title
-        ),
-        quality = episode.quality,
-        link = this.link,
-        publishDate = this.publishedDate
-    )
-}
-
-/**
- * Returns a list containing only episode files from the given iterable having distinct episodes files based on
- * its ID, selecting the most recent episode file.
- *
- * @author David Fialho (dfialho@protonmail.com)
- */
-private fun Iterable<EpisodeFile>.distinctByMostRecent(): List<EpisodeFile> {
-    val distinctEpisodes = mutableMapOf<ID, EpisodeFile>()
-
-    for (episodeFile in this) {
-
-        distinctEpisodes.merge(EpisodeIDGenerator.getID(episodeFile), episodeFile) { oldFile, newFile ->
-            // Update existing episode only if the new one is more recent
-            if (newFile.publishDate.isAfter(oldFile.publishDate)) {
-                newFile
-            } else {
-                oldFile
-            }
+        val parsedEpisodeFile = try {
+            videoFileParser.parse(item.title)
+        } catch (e: IllegalArgumentException) {
+            throw RSSFeedException("Failed to parse episode information from RSS item: $this", e)
         }
+
+        return EpisodeFile(
+            VideoFile(item.link, parsedEpisodeFile.quality, item.publishedDate),
+            episodes = parsedEpisodeFile.episodes
+                .map { Episode(tvShow, it.season, it.number, it.title) }
+        )
     }
-
-    return distinctEpisodes.values.toList()
 }
-

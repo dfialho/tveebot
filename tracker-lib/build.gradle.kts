@@ -7,7 +7,7 @@ repositories {
 
 dependencies {
     compile(project(":tracker-api"))
-    implementation(project(":common-utils"))
+    implementation(project(":rss-feed"))
 }
 
 dependencies {

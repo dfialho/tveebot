@@ -2,8 +2,6 @@ package dfialho.tveebot.downloader.api
 
 /**
  * Describes the state of a download.
- *
- * @author David Fialho (dfialho@protonmail.com)
  */
 enum class DownloadState {
 

@@ -1,8 +1,8 @@
 package dfialho.tveebot.tracker.lib
 
 import com.google.common.util.concurrent.AbstractScheduledService
+import dfialho.tveebot.app.api.models.EpisodeFile
 import dfialho.tveebot.tracker.api.*
-import dfialho.tveebot.tracker.api.models.EpisodeFile
 import dfialho.tveebot.utils.succeeded
 import mu.KLogging
 import java.io.IOException
@@ -10,8 +10,6 @@ import java.util.concurrent.TimeUnit
 
 /**
  * An implementation of [TrackerEngine] which periodically checks for new episodes.
- *
- * @author David Fialho (dfialho@protonmail.com)
  */
 class ScheduledTrackerEngine(
     override val provider: TVShowProvider,
@@ -31,7 +29,7 @@ class ScheduledTrackerEngine(
     override fun scheduler(): Scheduler = Scheduler.newFixedRateSchedule(1, checkPeriod, TimeUnit.SECONDS)
 
     override fun runOneIteration() {
-       check()
+        check()
     }
 
     override fun start() {
@@ -61,7 +59,7 @@ class ScheduledTrackerEngine(
 
                 for (episode in episodes) {
                     if (episodeLedger.appendOrUpdate(episode).succeeded) {
-                        logger.debug { "New episode: $episode" }
+                        logger.debug { "New episode file: $episode" }
                         listeners.forEach { it.onNewEpisode(episode) }
                     }
                 }

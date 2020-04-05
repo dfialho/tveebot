@@ -1,4 +1,4 @@
 dependencies {
-    compile(project(":application-api"))
-    compile(project(":common-utils"))
+    compile(project(":app-api"))
+    compile(project(":rss-feed"))
 }

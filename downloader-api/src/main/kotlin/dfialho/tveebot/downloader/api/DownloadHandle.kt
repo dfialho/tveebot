@@ -4,8 +4,6 @@ import java.nio.file.Path
 
 /**
  * Handle for a single download. It is used to perform actions for the download and to retrieve information about it.
- *
- * @author David Fialho (dfialho@protonmail.com)
  */
 interface DownloadHandle {
 

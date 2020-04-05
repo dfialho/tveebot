@@ -11,8 +11,6 @@ import kotlin.concurrent.write
 
 /**
  * Download engine that ensure thread-safeness for each individual method.
- *
- * @author David Fialho (dfialho@protonmail.com)
  */
 private class ThreadSafeDownloadEngine(private val engine: DownloadEngine) : DownloadEngine {
 

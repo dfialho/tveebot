@@ -1,7 +1,7 @@
 package dfialho.tveebot.tracker.api
 
-import dfialho.tveebot.tracker.api.models.EpisodeFile
-import dfialho.tveebot.tracker.api.models.TVShow
+import dfialho.tveebot.app.api.models.EpisodeFile
+import dfialho.tveebot.app.api.models.TVShow
 import java.io.IOException
 
 /**
@@ -11,8 +11,6 @@ import java.io.IOException
  * recent episodes corresponding to each TV show. As with any database, it does not necessarily contain information
  * about all episodes of a TV show. Still, it is expected to be able to provide information about the most recent
  * episodes of each TV show.
- *
- * @author David Fialho (dfialho@protonmail.com)
  */
 interface TVShowProvider {
 
