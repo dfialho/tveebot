@@ -1,6 +1,7 @@
 package dfialho.tveebot.app.repositories
 
 import dfialho.tveebot.app.api.models.*
+import dfialho.tveebot.app.repositories.DatabaseTVeebotRepository.TVShows.ID
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
@@ -8,27 +9,28 @@ import org.joda.time.DateTime
 class DatabaseTVeebotRepository(private val db: Database) : TVeebotRepository {
 
     private object TVShows : Table() {
-        val ID = varchar("ID", length = 36).primaryKey()
+        val ID = varchar("ID", length = 256).primaryKey()
         val TITLE = varchar("TITLE", length = 256)
         val TRACKED = bool("TRACKED").default(false)
         val VIDEO_QUALITY = enumeration("VIDEO_QUALITY", VideoQuality::class.java).default(VideoQuality.default())
     }
 
     private object Episodes : Table() {
-        val TVSHOW_ID = reference("TVSHOW_ID", TVShows.ID).primaryKey()
-        val SEASON = integer("SEASON").primaryKey()
-        val NUMBER = integer("NUMBER").primaryKey()
+        val ID = varchar("ID", length = 256).primaryKey()
+        val TVSHOW_ID = reference("TVSHOW_ID", TVShows.ID)
+        val SEASON = integer("SEASON")
+        val NUMBER = integer("NUMBER")
         val TITLE = varchar("TITLE", length = 256)
     }
 
     private object Files : Table() {
-        val LINK = varchar("LINK", length = 1024).primaryKey()
+        val LINK = varchar("LINK", length = 2048).primaryKey()
         val QUALITY = enumeration("QUALITY", VideoQuality::class.java).default(VideoQuality.default())
         val PUBLISHED_DATE = datetime("PUBLISHED_DATE")
     }
 
     private object EpisodeFiles : Table() {
-        val EPISODE_TVSHOW_ID = reference("EPISODE_TVSHOW_ID", Episodes.TVSHOW_ID).primaryKey()
+        val EPISODE_ID = reference("EPISODE_ID", Episodes.ID).primaryKey()
         val FILE_ID = reference("FILE_ID", Files.LINK).primaryKey()
     }
 
@@ -43,13 +45,13 @@ class DatabaseTVeebotRepository(private val db: Database) : TVeebotRepository {
         return transaction {
             TVShows.select {
                 if (tracked == null) {
-                    (TVShows.ID eq tvShowId)
+                    (ID eq tvShowId)
                 } else {
-                    (TVShows.ID eq tvShowId) and (TVShows.TRACKED eq tracked)
+                    (ID eq tvShowId) and (TVShows.TRACKED eq tracked)
                 }
             }.map {
                 TVShowEntity(
-                    TVShow(it[TVShows.ID], it[TVShows.TITLE]),
+                    TVShow(it[ID], it[TVShows.TITLE]),
                     it[TVShows.TRACKED],
                     it[TVShows.VIDEO_QUALITY]
                 )
@@ -71,6 +73,19 @@ class DatabaseTVeebotRepository(private val db: Database) : TVeebotRepository {
         }.isIgnore
 
         // FIXME
+    }
+
+    override fun findEpisodeLatestFile(id: String): VideoFile? {
+
+        return EpisodeFiles.innerJoin(Files)
+            .select { EpisodeFiles.EPISODE_ID eq id }
+            .map {
+                VideoFile(
+                    it[Files.LINK],
+                    it[Files.QUALITY],
+                    it[Files.PUBLISHED_DATE].toDate().toInstant()
+                )
+            }.firstOrNull()
     }
 
     override fun insert(episodeFile: EpisodeFile) {
@@ -98,6 +113,7 @@ class DatabaseTVeebotRepository(private val db: Database) : TVeebotRepository {
     private fun insert(episode: Episode) {
         transaction(db) {
             Episodes.insertIgnore {
+                it[ID] = episode.id
                 it[TVSHOW_ID] = episode.tvShow.id
                 it[SEASON] = episode.season
                 it[NUMBER] = episode.number
@@ -109,7 +125,7 @@ class DatabaseTVeebotRepository(private val db: Database) : TVeebotRepository {
     private fun link(episode: Episode, fileId: String) {
         transaction(db) {
             EpisodeFiles.insertIgnore {
-                it[EPISODE_TVSHOW_ID] = episode.tvShow.id
+                it[EPISODE_ID] = episode.id
                 it[FILE_ID] = fileId
             }
         }

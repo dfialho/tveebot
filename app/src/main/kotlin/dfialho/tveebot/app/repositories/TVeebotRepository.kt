@@ -2,6 +2,7 @@ package dfialho.tveebot.app.repositories
 
 import dfialho.tveebot.app.api.models.EpisodeFile
 import dfialho.tveebot.app.api.models.TVShowEntity
+import dfialho.tveebot.app.api.models.VideoFile
 
 interface TVeebotRepository {
 
@@ -10,6 +11,7 @@ interface TVeebotRepository {
     fun upsert(tvShow: TVShowEntity)
 
     fun insert(episodeFile: EpisodeFile)
+    fun findEpisodeLatestFile(id: String): VideoFile?
 
     fun <T> transaction(block: TVeebotRepository.() -> T): T
 }

@@ -1,6 +1,7 @@
 package dfialho.tveebot.app.repositories
 
 import dfialho.tveebot.app.api.models.EpisodeFile
+import dfialho.tveebot.app.api.models.VideoFile
 import dfialho.tveebot.tracker.api.EpisodeLedger
 import dfialho.tveebot.utils.Result
 
@@ -8,8 +9,18 @@ class EpisodeLedgerRepository(private val repository: TVeebotRepository) : Episo
 
     // FIXME incomplete
     override fun appendOrUpdate(episodeFile: EpisodeFile): Result {
-        repository.insert(episodeFile)
-        return Result.Success
+
+        return repository.transaction {
+            val episode = episodeFile.episodes[0]
+            val videoFile: VideoFile? = findEpisodeLatestFile(episode.id)
+
+            if (videoFile == null || episodeFile.file.publishDate.isAfter(videoFile.publishDate)) {
+                repository.insert(episodeFile)
+                Result.Success
+            } else {
+                Result.Failure
+            }
+        }
     }
 
     override fun toList(): List<EpisodeFile> {

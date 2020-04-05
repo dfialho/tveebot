@@ -43,8 +43,9 @@ fun anyVideoFile(
 ) = VideoFile(link, quality, publishedDate)
 
 fun anyEpisodeFile(
+    tvShow: TVShow = anyTVShow(),
     file: VideoFile = anyVideoFile(),
-    episode: Episode = anyEpisode()
+    episode: Episode = anyEpisode(tvShow = tvShow)
 ) = EpisodeFile(file, listOf(episode))
 
 private fun randomInt() = Random().nextInt(10)
