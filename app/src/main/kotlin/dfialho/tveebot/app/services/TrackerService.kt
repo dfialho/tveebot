@@ -53,12 +53,15 @@ class TrackerService(
 
     fun unregister(tvShowId: String) {
 
-        repository.transaction {
-            findTVShow(tvShowId, tracked = true)?.let { tvShow ->
-                update(tvShow.copy(tracked = false))
-                engine.unregister(tvShow.tvShow.id)
-                logger.info { "Stopped tracking ${tvShow.tvShow}" }
+        val tvShow = repository.transaction {
+            findTVShow(tvShowId, tracked = true)?.also {
+                update(it.copy(tracked = false))
             }
+        }
+
+        tvShow?.let {
+            engine.unregister(tvShow.tvShow.id)
+            logger.info { "Stopped tracking ${tvShow.tvShow}" }
         }
     }
 

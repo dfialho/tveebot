@@ -1,13 +1,12 @@
 package dfialho.tveebot.app.services
 
 import assertk.assert
+import assertk.assertions.containsExactly
 import assertk.assertions.hasSize
+import assertk.assertions.isNotNull
+import assertk.assertions.isNull
 import dfialho.tveebot.app.*
 import dfialho.tveebot.app.api.models.VideoQuality
-import dfialho.tveebot.app.events.Event
-import dfialho.tveebot.app.events.EventBus
-import dfialho.tveebot.app.events.subscribe
-import dfialho.tveebot.app.events.unsubscribe
 import dfialho.tveebot.app.repositories.TVeebotRepository
 import dfialho.tveebot.tracker.api.TVShowProvider
 import dfialho.tveebot.tracker.api.TrackerEngine
@@ -18,15 +17,12 @@ import org.kodein.di.generic.bind
 import org.kodein.di.generic.instance
 import org.kodein.di.generic.singleton
 import java.time.Duration
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
 
 @Suppress("BlockingMethodInNonBlockingContext")
 class TrackerServiceTest : BehaviorSpec({
 
-    val safetyPeriod = 1000L
+    Given("a tv show that is not registered and has episode files available") {
 
-    Given("a tv show with 2 new episode files") {
         val tvShow = ProvidedTVShow(
             anyTVShow(),
             episodeFiles = listOf(
@@ -36,54 +32,88 @@ class TrackerServiceTest : BehaviorSpec({
         )
         val provider = fakeTVShowProvider(tvShow)
         val services = services(provider)
-        val eventBus by services.instance<EventBus>()
-        val service by services.instance<TrackerService>()
-        service.start()
+        val service = startedService<TrackerService>(services)
 
-        val registrationLatch = CountDownLatch(tvShow.episodeFiles.size)
-        val firedEvents = mutableListOf<Event.EpisodeFileFound>()
-        subscribe<Event.EpisodeFileFound>(eventBus) {
-            firedEvents.add(it)
-            registrationLatch.countDown()
-        }
+        When("it is registered") {
+            val recorder = recordEvents(services)
+            service.register(tvShow.tvShow.id, VideoQuality.SD)
 
-        When("it starts being tracked") {
-            service.register(tvShow.tvShow.id, VideoQuality.default())
-
-            Then("eventually an ${Event.EpisodeFileFound::class.simpleName} event is fired for each episode file") {
-                registrationLatch.await(safetyPeriod, TimeUnit.MILLISECONDS)
-                assert(firedEvents)
-                    .hasSize(tvShow.episodeFiles.size)
-            }
-
-            And("no event is triggered while there is no new episode file") {
-                Thread.sleep(100)
-                assert(firedEvents)
+            Then("an event is fired for each episode file") {
+                assert(recorder.waitForEvents(tvShow.episodeFiles.size))
                     .hasSize(tvShow.episodeFiles.size)
             }
         }
+    }
 
-        unsubscribe<Event.EpisodeFileFound>(eventBus)
-        firedEvents.clear()
-        val newEpisodeLatch = CountDownLatch(1)
-        subscribe<Event.EpisodeFileFound>(eventBus) {
-            firedEvents.add(it)
-            newEpisodeLatch.countDown()
-        }
+    Given("a tv show that is registered") {
+
+        val tvShow = ProvidedTVShow(
+            anyTVShow(),
+            episodeFiles = emptyList()
+        )
+        val provider = fakeTVShowProvider(tvShow)
+        val services = services(provider)
+        val service = startedService<TrackerService>(services)
+        service.register(tvShow.tvShow.id, VideoQuality.default())
 
         When("a new episode file becomes available") {
+            val recorder = recordEvents(services)
             provider.addEpisode(tvShow.tvShow, anyEpisodeFile(tvShow.tvShow))
 
-            Then("eventually an ${Event.EpisodeFileFound::class.simpleName} event is fired for that episode file") {
-                newEpisodeLatch.await(safetyPeriod, TimeUnit.MILLISECONDS)
-                assert(firedEvents)
-                    .hasSize(1)
+            Then("an event is fired") {
+                assert(recorder.waitForEvent())
+                    .isNotNull()
             }
+        }
+    }
 
-            And("no event is triggered while there is no new episode file") {
-                Thread.sleep(100)
-                assert(firedEvents)
-                    .hasSize(1)
+    Given("a tv show that has been unregistered") {
+
+        val tvShow = ProvidedTVShow(
+            anyTVShow(),
+            episodeFiles = emptyList()
+        )
+        val provider = fakeTVShowProvider(tvShow)
+        val services = services(provider)
+        val service = startedService<TrackerService>(services)
+        service.register(tvShow.tvShow.id, VideoQuality.default())
+        service.unregister(tvShow.tvShow.id)
+
+        When("a new episode file becomes available") {
+            val recorder = recordEvents(services)
+            provider.addEpisode(tvShow.tvShow, anyEpisodeFile(tvShow.tvShow))
+
+            Then("no event is fired") {
+                assert(recorder.waitForEvent())
+                    .isNull()
+            }
+        }
+    }
+
+    Given("two tracked tv shows A and B") {
+
+        val tvShowA = ProvidedTVShow(
+            anyTVShow(),
+            episodeFiles = emptyList()
+        )
+        val tvShowB = ProvidedTVShow(
+            anyTVShow(),
+            episodeFiles = emptyList()
+        )
+        val provider = fakeTVShowProvider(tvShowA, tvShowB)
+        val services = services(provider)
+        val service = startedService<TrackerService>(services)
+        service.register(tvShowA.tvShow.id, VideoQuality.default())
+        service.register(tvShowB.tvShow.id, VideoQuality.default())
+
+        When("a new episode becomes available for tv show A") {
+            val recorder = recordEvents(services)
+            val newEpisode = anyEpisodeFile(tvShowA.tvShow)
+            provider.addEpisode(tvShowA.tvShow, newEpisode)
+
+            Then("no event is fired for tv show B") {
+                assert(recorder.waitForEvents(2).map { it.episode })
+                    .containsExactly(newEpisode)
             }
         }
     }

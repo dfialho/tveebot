@@ -61,11 +61,21 @@ class DatabaseTVeebotRepository(private val db: Database) : TVeebotRepository {
     }
 
     override fun update(tvShow: TVShowEntity) {
-        TODO("Not yet implemented")
+
+        transaction {
+            TVShows.update({ TVShows.ID eq tvShow.tvShow.id }) {
+                it[ID] = tvShow.tvShow.id
+                it[TITLE] = tvShow.tvShow.title
+                it[TRACKED] = tvShow.tracked
+                it[VIDEO_QUALITY] = tvShow.videoQuality
+            }
+        }
     }
 
     override fun upsert(tvShow: TVShowEntity) {
 
+
+        // TODO
         transaction {
             TVShows.insertIgnore {
                 it[ID] = tvShow.tvShow.id
