@@ -4,8 +4,8 @@ import dfialho.tveebot.app.api.models.Episode
 import dfialho.tveebot.app.api.models.EpisodeFile
 import dfialho.tveebot.app.api.models.TVShow
 import dfialho.tveebot.app.api.models.VideoFile
+import dfialho.tveebot.tracker.api.EpisodeFileMatcher
 import dfialho.tveebot.tracker.api.TVShowProvider
-import dfialho.tveebot.tracker.api.VideoFileParser
 import dfialho.tveebot.utils.rssfeed.RSSFeedException
 import dfialho.tveebot.utils.rssfeed.RSSFeedItem
 import dfialho.tveebot.utils.rssfeed.RSSFeedReader
@@ -16,7 +16,7 @@ import java.net.URL
 /**
  * [TVShowProvider] backed by the "showrss.info" website.
  */
-class ShowRSSProvider(private val videoFileParser: VideoFileParser) : TVShowProvider {
+class ShowRSSProvider(private val matcher: EpisodeFileMatcher) : TVShowProvider {
 
     companion object : KLogging() {
         private const val SHOWRSS_URL = "https://showrss.info/browse"
@@ -63,18 +63,20 @@ class ShowRSSProvider(private val videoFileParser: VideoFileParser) : TVShowProv
      * @throws RSSFeedException if it fails to find the episode information from the feed
      * @author David Fialho (dfialho@protonmail.com)
      */
-    private fun parseEpisode(item: RSSFeedItem, tvShow: TVShow): EpisodeFile {
+    private fun parseEpisode(item: RSSFeedItem, tvShow: TVShow): EpisodeFile? {
 
-        val parsedEpisodeFile = try {
-            videoFileParser.parse(item.title)
+        val matchedEpisodeFile = try {
+            matcher.match(item.title)
         } catch (e: IllegalArgumentException) {
             throw RSSFeedException("Failed to parse episode information from RSS item: $this", e)
         }
 
-        return EpisodeFile(
-            VideoFile(item.link, parsedEpisodeFile.videoQuality, item.publishedDate),
-            episodes = parsedEpisodeFile.episodes
-                .map { Episode(tvShow, it.season, it.number, it.title) }
-        )
+        return matchedEpisodeFile?.let { matched ->
+            EpisodeFile(
+                VideoFile(item.link, matched.videoQuality, item.publishedDate),
+                episodes = matched.episodes
+                    .map { Episode(tvShow, it.season, it.number, it.title) }
+            )
+        }
     }
 }

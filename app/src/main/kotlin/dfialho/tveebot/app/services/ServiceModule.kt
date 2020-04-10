@@ -10,13 +10,12 @@ import dfialho.tveebot.library.api.TVShowLibrary
 import dfialho.tveebot.library.api.TVShowOrganizer
 import dfialho.tveebot.library.lib.SimpleTVShowLibrary
 import dfialho.tveebot.library.lib.SimpleTVShowOrganizer
-import dfialho.tveebot.tracker.api.EpisodeLedger
-import dfialho.tveebot.tracker.api.TVShowProvider
-import dfialho.tveebot.tracker.api.TrackerEngine
-import dfialho.tveebot.tracker.api.VideoFileParser
+import dfialho.tveebot.tracker.api.*
 import dfialho.tveebot.tracker.lib.ScheduledTrackerEngine
 import dfialho.tveebot.tracker.lib.ShowRSSProvider
-import dfialho.tveebot.tracker.lib.ShowRSSVideoFileParser
+import dfialho.tveebot.tracker.lib.matchers.DefaultPatterns
+import dfialho.tveebot.tracker.lib.matchers.LazyPatternProvider
+import dfialho.tveebot.tracker.lib.matchers.PatternEpisodeFileMatcher
 import org.jetbrains.exposed.sql.Database
 import org.kodein.di.Kodein
 import org.kodein.di.generic.bind
@@ -54,7 +53,8 @@ val baseModule = Kodein.Module(name = "Base Module") {
 
 val trackerModule = Kodein.Module(name = "Tracker Service") {
     importOnce(baseModule)
-    bind<VideoFileParser>() with singleton { ShowRSSVideoFileParser() }
+    bind<PatternProvider>() with singleton { LazyPatternProvider(DefaultPatterns.patterns) }
+    bind<EpisodeFileMatcher>() with singleton { PatternEpisodeFileMatcher(instance()) }
     bind<TVShowProvider>() with singleton { ShowRSSProvider(instance()) }
     bind<EpisodeLedger>() with singleton { EpisodeLedgerRepository(instance()) }
     bind<TrackerEngine>() with singleton { ScheduledTrackerEngine(instance(), instance(), Duration.ofSeconds(1)) }
