@@ -6,6 +6,7 @@ import dfialho.tveebot.app.repositories.EpisodeLedgerRepository
 import dfialho.tveebot.app.repositories.TVeebotRepository
 import dfialho.tveebot.downloader.api.DownloadEngine
 import dfialho.tveebot.downloader.libtorrent.LibTorrentDownloadEngine
+import dfialho.tveebot.downloader.libtorrent.threadSafe
 import dfialho.tveebot.library.api.TVShowLibrary
 import dfialho.tveebot.library.api.TVShowOrganizer
 import dfialho.tveebot.library.lib.SimpleTVShowLibrary
@@ -63,8 +64,8 @@ val trackerModule = Kodein.Module(name = "Tracker Service") {
 
 val downloaderModule = Kodein.Module(name = "Downloader Service") {
     importOnce(baseModule)
-    bind<DownloadEngine>() with singleton { LibTorrentDownloadEngine(Paths.get("/home/david/Downloads/tveebot/downloads")) }
-    bind<DownloaderService>() with singleton { DownloaderService(instance(), instance()) }
+    bind<DownloadEngine>() with singleton { threadSafe { LibTorrentDownloadEngine(Paths.get("/home/david/Downloads/tveebot/downloads")) } }
+    bind<DownloaderService>() with singleton { DownloaderService(instance(), instance(), instance()) }
 }
 
 val organizerModule = Kodein.Module(name = "Organizer Service") {

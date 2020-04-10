@@ -21,6 +21,7 @@ class DatabaseTVeebotRepository(private val db: Database) : TVeebotRepository {
         val SEASON = integer("SEASON")
         val NUMBER = integer("NUMBER")
         val TITLE = varchar("TITLE", length = 256)
+        val STATE = enumeration("STATE", State::class.java).default(State.FOUND)
     }
 
     private object Files : Table() {
@@ -65,14 +66,28 @@ class DatabaseTVeebotRepository(private val db: Database) : TVeebotRepository {
 
     override fun upsert(tvShow: TVShowEntity) {
 
-        val alreadyExisted = TVShows.insertIgnore {
-            it[ID] = tvShow.tvShow.id
-            it[TITLE] = tvShow.tvShow.title
-            it[TRACKED] = tvShow.tracked
-            it[VIDEO_QUALITY] = tvShow.videoQuality
-        }.isIgnore
+        transaction {
+            TVShows.insertIgnore {
+                it[ID] = tvShow.tvShow.id
+                it[TITLE] = tvShow.tvShow.title
+                it[TRACKED] = tvShow.tracked
+                it[VIDEO_QUALITY] = tvShow.videoQuality
+            }
+        }
+    }
 
-        // FIXME
+    override fun update(entity: EpisodeEntity) {
+
+        transaction {
+            Episodes.update({ Episodes.ID eq entity.episode.id }) {
+                it[TVSHOW_ID] = entity.episode.tvShow.id
+                it[ID] = entity.episode.id
+                it[SEASON] = entity.episode.season
+                it[NUMBER] = entity.episode.number
+                it[TITLE] = entity.episode.title
+                it[STATE] = entity.state
+            }
+        }
     }
 
     override fun findEpisodeLatestFile(id: String): VideoFile? {
@@ -86,6 +101,29 @@ class DatabaseTVeebotRepository(private val db: Database) : TVeebotRepository {
                     it[Files.PUBLISHED_DATE].toDate().toInstant()
                 )
             }.firstOrNull()
+    }
+
+    override fun findEpisode(id: String): EpisodeEntity? {
+
+        return transaction {
+            Episodes.innerJoin(TVShows)
+                .select { Episodes.ID eq id }
+                .map {
+                    EpisodeEntity(
+                        Episode(
+                            TVShow(
+                                it[TVShows.ID],
+                                it[TVShows.TITLE]
+                            ),
+                            it[Episodes.SEASON],
+                            it[Episodes.NUMBER],
+                            it[Episodes.TITLE]
+                        ),
+                        it[Episodes.STATE]
+                    )
+                }
+                .firstOrNull()
+        }
     }
 
     override fun insert(episodeFile: EpisodeFile) {

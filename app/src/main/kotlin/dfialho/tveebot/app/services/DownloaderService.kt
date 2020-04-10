@@ -1,9 +1,12 @@
 package dfialho.tveebot.app.services
 
+import dfialho.tveebot.app.api.models.EpisodeEntity
 import dfialho.tveebot.app.api.models.EpisodeFile
+import dfialho.tveebot.app.api.models.State
 import dfialho.tveebot.app.events.Event
 import dfialho.tveebot.app.events.EventBus
 import dfialho.tveebot.app.events.subscribe
+import dfialho.tveebot.app.repositories.TVeebotRepository
 import dfialho.tveebot.downloader.api.DownloadEngine
 import dfialho.tveebot.downloader.api.DownloadHandle
 import dfialho.tveebot.downloader.api.DownloadListener
@@ -12,6 +15,7 @@ import mu.KLogging
 
 class DownloaderService(
     private val engine: DownloadEngine,
+    private val repository: TVeebotRepository,
     private val eventBus: EventBus
 ) : Service {
 
@@ -26,7 +30,7 @@ class DownloaderService(
         engine.addListener(engineListener)
 
         subscribe<Event.EpisodeFileFound>(eventBus) {
-            download(it.episode)
+            onNewEpisodeFile(it.episode)
         }
     }
 
@@ -36,30 +40,60 @@ class DownloaderService(
         engine.removeListener(engineListener)
     }
 
-    fun download(episode: EpisodeFile) {
-        val handle = engine.add(episode.file.link)
-        downloads[handle.reference] = episode
+    fun download(episodeFile: EpisodeFile) {
 
-        logger.info { "Started downloading: ${episode.episodes}" }
-        eventBus.fire(Event.DownloadStarted(episode))
+        repository.transaction {
+            episodeFile.episodes
+                .map { EpisodeEntity(it, State.DOWNLOADING) }
+                .forEach { update(it) }
+        }
+
+        val handle = engine.add(episodeFile.file.link)
+        downloads[handle.reference] = episodeFile
+
+        logger.info { "Started downloading: ${episodeFile.episodes}" }
+        eventBus.fire(Event.DownloadStarted(episodeFile))
+    }
+
+    private fun onNewEpisodeFile(episodeFile: EpisodeFile) {
+
+        // TODO Data Model: It should not be possible to have multiple tv shows in an episode file
+        val tvShow = episodeFile.episodes[0].tvShow
+        val trackedTVShow = repository.findTVShow(tvShow.id, tracked = true)
+        if (trackedTVShow == null) {
+            logger.info { "Ignoring episode file because the tv show is not tracked: $episodeFile" }
+            return
+        }
+
+        if (episodeFile.file.quality == trackedTVShow.videoQuality) {
+            download(episodeFile)
+        } else {
+            logger.debug { "Ignoring episode file because the video quality does not match: $episodeFile" }
+        }
     }
 
     private inner class EngineListener : DownloadListener {
 
         override fun onFinishedDownload(handle: DownloadHandle) {
 
-            val episode = downloads[handle.reference]
+            val episodeFile = downloads[handle.reference]
 
-            if (episode == null) {
+            if (episodeFile == null) {
                 logger.warn { "Received an handle for an download that was not being tracked: " +
                         "reference=${handle.reference} and savePath=${handle.savePath}" }
                 return
             }
 
-            logger.debug { "Finished downloading: ${episode.episodes}" }
+            logger.info { "Finished downloading: ${episodeFile.episodes}" }
+            repository.transaction {
+                episodeFile.episodes
+                    .map { EpisodeEntity(it, State.DOWNLOADED) }
+                    .forEach { update(it) }
+            }
+
             engine.remove(handle.reference)
             downloads.remove(handle.reference)
-            eventBus.fire(Event.DownloadFinished(episode, handle.savePath))
+            eventBus.fire(Event.DownloadFinished(episodeFile, handle.savePath))
         }
     }
 }
