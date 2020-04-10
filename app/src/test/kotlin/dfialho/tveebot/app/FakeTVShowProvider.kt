@@ -1,4 +1,4 @@
-package dfialho.tveebot.app.services
+package dfialho.tveebot.app
 
 import dfialho.tveebot.app.api.models.EpisodeFile
 import dfialho.tveebot.app.api.models.TVShow

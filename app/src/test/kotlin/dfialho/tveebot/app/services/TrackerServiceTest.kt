@@ -2,14 +2,12 @@ package dfialho.tveebot.app.services
 
 import assertk.assert
 import assertk.assertions.hasSize
-import dfialho.tveebot.app.anyEpisodeFile
-import dfialho.tveebot.app.anyTVShow
+import dfialho.tveebot.app.*
 import dfialho.tveebot.app.api.models.VideoQuality
 import dfialho.tveebot.app.events.Event
 import dfialho.tveebot.app.events.EventBus
 import dfialho.tveebot.app.events.subscribe
 import dfialho.tveebot.app.events.unsubscribe
-import dfialho.tveebot.app.newRepository
 import dfialho.tveebot.app.repositories.TVeebotRepository
 import dfialho.tveebot.tracker.api.TVShowProvider
 import dfialho.tveebot.tracker.api.TrackerEngine
