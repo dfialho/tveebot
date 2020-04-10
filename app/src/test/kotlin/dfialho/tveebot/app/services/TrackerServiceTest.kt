@@ -7,6 +7,7 @@ import assertk.assertions.isNotNull
 import assertk.assertions.isNull
 import dfialho.tveebot.app.*
 import dfialho.tveebot.app.api.models.VideoQuality
+import dfialho.tveebot.app.events.Event
 import dfialho.tveebot.app.repositories.TVeebotRepository
 import dfialho.tveebot.tracker.api.TVShowProvider
 import dfialho.tveebot.tracker.api.TrackerEngine
@@ -35,7 +36,7 @@ class TrackerServiceTest : BehaviorSpec({
         val service = startedService<TrackerService>(services)
 
         When("it is registered") {
-            val recorder = recordEvents(services)
+            val recorder = recordEvents<Event.EpisodeFileFound>(services)
             service.register(tvShow.tvShow.id, VideoQuality.SD)
 
             Then("an event is fired for each episode file") {
@@ -57,7 +58,7 @@ class TrackerServiceTest : BehaviorSpec({
         service.register(tvShow.tvShow.id, VideoQuality.default())
 
         When("a new episode file becomes available") {
-            val recorder = recordEvents(services)
+            val recorder = recordEvents<Event.EpisodeFileFound>(services)
             provider.addEpisode(tvShow.tvShow, anyEpisodeFile(tvShow.tvShow))
 
             Then("an event is fired") {
@@ -80,7 +81,7 @@ class TrackerServiceTest : BehaviorSpec({
         service.unregister(tvShow.tvShow.id)
 
         When("a new episode file becomes available") {
-            val recorder = recordEvents(services)
+            val recorder = recordEvents<Event.EpisodeFileFound>(services)
             provider.addEpisode(tvShow.tvShow, anyEpisodeFile(tvShow.tvShow))
 
             Then("no event is fired") {
@@ -107,7 +108,7 @@ class TrackerServiceTest : BehaviorSpec({
         service.register(tvShowB.tvShow.id, VideoQuality.default())
 
         When("a new episode becomes available for tv show A") {
-            val recorder = recordEvents(services)
+            val recorder = recordEvents<Event.EpisodeFileFound>(services)
             val newEpisode = anyEpisodeFile(tvShowA.tvShow)
             provider.addEpisode(tvShowA.tvShow, newEpisode)
 
