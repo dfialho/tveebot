@@ -2,8 +2,8 @@ package dfialho.tveebot.tracker.lib
 
 import dfialho.tveebot.app.api.models.VideoQuality
 import dfialho.tveebot.app.api.models.toVideoQualityOrNull
-import dfialho.tveebot.tracker.api.ParsedEpisode
-import dfialho.tveebot.tracker.api.ParsedEpisodeFile
+import dfialho.tveebot.tracker.api.MatchedEpisode
+import dfialho.tveebot.tracker.api.MatchedEpisodeFile
 import dfialho.tveebot.tracker.api.VideoFileParser
 import java.util.regex.Pattern
 
@@ -27,7 +27,7 @@ class ShowRSSVideoFileParser : VideoFileParser {
     }
 
     // TODO Support for multiple episodes
-    override fun parse(description: String): ParsedEpisodeFile {
+    override fun parse(description: String): MatchedEpisodeFile {
         require(description.isNotBlank()) { "Episode description cannot be blank" }
 
         val tokensWithQuality = description
@@ -56,10 +56,10 @@ class ShowRSSVideoFileParser : VideoFileParser {
         // Parse the episode number token - should be something like "12x23"
         val seasonAndNumber: List<String> = tokens[episodeNumberTokenIndex].split('x')
 
-        return ParsedEpisodeFile(
-            quality = quality,
+        return MatchedEpisodeFile(
+            videoQuality = quality,
             episodes = listOf(
-                ParsedEpisode(
+                MatchedEpisode(
                     title = tokens.subList(episodeNumberTokenIndex + 1, tokens.lastIndex + 1).joinToString(" "),
                     season = seasonAndNumber.first().toInt(),
                     number = seasonAndNumber.last().toInt()

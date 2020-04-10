@@ -72,7 +72,7 @@ class ShowRSSProvider(private val videoFileParser: VideoFileParser) : TVShowProv
         }
 
         return EpisodeFile(
-            VideoFile(item.link, parsedEpisodeFile.quality, item.publishedDate),
+            VideoFile(item.link, parsedEpisodeFile.videoQuality, item.publishedDate),
             episodes = parsedEpisodeFile.episodes
                 .map { Episode(tvShow, it.season, it.number, it.title) }
         )
