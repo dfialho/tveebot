@@ -5,8 +5,7 @@ val logbackVersion: String by project
 val loggingVersion: String by project
 val assertkVersion: String by project
 val mockkVersion: String by project
-val junitVersion: String by project
-val kotlintestVersion: String by project
+val kotestVersion: String by project
 
 plugins {
     kotlin("jvm") version "1.3.30" apply false
@@ -38,9 +37,7 @@ subprojects {
     }
 
     dependencies {
-        "testImplementation"("io.kotlintest:kotlintest-runner-junit5:$kotlintestVersion")
-        "testImplementation"("org.junit.jupiter:junit-jupiter-api:$junitVersion")
-        "testRuntime"("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
+        "testImplementation"("io.kotest:kotest-runner-junit5-jvm:$kotestVersion")
         "testImplementation"("com.willowtreeapps.assertk:assertk-jvm:$assertkVersion")
         "testImplementation"("io.mockk:mockk:$mockkVersion")
     }

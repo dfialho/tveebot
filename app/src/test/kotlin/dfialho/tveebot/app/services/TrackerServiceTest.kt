@@ -1,7 +1,7 @@
 package dfialho.tveebot.app.services
 
 import assertk.assert
-import assertk.assertions.*
+import assertk.assertions.hasSize
 import dfialho.tveebot.app.anyEpisodeFile
 import dfialho.tveebot.app.anyTVShow
 import dfialho.tveebot.app.api.models.VideoQuality
@@ -14,7 +14,7 @@ import dfialho.tveebot.app.repositories.TVeebotRepository
 import dfialho.tveebot.tracker.api.TVShowProvider
 import dfialho.tveebot.tracker.api.TrackerEngine
 import dfialho.tveebot.tracker.lib.ScheduledTrackerEngine
-import io.kotlintest.specs.BehaviorSpec
+import io.kotest.core.spec.style.BehaviorSpec
 import org.kodein.di.Kodein
 import org.kodein.di.generic.bind
 import org.kodein.di.generic.instance

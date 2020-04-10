@@ -16,7 +16,7 @@ import dfialho.tveebot.app.events.subscribe
 import dfialho.tveebot.app.newRepository
 import dfialho.tveebot.app.repositories.TVeebotRepository
 import dfialho.tveebot.downloader.api.*
-import io.kotlintest.specs.BehaviorSpec
+import io.kotest.core.spec.style.BehaviorSpec
 import org.kodein.di.Kodein
 import org.kodein.di.generic.bind
 import org.kodein.di.generic.instance
@@ -143,7 +143,7 @@ class FakeDownloadEngine : DownloadEngine {
     ) : DownloadHandle {
 
         override fun getStatus(): DownloadStatus {
-            TODO("Not yet implemented")
+            notNecessary()
         }
 
         override fun stop() {
@@ -151,11 +151,11 @@ class FakeDownloadEngine : DownloadEngine {
         }
 
         override fun pause() {
-            TODO("Not yet implemented")
+            notNecessary()
         }
 
         override fun resume() {
-            TODO("Not yet implemented")
+            notNecessary()
         }
     }
 
@@ -166,7 +166,7 @@ class FakeDownloadEngine : DownloadEngine {
     override fun stop() {}
 
     override fun add(torrentFile: Path): DownloadHandle {
-        TODO("Not yet implemented")
+        notNecessary()
     }
 
     override fun add(magnetLink: String): DownloadHandle {
@@ -209,5 +209,8 @@ class FakeDownloadEngine : DownloadEngine {
     override fun removeListener(listener: DownloadListener) {
         listeners.remove(listener)
     }
+}
 
+fun notNecessary(): Nothing {
+    throw NotImplementedError("An operation is not implemented because it should be required for the tests")
 }
