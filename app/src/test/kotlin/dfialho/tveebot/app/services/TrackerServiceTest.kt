@@ -7,11 +7,11 @@ import dfialho.tveebot.app.api.models.VideoQuality
 import dfialho.tveebot.app.events.Event
 import dfialho.tveebot.app.events.EventBus
 import dfialho.tveebot.app.events.subscribe
-import dfialho.tveebot.app.repositories.TVeebotRepository
 import dfialho.tveebot.tracker.api.TVShowProvider
 import dfialho.tveebot.tracker.api.TrackerEngine
 import dfialho.tveebot.tracker.lib.ScheduledTrackerEngine
 import io.kotest.core.spec.style.FunSpec
+import org.jetbrains.exposed.sql.Database
 import org.kodein.di.Kodein
 import org.kodein.di.generic.bind
 import org.kodein.di.generic.instance
@@ -25,7 +25,7 @@ class TrackerServiceTest : FunSpec({
 
     fun services(tvShowProvider: TVShowProvider, trackerCheckPeriod: Duration? = null) = Kodein {
         import(trackerModule)
-        bind<TVeebotRepository>(overrides = true) with singleton { newRepository() }
+        bind<Database>() with singleton { randomInMemoryDatabase() }
         bind<TVShowProvider>(overrides = true) with singleton { tvShowProvider }
         bind<TrackerEngine>(overrides = true) with singleton {
             ScheduledTrackerEngine(

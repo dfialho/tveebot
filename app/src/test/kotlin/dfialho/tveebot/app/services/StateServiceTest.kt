@@ -10,8 +10,8 @@ import dfialho.tveebot.app.api.models.State
 import dfialho.tveebot.app.api.models.TVShowEntity
 import dfialho.tveebot.app.events.Event
 import dfialho.tveebot.app.events.EventBus
-import dfialho.tveebot.app.repositories.TVeebotRepository
 import io.kotest.core.spec.style.FunSpec
+import org.jetbrains.exposed.sql.Database
 import org.kodein.di.Kodein
 import org.kodein.di.generic.bind
 import org.kodein.di.generic.instance
@@ -91,5 +91,5 @@ class StateServiceTest : FunSpec({
 
 private fun services() = Kodein {
     importOnce(stateModule)
-    bind<TVeebotRepository>(overrides = true) with singleton { newRepository() }
+    bind<Database>() with singleton { randomInMemoryDatabase() }
 }

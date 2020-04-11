@@ -17,7 +17,6 @@ import dfialho.tveebot.tracker.lib.ShowRSSProvider
 import dfialho.tveebot.tracker.lib.matchers.DefaultPatterns
 import dfialho.tveebot.tracker.lib.matchers.LazyPatternProvider
 import dfialho.tveebot.tracker.lib.matchers.PatternEpisodeFileMatcher
-import org.jetbrains.exposed.sql.Database
 import org.kodein.di.Kodein
 import org.kodein.di.generic.bind
 import org.kodein.di.generic.instance
@@ -42,14 +41,7 @@ val servicesModule = Kodein.Module(name = "Services") {
 
 val baseModule = Kodein.Module(name = "Base Module") {
     bind<EventBus>() with singleton { EventBus() }
-    bind<TVeebotRepository>() with singleton {
-        DatabaseTVeebotRepository(
-            Database.connect(
-                url = "jdbc:h2:mem:tveebot;MODE=MYSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE",
-                driver = "org.h2.Driver"
-            )
-        )
-    }
+    bind<TVeebotRepository>() with singleton { DatabaseTVeebotRepository(instance()) }
 }
 
 val trackerModule = Kodein.Module(name = "Tracker Service") {

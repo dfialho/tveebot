@@ -8,7 +8,6 @@ import dfialho.tveebot.app.api.models.EpisodeFile
 import dfialho.tveebot.app.events.Event
 import dfialho.tveebot.app.events.EventBus
 import dfialho.tveebot.app.events.fire
-import dfialho.tveebot.app.repositories.TVeebotRepository
 import dfialho.tveebot.library.api.TVShowLibrary
 import io.kotest.core.spec.style.FunSpec
 import io.mockk.every
@@ -75,7 +74,6 @@ class OrganizerServiceTest : FunSpec({
 
 private fun services() = Kodein {
     import(organizerModule)
-    bind<TVeebotRepository>(overrides = true) with singleton { newRepository() }
     bind<TVShowLibrary>(overrides = true) with singleton {
         mockk<TVShowLibrary> {
             every { store(any(), any()) } returns Paths.get("library/video.mkv")

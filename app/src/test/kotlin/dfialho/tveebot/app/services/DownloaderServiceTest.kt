@@ -7,7 +7,6 @@ import dfialho.tveebot.app.api.models.EpisodeFile
 import dfialho.tveebot.app.events.Event
 import dfialho.tveebot.app.events.EventBus
 import dfialho.tveebot.app.events.fire
-import dfialho.tveebot.app.repositories.TVeebotRepository
 import dfialho.tveebot.downloader.api.DownloadEngine
 import io.kotest.core.spec.style.FunSpec
 import org.kodein.di.Kodein
@@ -54,7 +53,6 @@ class DownloaderServiceTest : FunSpec({
 
 private fun services() = Kodein {
     import(downloaderModule)
-    bind<TVeebotRepository>(overrides = true) with singleton { newRepository() }
 
     val engine = FakeDownloadEngine()
     bind<DownloadEngine>(overrides = true) with singleton { engine }
