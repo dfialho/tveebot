@@ -1,9 +1,12 @@
 package dfialho.tveebot.app.services
 
+import dfialho.tveebot.app.api.models.EpisodeEntity
 import dfialho.tveebot.app.api.models.EpisodeFile
+import dfialho.tveebot.app.api.models.State
 import dfialho.tveebot.app.events.Event
 import dfialho.tveebot.app.events.EventBus
 import dfialho.tveebot.app.events.subscribe
+import dfialho.tveebot.app.repositories.TVeebotRepository
 import dfialho.tveebot.library.api.TVShowLibrary
 import dfialho.tveebot.library.lib.EpisodeDownloadPackage
 import mu.KLogging
@@ -13,6 +16,7 @@ import java.util.concurrent.TimeUnit
 
 class OrganizerService(
     private val library: TVShowLibrary,
+    private val repository: TVeebotRepository,
     private val eventBus: EventBus
 ) : Service {
 
@@ -40,16 +44,24 @@ class OrganizerService(
         }
     }
 
-    fun store(episode: EpisodeFile, fileLocation: Path) {
+    fun store(episodeFile: EpisodeFile, fileLocation: Path) {
+
         executor.submit {
             try {
-                logger.debug { "Storing episode in library: $episode" }
-                val storePath = library.store(episode.episodes, EpisodeDownloadPackage(fileLocation))
+                logger.debug { "Storing episode in library: $episodeFile" }
+                val storePath = library.store(episodeFile.episodes, EpisodeDownloadPackage(fileLocation))
 
-                eventBus.fire(Event.FileStored(episode, storePath))
+                repository.transaction {
+                    episodeFile.episodes
+                        .map { EpisodeEntity(it, State.STORED) }
+                        .forEach { update(it) }
+                }
+
+                logger.info { "Stored episode file for episode(s): ${episodeFile.episodes}" }
+                eventBus.fire(Event.FileStored(episodeFile, storePath))
 
             } catch (e: Throwable) {
-                logger.error(e) { "Failed to store episode in library: ${episode.episodes}" }
+                logger.error(e) { "Failed to store episode in library: ${episodeFile.episodes}" }
             }
         }
     }

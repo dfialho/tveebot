@@ -77,5 +77,5 @@ val organizerModule = Kodein.Module(name = "Organizer Service") {
             instance()
         )
     }
-    bind<OrganizerService>() with singleton { OrganizerService(instance(), instance()) }
+    bind<OrganizerService>() with singleton { OrganizerService(instance(), instance(), instance()) }
 }
