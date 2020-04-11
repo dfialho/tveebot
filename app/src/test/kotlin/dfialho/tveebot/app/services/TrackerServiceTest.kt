@@ -8,11 +8,13 @@ import assertk.assertions.isNull
 import dfialho.tveebot.app.*
 import dfialho.tveebot.app.api.models.VideoQuality
 import dfialho.tveebot.app.events.Event
+import dfialho.tveebot.app.events.EventBus
+import dfialho.tveebot.app.events.subscribe
 import dfialho.tveebot.app.repositories.TVeebotRepository
 import dfialho.tveebot.tracker.api.TVShowProvider
 import dfialho.tveebot.tracker.api.TrackerEngine
 import dfialho.tveebot.tracker.lib.ScheduledTrackerEngine
-import io.kotest.core.spec.style.BehaviorSpec
+import io.kotest.core.spec.style.FunSpec
 import org.kodein.di.Kodein
 import org.kodein.di.generic.bind
 import org.kodein.di.generic.instance
@@ -20,10 +22,24 @@ import org.kodein.di.generic.singleton
 import java.time.Duration
 
 @Suppress("BlockingMethodInNonBlockingContext")
-class TrackerServiceTest : BehaviorSpec({
+class TrackerServiceTest : FunSpec({
 
-    Given("a tv show that is not registered and has episode files available") {
+    val checkPeriod: Duration = Duration.ofMillis(10)
 
+    fun services(tvShowProvider: TVShowProvider, trackerCheckPeriod: Duration? = null) = Kodein {
+        import(trackerModule)
+        bind<TVeebotRepository>(overrides = true) with instance(newRepository())
+        bind<TVShowProvider>(overrides = true) with instance(tvShowProvider)
+        bind<TrackerEngine>(overrides = true) with singleton {
+            ScheduledTrackerEngine(
+                instance(),
+                instance(),
+                trackerCheckPeriod ?: checkPeriod
+            )
+        }
+    }
+
+    test("when a tv show is registered an event is fired for each episode available") {
         val tvShow = ProvidedTVShow(
             anyTVShow(),
             episodeFiles = listOf(
@@ -35,18 +51,14 @@ class TrackerServiceTest : BehaviorSpec({
         val services = services(provider)
         val service = startedService<TrackerService>(services)
 
-        When("it is registered") {
-            val recorder = recordEvents<Event.EpisodeFileFound>(services)
-            service.register(tvShow.tvShow.id, VideoQuality.SD)
+        val recorder = recordEvents<Event.EpisodeFileFound>(services)
+        service.register(tvShow.tvShow.id, VideoQuality.SD)
 
-            Then("an event is fired for each episode file") {
-                assert(recorder.waitForEvents(tvShow.episodeFiles.size))
-                    .hasSize(tvShow.episodeFiles.size)
-            }
-        }
+        assert(recorder.waitForEvents(tvShow.episodeFiles.size, checkPeriod.multipliedBy(10)))
+            .hasSize(tvShow.episodeFiles.size)
     }
 
-    Given("a tv show that is registered") {
+    test("when a new episode becomes available an event is fired") {
 
         val tvShow = ProvidedTVShow(
             anyTVShow(),
@@ -57,18 +69,14 @@ class TrackerServiceTest : BehaviorSpec({
         val service = startedService<TrackerService>(services)
         service.register(tvShow.tvShow.id, VideoQuality.default())
 
-        When("a new episode file becomes available") {
-            val recorder = recordEvents<Event.EpisodeFileFound>(services)
-            provider.addEpisode(tvShow.tvShow, anyEpisodeFile(tvShow.tvShow))
+        val recorder = recordEvents<Event.EpisodeFileFound>(services)
+        provider.addEpisode(tvShow.tvShow, anyEpisodeFile(tvShow.tvShow))
 
-            Then("an event is fired") {
-                assert(recorder.waitForEvent())
-                    .isNotNull()
-            }
-        }
+        assert(recorder.waitForEvent(checkPeriod.multipliedBy(10)))
+            .isNotNull()
     }
 
-    Given("a tv show that has been unregistered") {
+    test("after a tv show has been unregistered any new episode file does not trigger an event") {
 
         val tvShow = ProvidedTVShow(
             anyTVShow(),
@@ -80,18 +88,14 @@ class TrackerServiceTest : BehaviorSpec({
         service.register(tvShow.tvShow.id, VideoQuality.default())
         service.unregister(tvShow.tvShow.id)
 
-        When("a new episode file becomes available") {
-            val recorder = recordEvents<Event.EpisodeFileFound>(services)
-            provider.addEpisode(tvShow.tvShow, anyEpisodeFile(tvShow.tvShow))
+        val recorder = recordEvents<Event.EpisodeFileFound>(services)
+        provider.addEpisode(tvShow.tvShow, anyEpisodeFile(tvShow.tvShow))
 
-            Then("no event is fired") {
-                assert(recorder.waitForEvent())
-                    .isNull()
-            }
-        }
+        assert(recorder.waitForEvent(checkPeriod.multipliedBy(3)))
+            .isNull()
     }
 
-    Given("two tracked tv shows A and B") {
+    test("when a new episode becomes available for tv show A no event is fired for tv show B") {
 
         val tvShowA = ProvidedTVShow(
             anyTVShow(),
@@ -104,31 +108,44 @@ class TrackerServiceTest : BehaviorSpec({
         val provider = fakeTVShowProvider(tvShowA, tvShowB)
         val services = services(provider)
         val service = startedService<TrackerService>(services)
+        afterTest { service.stop() }
+
         service.register(tvShowA.tvShow.id, VideoQuality.default())
         service.register(tvShowB.tvShow.id, VideoQuality.default())
 
-        When("a new episode becomes available for tv show A") {
-            val recorder = recordEvents<Event.EpisodeFileFound>(services)
-            val newEpisode = anyEpisodeFile(tvShowA.tvShow)
-            provider.addEpisode(tvShowA.tvShow, newEpisode)
+        val recorder = recordEvents<Event.EpisodeFileFound>(services)
+        val newEpisode = anyEpisodeFile(tvShowA.tvShow)
+        provider.addEpisode(tvShowA.tvShow, newEpisode)
 
-            Then("no event is fired for tv show B") {
-                assert(recorder.waitForEvents(2).map { it.episode })
-                    .containsExactly(newEpisode)
-            }
-        }
+        val waitForEvents = recorder.waitForEvents(2, checkPeriod.multipliedBy(3))
+
+        assert(waitForEvents.map { it.episode })
+            .containsExactly(newEpisode)
     }
-})
 
-private fun services(tvShowProvider: TVShowProvider) = Kodein {
-    import(trackerModule)
-    bind<TVeebotRepository>(overrides = true) with instance(newRepository())
-    bind<TVShowProvider>(overrides = true) with instance(tvShowProvider)
-    bind<TrackerEngine>(overrides = true) with singleton {
-        ScheduledTrackerEngine(
-            instance(),
-            instance(),
-            Duration.ofMillis(10)
+    test("when registering a new tv show the available episodes are detected only once") {
+
+        val tvShow = ProvidedTVShow(
+            anyTVShow(),
+            episodeFiles = listOf(
+                anyEpisodeFile(),
+                anyEpisodeFile()
+            )
         )
+        val provider = fakeTVShowProvider(tvShow)
+        val services = services(provider, trackerCheckPeriod = Duration.ofMillis(1))
+        val service = startedService<TrackerService>(services)
+        val eventBus by services.instance<EventBus>()
+        val recorder = recordEvents<Event.EpisodeFileFound>(services)
+
+        subscribe<Event.EpisodeFileFound>(eventBus) {
+            Thread.sleep(checkPeriod.multipliedBy(3).toMillis())
+        }
+
+        service.register(tvShowId = tvShow.tvShow.id, videoQuality = VideoQuality.default())
+
+        assert(recorder.waitForEvents(2, checkPeriod.multipliedBy(10)))
+            .hasSize(2)
     }
-}
+
+})

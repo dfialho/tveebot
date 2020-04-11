@@ -30,25 +30,30 @@ class TrackerService(
         logger.debug { "Starting tracker engine..." }
         engine.addListener(engineListener)
         engine.start()
+        logger.debug { "Started tracker engine" }
     }
 
     override fun stop() {
         logger.debug { "Stopping tracker engine..." }
         engine.stop()
         engine.removeListener(engineListener)
+        logger.debug { "Stopped tracker engine" }
     }
 
     fun register(tvShowId: String, videoQuality: VideoQuality) {
 
-        repository.transaction {
+        val tvShow = repository.transaction {
             val tvShow = findTVShow(tvShowId)
                 ?: fetchTVShow(tvShowId)
                 ?: throw IllegalStateException("No TV show found with id $tvShowId")
 
             upsert(tvShow.copy(tracked = true, videoQuality = videoQuality))
-            engine.register(tvShow.tvShow)
-            logger.info { "Started tracking ${tvShow.tvShow} with video quality $videoQuality" }
+            tvShow
         }
+
+        engine.register(tvShow.tvShow)
+        logger.info { "Started tracking ${tvShow.tvShow} with video quality $videoQuality" }
+        engine.check()
     }
 
     fun unregister(tvShowId: String) {

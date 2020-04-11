@@ -48,4 +48,4 @@ fun anyEpisodeFile(
     episode: Episode = anyEpisode(tvShow = tvShow)
 ) = EpisodeFile(file, listOf(episode))
 
-private fun randomInt() = Random().nextInt(10)
+private fun randomInt() = Random().nextInt()

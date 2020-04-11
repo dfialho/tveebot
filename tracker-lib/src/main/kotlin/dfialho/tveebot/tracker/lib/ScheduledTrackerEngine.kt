@@ -1,6 +1,6 @@
 package dfialho.tveebot.tracker.lib
 
-import com.google.common.util.concurrent.AbstractScheduledService
+import com.google.common.util.concurrent.MoreExecutors
 import dfialho.tveebot.app.api.models.EpisodeFile
 import dfialho.tveebot.app.api.models.TVShow
 import dfialho.tveebot.tracker.api.EpisodeLedger
@@ -11,8 +11,7 @@ import dfialho.tveebot.utils.succeeded
 import mu.KLogging
 import java.io.IOException
 import java.time.Duration
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.TimeUnit
+import java.util.concurrent.*
 
 /**
  * An implementation of [TrackerEngine] which periodically checks for new episodes.
@@ -21,39 +20,22 @@ class ScheduledTrackerEngine(
     override val provider: TVShowProvider,
     private val episodeLedger: EpisodeLedger,
     private val checkPeriod: Duration
-) : TrackerEngine, AbstractScheduledService() {
+) : TrackerEngine {
 
     companion object : KLogging()
 
-    private val trackingList = ConcurrentHashMap<String, TVShow>()
-
-    /**
-     * Set holding every [TrackingListener] to be notified of new episode files.
-     */
-    private val listeners: MutableSet<TrackingListener> = mutableSetOf()
-
-    // Use a scheduler which calls [runOneIteration] periodically to check for new episodes
-    override fun scheduler(): Scheduler = Scheduler.newFixedRateSchedule(1, checkPeriod.toMillis(), TimeUnit.MILLISECONDS)
-
-    override fun runOneIteration() {
-        try {
-            check()
-        } catch (e: Throwable) {
-            logger.error(e) { "Unexpected error while checking for new episodes" }
-        }
-    }
+    private val trackingList: MutableMap<String, TVShow> = ConcurrentHashMap()
+    private val listeners: MutableSet<TrackingListener> = CopyOnWriteArraySet()
+    private val executor: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
 
     override fun start() {
-        logger.debug { "Starting tracker engine..." }
-        startAsync()
-        awaitRunning()
         logger.debug { "Started tracker engine" }
+        executor.scheduleCheck()
     }
 
     override fun stop() {
         logger.debug { "Stopping tracker engine..." }
-        stopAsync()
-        awaitTerminated()
+        MoreExecutors.shutdownAndAwaitTermination(executor, 30, TimeUnit.SECONDS)
         logger.debug { "Stopped tracker engine" }
     }
 
@@ -66,27 +48,48 @@ class ScheduledTrackerEngine(
     }
 
     override fun check() {
-        logger.info { "Checking for new episodes..." }
+        executor.submit {
+            checkNow()
+        }
+    }
 
-        for (tvShow in trackingList.values) {
+    private fun ScheduledExecutorService.scheduleCheck() {
+        schedule(Callable {
+            checkNow()
+            scheduleCheck()
+        }, checkPeriod.toMillis(), TimeUnit.MILLISECONDS)
+    }
 
-            val episodes: List<EpisodeFile> = try {
-                provider.fetchEpisodes(tvShow)
-            } catch (e: IOException) {
-                logger.error(e) { "Failed to fetch episodes for '${tvShow.title}' from the provider" }
-                continue
-            }
+    private fun checkNow() {
 
-            logger.debug { "Episodes available from TV Show '${tvShow.title}': $episodes" }
+        try {
+            logger.info { "Checking for new episodes..." }
 
-            for (episode in episodes) {
-                if (episodeLedger.appendOrUpdate(episode).succeeded) {
-                    logger.debug { "New episode file: $episode" }
-                    listeners.forEach { it.onNewEpisode(episode) }
-                } else {
-                    logger.debug { "Episode file ignored: $episode" }
+            for (tvShow in trackingList.values) {
+
+                val episodes: List<EpisodeFile> = try {
+                    provider.fetchEpisodes(tvShow)
+                } catch (e: IOException) {
+                    logger.error(e) { "Failed to fetch episodes for '${tvShow.title}' from the provider" }
+                    continue
+                }
+
+                logger.trace { "Episodes available from TV Show '${tvShow.title}': $episodes" }
+
+                for (episode in episodes) {
+                    if (episodeLedger.appendOrUpdate(episode).succeeded) {
+                        logger.debug { "New episode file: $episode" }
+                        listeners.forEach { it.onNewEpisode(episode) }
+                    } else {
+                        logger.trace { "Episode file ignored: $episode" }
+                    }
                 }
             }
+
+            logger.debug { "Finished checking" }
+
+        } catch (e: Throwable) {
+            logger.error(e) { "Unexpected error while checking for new episodes" }
         }
     }
 

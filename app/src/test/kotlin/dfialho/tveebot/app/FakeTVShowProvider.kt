@@ -2,12 +2,18 @@ package dfialho.tveebot.app
 
 import dfialho.tveebot.app.api.models.EpisodeFile
 import dfialho.tveebot.app.api.models.TVShow
+import dfialho.tveebot.app.utils.toConcurrentHashMap
 import dfialho.tveebot.tracker.api.TVShowProvider
 
 class FakeTVShowProvider(tvShows: List<ProvidedTVShow>) : TVShowProvider {
 
-    private val episodes = tvShows.associateBy({ it.tvShow.id }, { it.episodeFiles.toMutableList() }).toMutableMap()
-    private val tvShows = tvShows.associateBy({ it.tvShow.id }, { it.tvShow }).toMutableMap()
+    private val episodes: MutableMap<String, List<EpisodeFile>> = tvShows
+        .associateBy({ it.tvShow.id }, { it.episodeFiles.toList() })
+        .toConcurrentHashMap()
+
+    private val tvShows: MutableMap<String, TVShow> = tvShows
+        .associateBy({ it.tvShow.id }, { it.tvShow })
+        .toConcurrentHashMap()
 
     override fun fetchEpisodes(tvShow: TVShow): List<EpisodeFile> {
         return episodes[tvShow.id] ?: throw IllegalStateException("$tvShow not found")
@@ -20,7 +26,9 @@ class FakeTVShowProvider(tvShows: List<ProvidedTVShow>) : TVShowProvider {
     fun addEpisode(tvShow: TVShow, episodeFile: EpisodeFile) {
         require(episodeFile.episodes.all { it.tvShow.id == tvShow.id }) { "All episodes must be associated with input tv show" }
 
-        episodes[tvShow.id]?.add(episodeFile)
+        episodes.computeIfPresent(tvShow.id) { _, episodeFiles ->
+            episodeFiles.plus(episodeFile)
+        }
     }
 }
 

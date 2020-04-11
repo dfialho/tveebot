@@ -137,7 +137,7 @@ class DatabaseTVeebotRepository(private val db: Database) : TVeebotRepository {
     }
 
     override fun insert(episodeFile: EpisodeFile) {
-        transaction(db) {
+        transaction {
             val fileId = insert(episodeFile.file)
             for (episode in episodeFile.episodes) {
                 insert(episode)
@@ -147,7 +147,7 @@ class DatabaseTVeebotRepository(private val db: Database) : TVeebotRepository {
     }
 
     private fun insert(file: VideoFile): String {
-        transaction(db) {
+        transaction {
             Files.insertIgnore {
                 it[LINK] = file.link
                 it[QUALITY] = file.quality
@@ -159,7 +159,7 @@ class DatabaseTVeebotRepository(private val db: Database) : TVeebotRepository {
     }
 
     private fun insert(episode: Episode) {
-        transaction(db) {
+        transaction {
             Episodes.insertIgnore {
                 it[ID] = episode.id
                 it[TVSHOW_ID] = episode.tvShow.id
@@ -171,7 +171,7 @@ class DatabaseTVeebotRepository(private val db: Database) : TVeebotRepository {
     }
 
     private fun link(episode: Episode, fileId: String) {
-        transaction(db) {
+        transaction {
             EpisodeFiles.insertIgnore {
                 it[EPISODE_ID] = episode.id
                 it[FILE_ID] = fileId

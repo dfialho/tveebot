@@ -5,20 +5,22 @@ import dfialho.tveebot.app.events.EventBus
 import dfialho.tveebot.app.events.subscribe
 import org.kodein.di.Kodein
 import org.kodein.di.generic.instance
+import java.time.Duration
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.TimeUnit
 
-class EventRecorder<E : Event>() {
+class EventRecorder<E : Event> {
 
     private val firedEvents = LinkedBlockingQueue<E>()
 
-    fun waitForEvent(): E? {
-        return firedEvents.poll(100, TimeUnit.MILLISECONDS)
+    fun waitForEvent(timeout: Duration = Duration.ofMillis(100)): E? {
+        return firedEvents.poll(timeout.toMillis(), TimeUnit.MILLISECONDS)
     }
 
-    fun waitForEvents(count: Int): List<E> {
-        return (0..count)
-            .mapNotNull { firedEvents.poll(100, TimeUnit.MILLISECONDS) }
+    fun waitForEvents(count: Int, timeout: Duration = Duration.ofMillis(100)): List<E> {
+
+        return (1..count)
+            .mapNotNull { firedEvents.poll(timeout.toMillis(), TimeUnit.MILLISECONDS) }
     }
 
     fun onEvent(event: E) {

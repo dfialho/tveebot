@@ -21,9 +21,4 @@ interface EpisodeLedger {
      * [Result.Failure] if otherwise.
      */
     fun appendOrUpdate(episodeFile: EpisodeFile): Result
-
-    /**
-     * Returns a list containing all episode files currently hold by this ledger.
-     */
-    fun toList(): List<EpisodeFile>
 }

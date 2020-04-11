@@ -22,8 +22,4 @@ class EpisodeLedgerRepository(private val repository: TVeebotRepository) : Episo
             }
         }
     }
-
-    override fun toList(): List<EpisodeFile> {
-        TODO("Not yet implemented")
-    }
 }

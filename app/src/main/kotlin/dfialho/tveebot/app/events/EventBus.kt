@@ -7,17 +7,26 @@ import kotlin.reflect.KClass
 class EventBus {
     companion object : KLogging()
 
-    private val handlers: MutableMap<KClass<out Event>, MutableList<EventRegistration>> = ConcurrentHashMap()
+    private val handlers: MutableMap<KClass<out Event>, List<EventRegistration>> = ConcurrentHashMap()
 
     private data class EventRegistration(val service: Any, val handler: (Event) -> Unit)
 
     fun <T : Event> subscribe(service: Any, eventType: KClass<out T>, handler: (Event) -> Unit) {
-        handlers.computeIfAbsent(eventType) { mutableListOf() }
-            .add(EventRegistration(service, handler))
+
+        val registration = EventRegistration(service, handler)
+
+        handlers.compute(eventType) { _, registrations ->
+            registrations?.plus(registration)
+                ?: mutableListOf(registration)
+        }
     }
 
     fun <T : Event> unsubscribe(handlingService: Any, eventType: KClass<out T>) {
-        handlers[eventType]?.removeIf { it.service === handlingService }
+
+        handlers.computeIfPresent(eventType) { _, registrations ->
+            registrations
+                .filter { it.service === handlingService }
+        }
     }
 
     fun <T : Event> fire(event: T) {

@@ -1,11 +1,7 @@
 <configuration>
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-            <level>INFO</level>
-        </filter>
-
         <encoder>
-            <pattern>%d{YYYY-MM-dd HH:mm:ss.SSS} %-5level: %msg%n</pattern>
+            <pattern>%d{YYYY-MM-dd HH:mm:ss.SSS} [%thread] %logger{36} %-5level: %msg%n</pattern>
         </encoder>
     </appender>
 
