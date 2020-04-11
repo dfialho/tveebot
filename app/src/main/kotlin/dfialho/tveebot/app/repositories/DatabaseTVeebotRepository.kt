@@ -60,42 +60,36 @@ class DatabaseTVeebotRepository(private val db: Database) : TVeebotRepository {
         }
     }
 
-    override fun update(tvShow: TVShowEntity) {
-
-        transaction {
-            TVShows.update({ TVShows.ID eq tvShow.tvShow.id }) {
-                it[ID] = tvShow.tvShow.id
-                it[TITLE] = tvShow.tvShow.title
-                it[TRACKED] = tvShow.tracked
-                it[VIDEO_QUALITY] = tvShow.videoQuality
-            }
-        }
-    }
-
     override fun upsert(tvShow: TVShowEntity) {
 
-
-        // TODO
         transaction {
-            TVShows.insertIgnore {
+            val alreadyExists = TVShows.insertIgnore {
                 it[ID] = tvShow.tvShow.id
                 it[TITLE] = tvShow.tvShow.title
                 it[TRACKED] = tvShow.tracked
                 it[VIDEO_QUALITY] = tvShow.videoQuality
+            }.isIgnore
+
+
+            if (alreadyExists) {
+                TVShows.update({ ID eq tvShow.tvShow.id }) {
+                    it[TITLE] = tvShow.tvShow.title
+                    it[TRACKED] = tvShow.tracked
+                    it[VIDEO_QUALITY] = tvShow.videoQuality
+                }
             }
         }
     }
 
-    override fun update(entity: EpisodeEntity) {
+    override fun update(episode: EpisodeEntity) {
 
         transaction {
-            Episodes.update({ Episodes.ID eq entity.episode.id }) {
-                it[TVSHOW_ID] = entity.episode.tvShow.id
-                it[ID] = entity.episode.id
-                it[SEASON] = entity.episode.season
-                it[NUMBER] = entity.episode.number
-                it[TITLE] = entity.episode.title
-                it[STATE] = entity.state
+            Episodes.update({ Episodes.ID eq episode.episode.id }) {
+                it[TVSHOW_ID] = episode.episode.tvShow.id
+                it[SEASON] = episode.episode.season
+                it[NUMBER] = episode.episode.number
+                it[TITLE] = episode.episode.title
+                it[STATE] = episode.state
             }
         }
     }
@@ -122,7 +116,7 @@ class DatabaseTVeebotRepository(private val db: Database) : TVeebotRepository {
                     EpisodeEntity(
                         Episode(
                             TVShow(
-                                it[TVShows.ID],
+                                it[ID],
                                 it[TVShows.TITLE]
                             ),
                             it[Episodes.SEASON],

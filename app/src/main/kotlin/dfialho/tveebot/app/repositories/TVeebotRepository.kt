@@ -8,7 +8,6 @@ import dfialho.tveebot.app.api.models.VideoFile
 interface TVeebotRepository {
 
     fun findTVShow(tvShowId: String, tracked: Boolean? = null): TVShowEntity?
-    fun update(tvShow: TVShowEntity)
     fun upsert(tvShow: TVShowEntity)
 
     fun update(episode: EpisodeEntity)

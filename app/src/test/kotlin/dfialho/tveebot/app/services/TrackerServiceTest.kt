@@ -3,6 +3,7 @@ package dfialho.tveebot.app.services
 import assertk.assert
 import assertk.assertions.*
 import dfialho.tveebot.app.*
+import dfialho.tveebot.app.api.models.TVShowEntity
 import dfialho.tveebot.app.api.models.VideoQuality
 import dfialho.tveebot.app.events.Event
 import dfialho.tveebot.app.events.EventBus
@@ -162,4 +163,23 @@ class TrackerServiceTest : FunSpec({
             .hasSize(2)
     }
 
+    test("when registering a tv show already in the repository events are still fired") {
+
+        val tvShow = ProvidedTVShow(
+            anyTVShow(),
+            episodeFiles = listOf(anyEpisodeFile())
+        )
+        val provider = fakeTVShowProvider(tvShow)
+        val services = services(provider)
+        val service = start<TrackerService>(services)
+        withRepository(services) {
+            upsert(TVShowEntity(tvShow.tvShow))
+        }
+
+        val recorder = recordEvents<Event.EpisodeFileFound>(services)
+        service.register(tvShow.tvShow.id, VideoQuality.default())
+
+        assert(recorder.waitForEvents(tvShow.episodeFiles.size, checkPeriod.multipliedBy(10)))
+            .hasSize(tvShow.episodeFiles.size)
+    }
 })

@@ -77,7 +77,7 @@ class TrackerService(
 
         val tvShow = repository.transaction {
             findTVShow(tvShowId, tracked = true)?.also {
-                update(it.copy(tracked = false))
+                upsert(it.copy(tracked = false))
             }
         }
 
