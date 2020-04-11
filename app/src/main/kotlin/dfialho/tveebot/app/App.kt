@@ -14,6 +14,13 @@ import kotlin.concurrent.thread
 
 fun Application.app() {
 
+//    val config = loadConfig()
+//
+//    Database.connect(
+//        url = "jdbc:h2:${config.databasePath};MODE=MYSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE",
+//        driver = "org.h2.Driver"
+//    )
+
     val kodein = Kodein {
         import(servicesModule)
     }
@@ -45,3 +52,25 @@ fun Application.shutdown() {
 
     log.info("Server was shutdown successfully")
 }
+
+//    @KtorExperimentalAPI
+//    fun Application.loadConfig(): TVeebotConfig {
+//
+//        try {
+//            val config = with(environment.config.config("tveebot")) {
+//                TVeebotConfig(
+//                    checkPeriod = property("checkPeriod").getString().toLong(),
+//                    downloadingDirectory = Paths.get(property("downloadingDirectory").getString()),
+//                    libraryDirectory = Paths.get(property("libraryDirectory").getString()),
+//                    databasePath = Paths.get(property("databasePath").getString())
+//                )
+//            }
+//
+//            log.info("Loaded configuration: $config")
+//            return config
+//
+//        } catch (e: ApplicationConfigurationException) {
+//            log.error(e.message.orEmpty(), e)
+//            throw e
+//        }
+//    }
