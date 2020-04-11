@@ -29,9 +29,9 @@ val servicesModule = Kodein.Module(name = "Services") {
     importOnce(trackerModule)
     importOnce(downloaderModule)
     importOnce(organizerModule)
+    importOnce(stateModule)
     bind<ServiceManager>() with singleton {
         ServiceManager(
-            instance(),
             instance(),
             instance(),
             instance(),
@@ -65,7 +65,7 @@ val trackerModule = Kodein.Module(name = "Tracker Service") {
 val downloaderModule = Kodein.Module(name = "Downloader Service") {
     importOnce(baseModule)
     bind<DownloadEngine>() with singleton { threadSafe { LibTorrentDownloadEngine(Paths.get("/home/david/Downloads/tveebot/downloads")) } }
-    bind<DownloaderService>() with singleton { DownloaderService(instance(), instance(), instance()) }
+    bind<DownloaderService>() with singleton { DownloaderService(instance(), instance()) }
 }
 
 val organizerModule = Kodein.Module(name = "Organizer Service") {
@@ -77,5 +77,10 @@ val organizerModule = Kodein.Module(name = "Organizer Service") {
             instance()
         )
     }
-    bind<OrganizerService>() with singleton { OrganizerService(instance(), instance(), instance()) }
+    bind<OrganizerService>() with singleton { OrganizerService(instance(), instance()) }
+}
+
+val stateModule = Kodein.Module(name = "State Service") {
+    importOnce(baseModule)
+    bind<StateService>() with singleton { StateService(instance(), instance()) }
 }

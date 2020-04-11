@@ -1,7 +1,5 @@
 package dfialho.tveebot.app.services
 
-import dfialho.tveebot.app.events.EventBus
-import dfialho.tveebot.app.repositories.TVeebotRepository
 import mu.KLogging
 
 /**
@@ -10,15 +8,15 @@ import mu.KLogging
  * provides a central access point to every individual service.
  */
 class ServiceManager(
-    private val trackerService: TrackerService,
-    private val downloaderService: DownloaderService,
-    private val organizerService: OrganizerService,
-    private val repository: TVeebotRepository,
-    private val eventBus: EventBus
+    stateService: StateService,
+    trackerService: TrackerService,
+    downloaderService: DownloaderService,
+    organizerService: OrganizerService
 ) {
     companion object : KLogging()
 
     private val startOrder = listOf(
+        stateService,
         organizerService,
         downloaderService,
         trackerService

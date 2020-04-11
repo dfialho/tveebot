@@ -1,14 +1,10 @@
 package dfialho.tveebot.app.services
 
 import assertk.assert
-import assertk.assertAll
 import assertk.assertions.isEqualTo
-import assertk.assertions.isNotEqualTo
 import assertk.assertions.isNull
 import dfialho.tveebot.app.*
 import dfialho.tveebot.app.api.models.EpisodeFile
-import dfialho.tveebot.app.api.models.State
-import dfialho.tveebot.app.api.models.TVShowEntity
 import dfialho.tveebot.app.events.Event
 import dfialho.tveebot.app.events.EventBus
 import dfialho.tveebot.app.events.fire
@@ -29,12 +25,7 @@ class OrganizerServiceTest : FunSpec({
     val services by beforeTestSetup { services() }
     beforeTest { start<OrganizerService>(services) }
 
-    fun submitDownloadedEpisodeFile(tvShow: TVShowEntity, episodeFile: EpisodeFile, downloadPath: Path) {
-
-        withRepository(services) {
-            upsert(tvShow)
-            insert(episodeFile)
-        }
+    fun submitDownloadedEpisodeFile(episodeFile: EpisodeFile, downloadPath: Path) {
 
         val eventBus by services.instance<EventBus>()
         fire(eventBus, Event.DownloadFinished(episodeFile, downloadPath))
@@ -42,82 +33,43 @@ class OrganizerServiceTest : FunSpec({
 
     test("when an episode file is downloaded then a stored event is fired") {
 
-        val trackedTVShow = TVShowEntity(anyTVShow(), tracked = true)
-        val newEpisodeFile = anyEpisodeFile(
-            tvShow = trackedTVShow.tvShow,
-            file = anyVideoFile()
-        )
-
+        val newEpisodeFile = anyEpisodeFile()
         val recorder = recordEvents<Event.FileStored>(services)
-        submitDownloadedEpisodeFile(trackedTVShow, newEpisodeFile, Paths.get("video.mkv"))
 
-        assertAll {
-            assert(recorder.waitForEvent()?.episode)
-                .isEqualTo(newEpisodeFile)
+        submitDownloadedEpisodeFile(newEpisodeFile, Paths.get("video.mkv"))
 
-            val episode = withRepository(services) { findEpisode(newEpisodeFile.episodes[0].id) }
-            assert(episode?.state)
-                .isEqualTo(State.STORED)
-        }
+        assert(recorder.waitForEvent()?.episode)
+            .isEqualTo(newEpisodeFile)
     }
 
-    test("when the library fails to store the file then no event is fired"){
+    test("when the library fails to store the file then no event is fired") {
 
+        val newEpisodeFile = anyEpisodeFile()
+        val recorder = recordEvents<Event.FileStored>(services)
         val libraryMock by services.instance<TVShowLibrary>()
         every { libraryMock.store(any(), any()) } throws Exception()
 
-        val trackedTVShow = TVShowEntity(anyTVShow(), tracked = true)
-        val newEpisodeFile = anyEpisodeFile(
-            tvShow = trackedTVShow.tvShow,
-            file = anyVideoFile()
-        )
+        submitDownloadedEpisodeFile(newEpisodeFile, Paths.get("video.mkv"))
 
-        val recorder = recordEvents<Event.FileStored>(services)
-        submitDownloadedEpisodeFile(trackedTVShow, newEpisodeFile, Paths.get("video.mkv"))
-
-        assertAll {
-            assert(recorder.waitForEvent()?.episode)
-                .isNull()
-
-            val episode = withRepository(services) { findEpisode(newEpisodeFile.episodes[0].id) }
-            assert(episode?.state)
-                .isNotEqualTo(State.STORED)
-        }
-
+        assert(recorder.waitForEvent()?.episode)
+            .isNull()
     }
 
-    test("after the library fails to store the file new episode files are still stored"){
+    test("after the library fails to store the file new episode files are still stored") {
 
-        val trackedTVShow = TVShowEntity(anyTVShow(), tracked = true)
-        val firstEpisodeFile = anyEpisodeFile(
-            tvShow = trackedTVShow.tvShow,
-            file = anyVideoFile()
-        )
-        val secondEpisodeFile = anyEpisodeFile(
-            tvShow = trackedTVShow.tvShow,
-            file = anyVideoFile()
-        )
-
+        val tvShow = anyTVShow()
+        val firstEpisodeFile = anyEpisodeFile(tvShow)
+        val secondEpisodeFile = anyEpisodeFile(tvShow)
+        val recorder = recordEvents<Event.FileStored>(services)
         val libraryMock by services.instance<TVShowLibrary>()
         every { libraryMock.store(firstEpisodeFile.episodes, any()) } throws Exception("Some error occurred")
         every { libraryMock.store(secondEpisodeFile.episodes, any()) } returns Paths.get("library/video.mkv")
 
-        val recorder = recordEvents<Event.FileStored>(services)
-        submitDownloadedEpisodeFile(trackedTVShow, firstEpisodeFile, Paths.get("video1.mkv"))
-        submitDownloadedEpisodeFile(trackedTVShow, secondEpisodeFile, Paths.get("video2.mkv"))
+        submitDownloadedEpisodeFile(firstEpisodeFile, Paths.get("video1.mkv"))
+        submitDownloadedEpisodeFile(secondEpisodeFile, Paths.get("video2.mkv"))
 
-        assertAll {
-            assert(recorder.waitForEvent()?.episode)
-                .isEqualTo(secondEpisodeFile)
-
-            val firstEpisode = withRepository(services) { findEpisode(firstEpisodeFile.episodes[0].id) }
-            assert(firstEpisode?.state)
-                .isNotEqualTo(State.STORED)
-
-            val secondEpisode = withRepository(services) { findEpisode(secondEpisodeFile.episodes[0].id) }
-            assert(secondEpisode?.state)
-                .isEqualTo(State.STORED)
-        }
+        assert(recorder.waitForEvent()?.episode)
+            .isEqualTo(secondEpisodeFile)
     }
 })
 
