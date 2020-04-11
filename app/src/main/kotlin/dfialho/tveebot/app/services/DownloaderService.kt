@@ -30,7 +30,7 @@ class DownloaderService(
         engine.addListener(engineListener)
 
         subscribe<Event.EpisodeFileFound>(eventBus) {
-            onNewEpisodeFile(it.episode)
+            download(it.episode)
         }
     }
 
@@ -53,23 +53,6 @@ class DownloaderService(
 
         logger.info { "Started downloading: ${episodeFile.episodes}" }
         eventBus.fire(Event.DownloadStarted(episodeFile))
-    }
-
-    private fun onNewEpisodeFile(episodeFile: EpisodeFile) {
-
-        // TODO Data Model: It should not be possible to have multiple tv shows in an episode file
-        val tvShow = episodeFile.episodes[0].tvShow
-        val trackedTVShow = repository.findTVShow(tvShow.id, tracked = true)
-        if (trackedTVShow == null) {
-            logger.info { "Ignoring episode file because the tv show is not tracked: $episodeFile" }
-            return
-        }
-
-        if (episodeFile.file.quality == trackedTVShow.videoQuality) {
-            download(episodeFile)
-        } else {
-            logger.debug { "Ignoring episode file because the video quality does not match: $episodeFile" }
-        }
     }
 
     private inner class EngineListener : DownloadListener {

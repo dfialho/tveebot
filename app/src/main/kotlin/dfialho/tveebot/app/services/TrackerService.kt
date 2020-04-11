@@ -21,7 +21,24 @@ class TrackerService(
 
     private val engineListener: TrackingListener = object : TrackingListener {
         override fun onNewEpisode(file: EpisodeFile) {
+
             logger.info { "Found new episode file: $file" }
+
+            // TODO Data Model: It should not be possible to have multiple tv shows in an episode file
+            val tvShow = file.episodes[0].tvShow
+            val trackedTVShow = repository.findTVShow(tvShow.id, tracked = true)
+
+            if (trackedTVShow == null) {
+                logger.info { "Ignoring episode file because the tv show is not tracked: $file" }
+                return
+            }
+
+            if (file.file.quality != trackedTVShow.videoQuality) {
+                logger.info { "Ignoring episode file because tv show is tracking files with quality " +
+                    "${trackedTVShow.videoQuality} but the file has quality ${file.file.quality}: $file" }
+                return
+            }
+
             fire(eventBus, Event.EpisodeFileFound(file))
         }
     }

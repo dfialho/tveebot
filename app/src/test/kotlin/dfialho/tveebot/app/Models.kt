@@ -37,8 +37,8 @@ fun anyEpisode(
 ) = Episode(tvShow, season, number, title)
 
 fun anyVideoFile(
-    link: String = UUID.randomUUID().toString(),
     quality: VideoQuality = VideoQuality.default(),
+    link: String = UUID.randomUUID().toString(),
     publishedDate: Instant = Instant.now()
 ) = VideoFile(link, quality, publishedDate)
 

@@ -3,13 +3,10 @@ package dfialho.tveebot.app.services
 import assertk.assert
 import assertk.assertAll
 import assertk.assertions.isEqualTo
-import assertk.assertions.isNotEqualTo
-import assertk.assertions.isNull
 import dfialho.tveebot.app.*
 import dfialho.tveebot.app.api.models.EpisodeFile
 import dfialho.tveebot.app.api.models.State
 import dfialho.tveebot.app.api.models.TVShowEntity
-import dfialho.tveebot.app.api.models.VideoQuality
 import dfialho.tveebot.app.events.Event
 import dfialho.tveebot.app.events.EventBus
 import dfialho.tveebot.app.events.fire
@@ -38,13 +35,10 @@ class DownloaderServiceTest : FunSpec({
         fire(eventBus, Event.EpisodeFileFound(newEpisodeFile))
     }
 
-    test("when a new episode file is found and its video quality matches the tv show's it starts being downloaded") {
+    test("when a new episode file is found it starts being downloaded") {
 
-        val trackedTVShow = TVShowEntity(anyTVShow(), tracked = true, videoQuality = VideoQuality.FHD)
-        val newEpisodeFile = anyEpisodeFile(
-            tvShow = trackedTVShow.tvShow,
-            file = anyVideoFile(quality = VideoQuality.FHD)
-        )
+        val trackedTVShow = TVShowEntity(anyTVShow(), tracked = true)
+        val newEpisodeFile = anyEpisodeFile(tvShow = trackedTVShow.tvShow)
 
         val recorder = recordEvents<Event.DownloadStarted>(services)
         submitNewEpisodeFile(trackedTVShow, newEpisodeFile)
@@ -56,30 +50,6 @@ class DownloaderServiceTest : FunSpec({
             val episode = withRepository(services) { findEpisode(newEpisodeFile.episodes[0].id) }
             assert(episode?.state)
                 .isEqualTo(State.DOWNLOADING)
-        }
-    }
-
-    test("when a new episode becomes available with another video quality it is NOT downloaded") {
-
-
-        val trackedTVShow = TVShowEntity(anyTVShow(), tracked = true, videoQuality = VideoQuality.FHD)
-        val newEpisodeFile = anyEpisodeFile(
-            tvShow = trackedTVShow.tvShow,
-            file = anyVideoFile(quality = VideoQuality.SD)
-        )
-
-        val recorder = recordEvents<Event.DownloadStarted>(services)
-        submitNewEpisodeFile(trackedTVShow, newEpisodeFile)
-
-        assertAll {
-            assert(recorder.waitForEvent()?.episode)
-                .isNull()
-
-            val episode = withRepository(services) { findEpisode(newEpisodeFile.episodes[0].id) }
-            assert(episode?.state)
-                .isNotEqualTo(State.DOWNLOADING)
-            assert(episode?.state)
-                .isNotEqualTo(State.DOWNLOADED)
         }
     }
 

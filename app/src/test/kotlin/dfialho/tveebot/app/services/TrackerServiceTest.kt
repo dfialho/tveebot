@@ -1,10 +1,7 @@
 package dfialho.tveebot.app.services
 
 import assertk.assert
-import assertk.assertions.containsExactly
-import assertk.assertions.hasSize
-import assertk.assertions.isNotNull
-import assertk.assertions.isNull
+import assertk.assertions.*
 import dfialho.tveebot.app.*
 import dfialho.tveebot.app.api.models.VideoQuality
 import dfialho.tveebot.app.events.Event
@@ -39,12 +36,16 @@ class TrackerServiceTest : FunSpec({
         }
     }
 
-    test("when a tv show is registered an event is fired for each episode available") {
+    test("when a tv show is registered an event is fired for each episode matching tracked quality") {
+
+        val trackedVideoQuality = VideoQuality.FHD
+        val episodeWithOtherQuality = anyEpisodeFile(file = anyVideoFile(VideoQuality.SD))
         val tvShow = ProvidedTVShow(
             anyTVShow(),
             episodeFiles = listOf(
-                anyEpisodeFile(),
-                anyEpisodeFile()
+                episodeWithOtherQuality,
+                anyEpisodeFile(file = anyVideoFile(trackedVideoQuality)),
+                anyEpisodeFile(file = anyVideoFile(trackedVideoQuality))
             )
         )
         val provider = fakeTVShowProvider(tvShow)
@@ -52,14 +53,16 @@ class TrackerServiceTest : FunSpec({
         val service = start<TrackerService>(services)
 
         val recorder = recordEvents<Event.EpisodeFileFound>(services)
-        service.register(tvShow.tvShow.id, VideoQuality.SD)
+        service.register(tvShow.tvShow.id, trackedVideoQuality)
 
-        assert(recorder.waitForEvents(tvShow.episodeFiles.size, checkPeriod.multipliedBy(10)))
-            .hasSize(tvShow.episodeFiles.size)
+        val events = recorder.waitForEvents(2, checkPeriod.multipliedBy(10))
+        assert(events.map { it.episode.file })
+            .doesNotContain(episodeWithOtherQuality.file)
     }
 
-    test("when a new episode becomes available an event is fired") {
+    test("when a new episode becomes available with the tracked video quality an event is fired") {
 
+        val trackedVideoQuality = VideoQuality.FHD
         val tvShow = ProvidedTVShow(
             anyTVShow(),
             episodeFiles = emptyList()
@@ -67,13 +70,32 @@ class TrackerServiceTest : FunSpec({
         val provider = fakeTVShowProvider(tvShow)
         val services = services(provider)
         val service = start<TrackerService>(services)
-        service.register(tvShow.tvShow.id, VideoQuality.default())
+        service.register(tvShow.tvShow.id, trackedVideoQuality)
 
         val recorder = recordEvents<Event.EpisodeFileFound>(services)
-        provider.addEpisode(tvShow.tvShow, anyEpisodeFile(tvShow.tvShow))
+        provider.addEpisode(tvShow.tvShow, anyEpisodeFile(tvShow.tvShow, anyVideoFile(trackedVideoQuality)))
 
         assert(recorder.waitForEvent(checkPeriod.multipliedBy(10)))
             .isNotNull()
+    }
+
+    test("when a new episode becomes available with a video quality different from tracked NO event is fired") {
+
+        val trackedVideoQuality = VideoQuality.FHD
+        val tvShow = ProvidedTVShow(
+            anyTVShow(),
+            episodeFiles = emptyList()
+        )
+        val provider = fakeTVShowProvider(tvShow)
+        val services = services(provider)
+        val service = start<TrackerService>(services)
+        service.register(tvShow.tvShow.id, trackedVideoQuality)
+
+        val recorder = recordEvents<Event.EpisodeFileFound>(services)
+        provider.addEpisode(tvShow.tvShow, anyEpisodeFile(tvShow.tvShow, anyVideoFile(quality = VideoQuality.SD)))
+
+        assert(recorder.waitForEvent(checkPeriod.multipliedBy(3)))
+            .isNull()
     }
 
     test("after a tv show has been unregistered any new episode file does not trigger an event") {
