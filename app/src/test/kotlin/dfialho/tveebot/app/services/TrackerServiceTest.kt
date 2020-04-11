@@ -28,8 +28,8 @@ class TrackerServiceTest : FunSpec({
 
     fun services(tvShowProvider: TVShowProvider, trackerCheckPeriod: Duration? = null) = Kodein {
         import(trackerModule)
-        bind<TVeebotRepository>(overrides = true) with instance(newRepository())
-        bind<TVShowProvider>(overrides = true) with instance(tvShowProvider)
+        bind<TVeebotRepository>(overrides = true) with singleton { newRepository() }
+        bind<TVShowProvider>(overrides = true) with singleton { tvShowProvider }
         bind<TrackerEngine>(overrides = true) with singleton {
             ScheduledTrackerEngine(
                 instance(),
@@ -49,7 +49,7 @@ class TrackerServiceTest : FunSpec({
         )
         val provider = fakeTVShowProvider(tvShow)
         val services = services(provider)
-        val service = startedService<TrackerService>(services)
+        val service = start<TrackerService>(services)
 
         val recorder = recordEvents<Event.EpisodeFileFound>(services)
         service.register(tvShow.tvShow.id, VideoQuality.SD)
@@ -66,7 +66,7 @@ class TrackerServiceTest : FunSpec({
         )
         val provider = fakeTVShowProvider(tvShow)
         val services = services(provider)
-        val service = startedService<TrackerService>(services)
+        val service = start<TrackerService>(services)
         service.register(tvShow.tvShow.id, VideoQuality.default())
 
         val recorder = recordEvents<Event.EpisodeFileFound>(services)
@@ -84,7 +84,7 @@ class TrackerServiceTest : FunSpec({
         )
         val provider = fakeTVShowProvider(tvShow)
         val services = services(provider)
-        val service = startedService<TrackerService>(services)
+        val service = start<TrackerService>(services)
         service.register(tvShow.tvShow.id, VideoQuality.default())
         service.unregister(tvShow.tvShow.id)
 
@@ -107,7 +107,7 @@ class TrackerServiceTest : FunSpec({
         )
         val provider = fakeTVShowProvider(tvShowA, tvShowB)
         val services = services(provider)
-        val service = startedService<TrackerService>(services)
+        val service = start<TrackerService>(services)
         afterTest { service.stop() }
 
         service.register(tvShowA.tvShow.id, VideoQuality.default())
@@ -134,7 +134,7 @@ class TrackerServiceTest : FunSpec({
         )
         val provider = fakeTVShowProvider(tvShow)
         val services = services(provider, trackerCheckPeriod = Duration.ofMillis(1))
-        val service = startedService<TrackerService>(services)
+        val service = start<TrackerService>(services)
         val eventBus by services.instance<EventBus>()
         val recorder = recordEvents<Event.EpisodeFileFound>(services)
 
