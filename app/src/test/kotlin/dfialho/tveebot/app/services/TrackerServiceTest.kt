@@ -9,6 +9,7 @@ import dfialho.tveebot.app.events.Event
 import dfialho.tveebot.app.events.EventBus
 import dfialho.tveebot.app.events.subscribe
 import dfialho.tveebot.tracker.api.TVShowProvider
+import dfialho.tveebot.tracker.api.TrackerEngine
 import io.kotest.core.spec.style.FunSpec
 import org.jetbrains.exposed.sql.Database
 import org.kodein.di.Kodein
@@ -180,6 +181,29 @@ class TrackerServiceTest : FunSpec({
         service.register(tvShow.tvShow.id, VideoQuality.default())
 
         assert(recorder.waitForEvents(tvShow.episodeFiles.size, checkPeriod.multipliedBy(10)))
+            .hasSize(tvShow.episodeFiles.size)
+    }
+
+    test("when the service is started it checks for new episodes") {
+
+        val tvShow = ProvidedTVShow(
+            anyTVShow(),
+            episodeFiles = listOf(anyEpisodeFile())
+        )
+        val provider = fakeTVShowProvider(tvShow)
+        val services = services(provider, trackerCheckPeriod = Duration.ofMillis(500))
+        val service by services.instance<TrackerService>()
+        afterTest { service.stop() }
+        withRepository(services) {
+            upsert(TVShowEntity(tvShow.tvShow, tracked = true))
+        }
+        val engine by services.instance<TrackerEngine>()
+        engine.register(tvShow.tvShow)
+
+        val recorder = recordEvents<Event.EpisodeFileFound>(services)
+        service.start()
+
+        assert(recorder.waitForEvents(tvShow.episodeFiles.size, Duration.ofMillis(100)))
             .hasSize(tvShow.episodeFiles.size)
     }
 })

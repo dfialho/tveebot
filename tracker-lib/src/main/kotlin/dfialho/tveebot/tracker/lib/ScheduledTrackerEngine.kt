@@ -1,6 +1,5 @@
 package dfialho.tveebot.tracker.lib
 
-import com.google.common.util.concurrent.MoreExecutors
 import dfialho.tveebot.app.api.models.EpisodeFile
 import dfialho.tveebot.app.api.models.TVShow
 import dfialho.tveebot.tracker.api.EpisodeLedger
@@ -29,14 +28,18 @@ class ScheduledTrackerEngine(
     private val executor: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
 
     override fun start() {
-        logger.debug { "Started tracker engine" }
+        check()
         executor.scheduleCheck()
     }
 
     override fun stop() {
-        logger.debug { "Stopping tracker engine..." }
-        MoreExecutors.shutdownAndAwaitTermination(executor, 30, TimeUnit.SECONDS)
-        logger.debug { "Stopped tracker engine" }
+
+        try {
+            executor.shutdownNow()
+            executor.awaitTermination(30, TimeUnit.SECONDS)
+        } catch (e: InterruptedException) {
+            Thread.currentThread().interrupt()
+        }
     }
 
     override fun register(tvShow: TVShow) {
