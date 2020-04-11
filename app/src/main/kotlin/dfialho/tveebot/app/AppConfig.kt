@@ -5,7 +5,7 @@ import java.time.Duration
 
 data class AppConfig(
     val checkPeriod: Duration,
-    val downloadingDirectory: Path,
+    val downloadsDirectory: Path,
     val libraryDirectory: Path,
     val databasePath: Path
 )

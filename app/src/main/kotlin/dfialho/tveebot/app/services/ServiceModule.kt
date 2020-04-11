@@ -22,7 +22,6 @@ import org.kodein.di.Kodein
 import org.kodein.di.generic.bind
 import org.kodein.di.generic.instance
 import org.kodein.di.generic.singleton
-import java.nio.file.Paths
 
 val servicesModule = Kodein.Module(name = "Services") {
     importOnce(trackerModule)
@@ -56,19 +55,14 @@ val trackerModule = Kodein.Module(name = "Tracker Service") {
 
 val downloaderModule = Kodein.Module(name = "Downloader Service") {
     importOnce(baseModule)
-    bind<DownloadEngine>() with singleton { threadSafe { LibTorrentDownloadEngine(Paths.get("/home/david/Downloads/tveebot/downloads")) } }
+    bind<DownloadEngine>() with singleton { threadSafe { LibTorrentDownloadEngine(instance<AppConfig>().downloadsDirectory) } }
     bind<DownloaderService>() with singleton { DownloaderService(instance(), instance()) }
 }
 
 val organizerModule = Kodein.Module(name = "Organizer Service") {
     importOnce(baseModule)
     bind<TVShowOrganizer>() with singleton { SimpleTVShowOrganizer() }
-    bind<TVShowLibrary>() with singleton {
-        SimpleTVShowLibrary(
-            Paths.get("/home/david/Downloads/tveebot/library"),
-            instance()
-        )
-    }
+    bind<TVShowLibrary>() with singleton { SimpleTVShowLibrary(instance<AppConfig>().libraryDirectory, instance()) }
     bind<OrganizerService>() with singleton { OrganizerService(instance(), instance()) }
 }
 
