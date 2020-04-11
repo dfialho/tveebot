@@ -1,5 +1,6 @@
 package dfialho.tveebot.app.services
 
+import dfialho.tveebot.app.AppConfig
 import dfialho.tveebot.app.events.EventBus
 import dfialho.tveebot.app.repositories.DatabaseTVeebotRepository
 import dfialho.tveebot.app.repositories.EpisodeLedgerRepository
@@ -22,7 +23,6 @@ import org.kodein.di.generic.bind
 import org.kodein.di.generic.instance
 import org.kodein.di.generic.singleton
 import java.nio.file.Paths
-import java.time.Duration
 
 val servicesModule = Kodein.Module(name = "Services") {
     importOnce(trackerModule)
@@ -50,7 +50,7 @@ val trackerModule = Kodein.Module(name = "Tracker Service") {
     bind<EpisodeFileMatcher>() with singleton { PatternEpisodeFileMatcher(instance()) }
     bind<TVShowProvider>() with singleton { ShowRSSProvider(instance()) }
     bind<EpisodeLedger>() with singleton { EpisodeLedgerRepository(instance()) }
-    bind<TrackerEngine>() with singleton { ScheduledTrackerEngine(instance(), instance(), Duration.ofSeconds(1)) }
+    bind<TrackerEngine>() with singleton { ScheduledTrackerEngine(instance(), instance(), instance<AppConfig>().checkPeriod) }
     bind<TrackerService>() with singleton { TrackerService(instance(), instance(), instance()) }
 }
 

@@ -8,8 +8,6 @@ import dfialho.tveebot.app.events.Event
 import dfialho.tveebot.app.events.EventBus
 import dfialho.tveebot.app.events.subscribe
 import dfialho.tveebot.tracker.api.TVShowProvider
-import dfialho.tveebot.tracker.api.TrackerEngine
-import dfialho.tveebot.tracker.lib.ScheduledTrackerEngine
 import io.kotest.core.spec.style.FunSpec
 import org.jetbrains.exposed.sql.Database
 import org.kodein.di.Kodein
@@ -27,13 +25,7 @@ class TrackerServiceTest : FunSpec({
         import(trackerModule)
         bind<Database>() with singleton { randomInMemoryDatabase() }
         bind<TVShowProvider>(overrides = true) with singleton { tvShowProvider }
-        bind<TrackerEngine>(overrides = true) with singleton {
-            ScheduledTrackerEngine(
-                instance(),
-                instance(),
-                trackerCheckPeriod ?: checkPeriod
-            )
-        }
+        bind<AppConfig>() with instance(appConfig(checkPeriod = trackerCheckPeriod ?: checkPeriod))
     }
 
     test("when a tv show is registered an event is fired for each episode matching tracked quality") {
