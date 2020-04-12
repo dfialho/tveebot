@@ -22,6 +22,7 @@ dependencies {
     implementation(project(":tracker-lib"))
     implementation(project(":library-lib"))
     implementation(project(":app-api"))
+    testImplementation(project(":app-api", configuration = "tests"))
 }
 
 dependencies {

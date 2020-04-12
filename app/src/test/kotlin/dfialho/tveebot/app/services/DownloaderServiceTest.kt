@@ -7,6 +7,8 @@ import assertk.assertions.isNull
 import dfialho.tveebot.app.*
 import dfialho.tveebot.app.api.models.EpisodeFile
 import dfialho.tveebot.app.api.models.TVShowEntity
+import dfialho.tveebot.app.api.models.anyEpisodeFile
+import dfialho.tveebot.app.api.models.anyTVShow
 import dfialho.tveebot.app.events.Event
 import dfialho.tveebot.app.events.EventBus
 import dfialho.tveebot.app.events.fire

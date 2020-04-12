@@ -3,8 +3,7 @@ package dfialho.tveebot.app.services
 import assertk.assert
 import assertk.assertions.*
 import dfialho.tveebot.app.*
-import dfialho.tveebot.app.api.models.TVShowEntity
-import dfialho.tveebot.app.api.models.VideoQuality
+import dfialho.tveebot.app.api.models.*
 import dfialho.tveebot.app.events.Event
 import dfialho.tveebot.app.events.EventBus
 import dfialho.tveebot.app.events.subscribe
