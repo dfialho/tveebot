@@ -61,8 +61,8 @@ class LibraryServiceTest : FunSpec({
         val secondEpisodeFile = anyEpisodeFile(tvShow)
         val recorder = recordEvents<Event.FileStored>(services)
         val libraryMock by services.instance<TVShowLibrary>()
-        every { libraryMock.store(firstEpisodeFile.episodes, any()) } throws Exception("Some error occurred")
-        every { libraryMock.store(secondEpisodeFile.episodes, any()) } returns Paths.get("library/video.mkv")
+        every { libraryMock.store(firstEpisodeFile, any()) } throws Exception("Some error occurred")
+        every { libraryMock.store(secondEpisodeFile, any()) } returns Paths.get("library/video.mkv")
 
         submitDownloadedEpisodeFile(firstEpisodeFile, Paths.get("video1.mkv"))
         submitDownloadedEpisodeFile(secondEpisodeFile, Paths.get("video2.mkv"))

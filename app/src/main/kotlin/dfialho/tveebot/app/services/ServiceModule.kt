@@ -14,8 +14,8 @@ import dfialho.tveebot.downloader.libtorrent.LibTorrentDownloadEngine
 import dfialho.tveebot.downloader.libtorrent.threadSafe
 import dfialho.tveebot.library.api.TVShowLibrary
 import dfialho.tveebot.library.api.TVShowOrganizer
-import dfialho.tveebot.library.lib.SimpleTVShowLibrary
-import dfialho.tveebot.library.lib.SimpleTVShowOrganizer
+import dfialho.tveebot.library.lib.FileSystemTVShowLibrary
+import dfialho.tveebot.library.lib.PlexTVShowOrganizer
 import dfialho.tveebot.tracker.api.*
 import dfialho.tveebot.tracker.lib.ScheduledTrackerEngine
 import dfialho.tveebot.tracker.lib.ShowRSSProvider
@@ -68,8 +68,8 @@ val downloaderModule = Kodein.Module(name = "Downloader Service") {
 
 val organizerModule = Kodein.Module(name = "Organizer Service") {
     importOnce(baseModule)
-    bind<TVShowOrganizer>() with singleton { SimpleTVShowOrganizer() }
-    bind<TVShowLibrary>() with singleton { SimpleTVShowLibrary(instance<AppConfig>().libraryDirectory, instance()) }
+    bind<TVShowOrganizer>() with singleton { PlexTVShowOrganizer() }
+    bind<TVShowLibrary>() with singleton { FileSystemTVShowLibrary(instance<AppConfig>().libraryDirectory, instance()) }
     bind<LibraryService>() with singleton { LibraryService(instance(), instance()) }
 }
 

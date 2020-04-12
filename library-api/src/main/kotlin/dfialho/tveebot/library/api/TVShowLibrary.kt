@@ -1,8 +1,8 @@
 package dfialho.tveebot.library.api
 
-import dfialho.tveebot.app.api.models.Episode
+import dfialho.tveebot.app.api.models.EpisodeFile
 import java.nio.file.Path
 
 interface TVShowLibrary {
-    fun store(episodes: List<Episode>, episodePackage: EpisodePackage): Path
+    fun store(episodeFile: EpisodeFile, videoFile: Path): Path
 }

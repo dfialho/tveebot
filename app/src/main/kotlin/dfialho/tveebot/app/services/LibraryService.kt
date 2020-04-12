@@ -6,7 +6,6 @@ import dfialho.tveebot.app.events.EventBus
 import dfialho.tveebot.app.events.subscribe
 import dfialho.tveebot.app.events.unsubscribe
 import dfialho.tveebot.library.api.TVShowLibrary
-import dfialho.tveebot.library.lib.EpisodeDownloadPackage
 import mu.KLogging
 import java.nio.file.Path
 import java.util.concurrent.Executors
@@ -43,12 +42,12 @@ class LibraryService(
         }
     }
 
-    fun store(episodeFile: EpisodeFile, fileLocation: Path) {
+    private fun store(episodeFile: EpisodeFile, fileLocation: Path) {
 
         executor.submit {
             try {
                 logger.debug { "Storing episode in library: $episodeFile" }
-                val storePath = library.store(episodeFile.episodes, EpisodeDownloadPackage(fileLocation))
+                val storePath = library.store(episodeFile, fileLocation)
 
                 logger.info { "Stored episode file for episode(s): ${episodeFile.episodes}" }
                 eventBus.fire(Event.FileStored(episodeFile, storePath))
