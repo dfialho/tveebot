@@ -56,7 +56,7 @@ val trackerModule = Kodein.Module(name = "Tracker Service") {
 val downloaderModule = Kodein.Module(name = "Downloader Service") {
     importOnce(baseModule)
     bind<DownloadEngine>() with singleton { threadSafe { LibTorrentDownloadEngine(instance<AppConfig>().downloadsDirectory) } }
-    bind<DownloaderService>() with singleton { DownloaderService(instance(), instance()) }
+    bind<DownloaderService>() with singleton { DownloaderService(instance(), instance(), instance()) }
 }
 
 val organizerModule = Kodein.Module(name = "Organizer Service") {

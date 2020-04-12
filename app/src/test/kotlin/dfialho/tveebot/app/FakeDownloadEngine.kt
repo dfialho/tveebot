@@ -34,7 +34,11 @@ class FakeDownloadEngine : DownloadEngine {
     private val listeners = mutableListOf<DownloadListener>()
 
     override fun start() {}
-    override fun stop() {}
+
+    override fun stop() {
+        downloads.clear()
+        listeners.clear()
+    }
 
     override fun add(torrentFile: Path): DownloadHandle {
         notNecessary()

@@ -60,6 +60,24 @@ class DatabaseTVeebotRepository(private val db: Database) : TVeebotRepository {
         }
     }
 
+    override fun findTVShows(tracked: Boolean?): List<TVShowEntity> {
+
+        return transaction {
+
+            if (tracked != null) {
+                TVShows.select { TVShows.TRACKED eq tracked }
+            } else {
+                TVShows.selectAll()
+            }.map {
+                TVShowEntity(
+                    TVShow(it[ID], it[TVShows.TITLE]),
+                    it[TVShows.TRACKED],
+                    it[TVShows.VIDEO_QUALITY]
+                )
+            }
+        }
+    }
+
     override fun upsert(tvShow: TVShowEntity) {
 
         transaction {
@@ -127,6 +145,42 @@ class DatabaseTVeebotRepository(private val db: Database) : TVeebotRepository {
                     )
                 }
                 .firstOrNull()
+        }
+    }
+
+    override fun findEpisodeFiles(
+        tvShowId: String,
+        state: State,
+        videoQuality: VideoQuality
+    ): List<EpisodeFile> {
+
+        return transaction {
+
+            (Episodes innerJoin TVShows)
+                .join(EpisodeFiles.innerJoin(Files), JoinType.INNER, Episodes.ID, EpisodeFiles.EPISODE_ID)
+                .select { (ID eq tvShowId) and (Episodes.STATE eq state) and (Files.QUALITY eq videoQuality) }
+                .map {
+                    EpisodeFile(
+                        VideoFile(
+                            it[Files.LINK],
+                            it[Files.QUALITY],
+                            it[Files.PUBLISHED_DATE].toDate().toInstant()
+                        ),
+                        listOf(
+                            Episode(
+                                TVShow(it[ID], it[TVShows.TITLE]),
+                                it[Episodes.SEASON],
+                                it[Episodes.NUMBER],
+                                it[Episodes.TITLE]
+                            )
+                        )
+                    )
+                }
+                .groupBy { it.file }
+                .values
+                .map {
+                    it[0].copy(episodes = it.map { it.episodes[0] })
+                }
         }
     }
 

@@ -5,6 +5,9 @@ import org.jetbrains.exposed.sql.Database
 import org.kodein.di.Kodein
 import org.kodein.di.generic.instance
 import java.util.*
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
 fun randomInMemoryDatabase(): Database {
 
@@ -16,7 +19,11 @@ fun randomInMemoryDatabase(): Database {
     )
 }
 
-fun <R> withRepository(services: Kodein, block: TVeebotRepository.() -> R): R {
+@OptIn(ExperimentalContracts::class)
+inline fun <R> withRepository(services: Kodein, block: TVeebotRepository.() -> R): R {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    }
 
     val repository by services.instance<TVeebotRepository>()
     return with(repository, block)

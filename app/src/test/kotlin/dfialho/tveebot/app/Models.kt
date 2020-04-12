@@ -36,16 +36,22 @@ fun anyEpisode(
     title: String = episodeTitles.random()
 ) = Episode(tvShow, season, number, title)
 
+fun TVShow.anyEpisode() = Episode(this, randomInt(), randomInt(), episodeTitles.random())
+
 fun anyVideoFile(
     quality: VideoQuality = VideoQuality.default(),
     link: String = UUID.randomUUID().toString(),
     publishedDate: Instant = Instant.now()
 ) = VideoFile(link, quality, publishedDate)
 
+fun TVShow.anyEpisodeFile(
+    vararg episodes: Episode = arrayOf(anyEpisode()),
+    file: VideoFile = anyVideoFile()
+) = EpisodeFile(file, episodes.toList())
+
 fun anyEpisodeFile(
     tvShow: TVShow = anyTVShow(),
-    file: VideoFile = anyVideoFile(),
-    episode: Episode = anyEpisode(tvShow = tvShow)
-) = EpisodeFile(file, listOf(episode))
+    file: VideoFile = anyVideoFile()
+) = EpisodeFile(file, listOf(anyEpisode(tvShow = tvShow)))
 
 private fun randomInt() = Random().nextInt()

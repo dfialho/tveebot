@@ -1,10 +1,13 @@
 package dfialho.tveebot.app.services
 
 import dfialho.tveebot.app.api.models.EpisodeFile
+import dfialho.tveebot.app.api.models.State
 import dfialho.tveebot.app.events.Event
 import dfialho.tveebot.app.events.EventBus
 import dfialho.tveebot.app.events.subscribe
 import dfialho.tveebot.app.events.unsubscribe
+import dfialho.tveebot.app.repositories.TVeebotRepository
+import dfialho.tveebot.app.utils.toConcurrentHashMap
 import dfialho.tveebot.downloader.api.DownloadEngine
 import dfialho.tveebot.downloader.api.DownloadHandle
 import dfialho.tveebot.downloader.api.DownloadListener
@@ -13,18 +16,21 @@ import mu.KLogging
 
 class DownloaderService(
     private val engine: DownloadEngine,
+    private val repository: TVeebotRepository,
     private val eventBus: EventBus
 ) : Service {
 
     companion object : KLogging()
 
-    private val downloads = mutableMapOf<DownloadReference, EpisodeFile>()
+    private val downloads = mutableMapOf<DownloadReference, EpisodeFile>().toConcurrentHashMap()
     private val engineListener = EngineListener()
 
     override fun start() {
         logger.debug { "Starting download engine..." }
         engine.start()
         engine.addListener(engineListener)
+
+        restartDownloads()
 
         subscribe<Event.EpisodeFileFound>(eventBus) {
             download(it.episode)
@@ -33,6 +39,7 @@ class DownloaderService(
 
     override fun stop() {
 
+        downloads.clear()
         unsubscribe<Event.EpisodeFileFound>(eventBus)
 
         logger.debug { "Stopping download engine..." }
@@ -47,6 +54,21 @@ class DownloaderService(
 
         logger.info { "Started downloading: ${episodeFile.episodes}" }
         eventBus.fire(Event.DownloadStarted(episodeFile))
+    }
+
+    private fun restartDownloads() {
+
+        repository.transaction {
+            findTVShows(tracked = true).forEach { tvShow ->
+                findEpisodeFiles(
+                    tvShowId = tvShow.tvShow.id,
+                    state = State.DOWNLOADING,
+                    videoQuality = tvShow.videoQuality
+                ).forEach {
+                    download(it)
+                }
+            }
+        }
     }
 
     private inner class EngineListener : DownloadListener {
