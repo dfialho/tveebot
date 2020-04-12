@@ -70,7 +70,7 @@ val organizerModule = Kodein.Module(name = "Organizer Service") {
     importOnce(baseModule)
     bind<TVShowOrganizer>() with singleton { SimpleTVShowOrganizer() }
     bind<TVShowLibrary>() with singleton { SimpleTVShowLibrary(instance<AppConfig>().libraryDirectory, instance()) }
-    bind<OrganizerService>() with singleton { OrganizerService(instance(), instance()) }
+    bind<LibraryService>() with singleton { LibraryService(instance(), instance()) }
 }
 
 val stateModule = Kodein.Module(name = "State Service") {

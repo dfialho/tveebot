@@ -19,10 +19,10 @@ import org.kodein.di.generic.singleton
 import java.nio.file.Path
 import java.nio.file.Paths
 
-class OrganizerServiceTest : FunSpec({
+class LibraryServiceTest : FunSpec({
 
     val services by beforeTestSetup { services() }
-    beforeTest { start<OrganizerService>(services) }
+    beforeTest { start<LibraryService>(services) }
 
     fun submitDownloadedEpisodeFile(episodeFile: EpisodeFile, downloadPath: Path) {
 

@@ -11,13 +11,13 @@ class ServiceManager(
     stateService: StateService,
     trackerService: TrackerService,
     downloaderService: DownloaderService,
-    organizerService: OrganizerService
+    libraryService: LibraryService
 ) {
     companion object : KLogging()
 
     private val startOrder = listOf(
         stateService,
-        organizerService,
+        libraryService,
         downloaderService,
         trackerService
     )

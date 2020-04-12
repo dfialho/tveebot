@@ -12,7 +12,7 @@ import java.nio.file.Path
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
-class OrganizerService(
+class LibraryService(
     private val library: TVShowLibrary,
     private val eventBus: EventBus
 ) : Service {
