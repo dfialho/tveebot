@@ -5,6 +5,7 @@ import dfialho.tveebot.app.events.Event
 import dfialho.tveebot.app.events.EventBus
 import dfialho.tveebot.app.events.subscribe
 import dfialho.tveebot.app.events.unsubscribe
+import dfialho.tveebot.app.services.downloader.DownloadCleaner
 import dfialho.tveebot.app.services.downloader.DownloadTracker
 import dfialho.tveebot.downloader.api.DownloadEngine
 import dfialho.tveebot.downloader.api.DownloadHandle
@@ -14,6 +15,7 @@ import mu.KLogging
 class DownloaderService(
     private val engine: DownloadEngine,
     private val downloads: DownloadTracker,
+    private val cleaner: DownloadCleaner,
     private val eventBus: EventBus
 ) : Service {
 
@@ -73,7 +75,10 @@ class DownloaderService(
 
             downloads.remove(handle.reference)
             logger.info { "Finished downloading: ${episodeFile.episodes}" }
-            eventBus.fire(Event.DownloadFinished(episodeFile, handle.savePath))
+
+            val downloadPath = handle.savePath
+            cleaner.cleanUp(downloadPath)
+            eventBus.fire(Event.DownloadFinished(episodeFile, downloadPath))
 
             engine.remove(handle.reference)
         }
