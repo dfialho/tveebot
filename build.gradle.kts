@@ -8,7 +8,7 @@ val mockkVersion: String by project
 val kotestVersion: String by project
 
 plugins {
-    kotlin("jvm") version "1.3.30" apply false
+    kotlin("jvm") version "1.3.71" apply false
     id("fr.brouillard.oss.gradle.jgitver") version "0.8.0"
 }
 
@@ -44,6 +44,7 @@ subprojects {
 
     tasks.withType<KotlinCompile> {
         kotlinOptions.jvmTarget = "1.8"
+        kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
     }
 
     tasks.withType<Test> {
