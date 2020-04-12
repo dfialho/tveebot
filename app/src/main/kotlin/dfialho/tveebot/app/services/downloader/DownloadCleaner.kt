@@ -5,24 +5,37 @@ import java.nio.file.Path
 
 class DownloadCleaner(private val scanner: DownloadScanner) {
 
-    fun cleanUp(downloadPath: Path): Path {
+    fun cleanUp(downloadPath: Path): CleanupResult {
 
         return when {
-            Files.isRegularFile(downloadPath) -> downloadPath
-            Files.isDirectory(downloadPath) -> extractVideoFile(downloadPath)
-            Files.notExists(downloadPath) -> throw IllegalStateException("Path does not exist: $downloadPath")
-            else -> throw IllegalStateException("Path is neither a directory or a regular file")
+            Files.isRegularFile(downloadPath) -> extractVideoFile(downloadPath)
+            Files.isDirectory(downloadPath) -> extractVideoFileFromDirectory(downloadPath)
+            Files.notExists(downloadPath) -> CleanupResult.PathNotExists
+            else -> CleanupResult.UnsupportedFileType
         }
     }
 
-    private fun extractVideoFile(downloadDirectory: Path): Path {
+    private fun extractVideoFile(downloadFile: Path): CleanupResult {
+
+        val videoFile = scanner.scan(downloadFile)
+
+        return if (videoFile == null) {
+            CleanupResult.VideoFileNotFound
+        } else {
+            CleanupResult.Success(downloadFile)
+        }
+    }
+
+    private fun extractVideoFileFromDirectory(downloadDirectory: Path): CleanupResult {
 
         val videoFile = scanner.scan(downloadDirectory)
-            ?: throw IllegalStateException("No video file found in $downloadDirectory")
 
-        val finalPath = Files.move(videoFile, videoFile.parent.parent.resolve(videoFile.fileName))
-        downloadDirectory.toFile().deleteRecursively()
-
-        return finalPath
+        return if (videoFile == null) {
+            CleanupResult.VideoFileNotFound
+        } else {
+            val finalPath = Files.move(videoFile, videoFile.parent.parent.resolve(videoFile.fileName))
+            downloadDirectory.toFile().deleteRecursively()
+            CleanupResult.Success(finalPath)
+        }
     }
 }

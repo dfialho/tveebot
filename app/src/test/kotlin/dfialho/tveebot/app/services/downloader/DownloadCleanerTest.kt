@@ -4,6 +4,7 @@ import assertk.assert
 import assertk.assertAll
 import assertk.assertions.isEqualTo
 import assertk.assertions.isFalse
+import assertk.assertions.isInstanceOf
 import dfialho.tveebot.app.temporaryDirectory
 import io.kotest.core.spec.style.FunSpec
 import java.nio.file.Files
@@ -18,9 +19,14 @@ class DownloadCleanerTest : FunSpec({
         val cleaner = DownloadCleaner(DownloadScanner())
         val downloadFile = Files.createFile(downloadsDirectory.resolve("video.mkv"))
 
-        val resultPath = cleaner.cleanUp(downloadFile)
+        val result = cleaner.cleanUp(downloadFile)
 
-        assert(resultPath)
+        assert(result)
+            .isInstanceOf(CleanupResult.Success::class)
+
+        result as CleanupResult.Success
+
+        assert(result.path)
             .isEqualTo(downloadFile)
     }
 
@@ -30,10 +36,15 @@ class DownloadCleanerTest : FunSpec({
         val directory = Files.createDirectory(downloadsDirectory.resolve("videos"))
         Files.createFile(directory.resolve("video.mkv"))
 
-        val resultPath = cleaner.cleanUp(directory)
+        val result = cleaner.cleanUp(directory)
 
         assertAll {
-            assert(resultPath)
+            assert(result)
+                .isInstanceOf(CleanupResult.Success::class)
+
+            result as CleanupResult.Success
+
+            assert(result.path)
                 .isEqualTo(downloadsDirectory.resolve("video.mkv"))
 
             assert(Files.exists(directory))
@@ -41,8 +52,36 @@ class DownloadCleanerTest : FunSpec({
         }
     }
 
-    test("when the video file is in the downloads directory then ") {
+    test("when the provided path does not exist then the result is ${CleanupResult.PathNotExists}") {
 
+        val cleaner = DownloadCleaner(DownloadScanner())
+
+        val result = cleaner.cleanUp(downloadsDirectory.resolve("video.mkv"))
+
+        assert(result)
+            .isInstanceOf(CleanupResult.PathNotExists::class)
     }
 
+    test("when the provided path is not a video file then the result is ${CleanupResult.VideoFileNotFound}") {
+
+        val cleaner = DownloadCleaner(DownloadScanner())
+        val file = Files.createFile(downloadsDirectory.resolve("file.txt"))
+
+        val result = cleaner.cleanUp(file)
+
+        assert(result)
+            .isInstanceOf(CleanupResult.VideoFileNotFound::class)
+    }
+
+    test("when the provided directory does not include any video file then the result is ${CleanupResult.VideoFileNotFound}") {
+
+        val cleaner = DownloadCleaner(DownloadScanner())
+        val directory = Files.createDirectory(downloadsDirectory.resolve("videos"))
+        Files.createFile(directory.resolve("file.txt"))
+
+        val result = cleaner.cleanUp(directory)
+
+        assert(result)
+            .isInstanceOf(CleanupResult.VideoFileNotFound::class)
+    }
 })
