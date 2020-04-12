@@ -7,7 +7,7 @@ import java.nio.file.Paths
 
 class PlexTVShowOrganizer : TVShowOrganizer {
 
-    override fun getLocationOf(episodeFile: EpisodeFile): Path {
+    override fun locationOf(episodeFile: EpisodeFile): Path {
 
         val baseEpisode = episodeFile.episodes[0]
 

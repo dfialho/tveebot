@@ -16,7 +16,7 @@ class FileSystemTVShowLibrary(private val libraryDirectory: Path, private val or
 
     override fun store(episodeFile: EpisodeFile, videoFile: Path): Path {
 
-        val targetPath = organizer.getLocationOf(episodeFile)
+        val targetPath = organizer.locationOf(episodeFile)
         val extension = GFiles.getFileExtension(videoFile.toString())
         val destinationSubPath = targetPath.resolveSibling("${targetPath.fileName}.$extension")
         val destinationPath = libraryDirectory.resolve(destinationSubPath)

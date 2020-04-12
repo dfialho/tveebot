@@ -18,7 +18,7 @@ class PlexTVShowOrganizerTest : FunSpec({
 
         test("$episodeFile -> $expectedLocation") {
 
-            assert(organizer.getLocationOf(episodeFile))
+            assert(organizer.locationOf(episodeFile))
                 .isEqualTo(expectedLocation)
         }
     }

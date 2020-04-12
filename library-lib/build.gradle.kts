@@ -4,5 +4,6 @@ dependencies {
     compile(project(":library-api"))
     implementation("com.google.guava:guava:$guavaVersion")
 
-    testCompile(project(":app-api", configuration = "tests"))
+    testImplementation(project(":app-api", configuration = "tests"))
+    testImplementation(project(":commons", configuration = "tests"))
 }
