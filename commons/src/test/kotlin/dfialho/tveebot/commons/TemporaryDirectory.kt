@@ -1,4 +1,4 @@
-package dfialho.tveebot.app
+package dfialho.tveebot.commons
 
 import io.kotest.core.spec.Spec
 import java.nio.file.Path

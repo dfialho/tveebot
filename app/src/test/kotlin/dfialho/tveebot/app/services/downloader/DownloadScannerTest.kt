@@ -3,7 +3,7 @@ package dfialho.tveebot.app.services.downloader
 import assertk.assert
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNull
-import dfialho.tveebot.app.temporaryDirectory
+import dfialho.tveebot.commons.temporaryDirectory
 import io.kotest.core.spec.style.FunSpec
 import java.nio.file.Files
 
