@@ -17,6 +17,7 @@ import org.kodein.di.Kodein
 import org.kodein.di.generic.bind
 import org.kodein.di.generic.instance
 import org.kodein.di.generic.singleton
+import java.time.Duration
 
 @Suppress("BlockingMethodInNonBlockingContext")
 class DownloaderServiceTest : FunSpec({
@@ -24,10 +25,15 @@ class DownloaderServiceTest : FunSpec({
     val services by beforeTestSetup { services() }
     val service by beforeTestSetup { start<DownloaderService>(services) }
 
-    fun submitNewEpisodeFile(newEpisodeFile: EpisodeFile) {
+    fun submitNewEpisodeFile(episodeFile: EpisodeFile) {
+
+        withRepository(services) {
+            upsert(TVShowEntity(episodeFile.tvShow, tracked = true))
+            insert(episodeFile)
+        }
 
         val eventBus by services.instance<EventBus>()
-        fire(eventBus, Event.EpisodeFileFound(newEpisodeFile))
+        fire(eventBus, Event.EpisodeFileFound(episodeFile))
     }
 
     test("when a new episode file is found it starts being downloaded") {
@@ -56,15 +62,9 @@ class DownloaderServiceTest : FunSpec({
 
     test("when it starts up it starts downloading past files") {
 
-        val tvShow = anyTVShow()
-        val newEpisodeFile = anyEpisodeFile(tvShow)
-        withRepository(services) {
-            upsert(TVShowEntity(tvShow, tracked = true))
-            insert(newEpisodeFile)
-        }
-        start<StateService>(services)
+        val newEpisodeFile = anyEpisodeFile(anyTVShow())
 
-        service.download(newEpisodeFile)
+        submitNewEpisodeFile(newEpisodeFile)
         val recorder = recordEvents<Event.DownloadStarted>(services)
         service.stop()
         service.start()
@@ -75,13 +75,11 @@ class DownloaderServiceTest : FunSpec({
 
     test("when it starts up it does not download files that were not download before") {
 
-        val tvShow = anyTVShow()
-        val newEpisodeFile = anyEpisodeFile(tvShow)
+        val episodeFile = anyEpisodeFile()
         withRepository(services) {
-            upsert(TVShowEntity(tvShow, tracked = true))
-            insert(newEpisodeFile)
+            upsert(TVShowEntity(episodeFile.tvShow, tracked = true))
+            insert(episodeFile)
         }
-        start<StateService>(services)
 
         val recorder = recordEvents<Event.DownloadStarted>(services)
         service.stop()
@@ -93,16 +91,10 @@ class DownloaderServiceTest : FunSpec({
 
     test("when it starts up it does not download files that have been downloaded") {
 
-        val tvShow = anyTVShow()
-        val newEpisodeFile = anyEpisodeFile(tvShow)
-        withRepository(services) {
-            upsert(TVShowEntity(tvShow, tracked = true))
-            insert(newEpisodeFile)
-        }
-        start<StateService>(services)
+        val newEpisodeFile = anyEpisodeFile(anyTVShow())
         val engine by services.instance<FakeDownloadEngine>()
 
-        service.download(newEpisodeFile)
+        submitNewEpisodeFile(newEpisodeFile)
         engine.finish(newEpisodeFile)
         val recorder = recordEvents<Event.DownloadStarted>(services)
         service.stop()
@@ -111,11 +103,24 @@ class DownloaderServiceTest : FunSpec({
         assert(recorder.waitForEvent())
             .isNull()
     }
+
+    test("even if a download was triggered twice on startup it is started once") {
+
+        val newEpisodeFile = anyEpisodeFile(anyTVShow())
+
+        submitNewEpisodeFile(newEpisodeFile)
+        submitNewEpisodeFile(newEpisodeFile)
+        val recorder = recordEvents<Event.DownloadStarted>(services)
+        service.stop()
+        service.start()
+
+        assert(recorder.waitForEvents(2, Duration.ZERO))
+            .hasSize(1)
+    }
 })
 
 private fun services() = Kodein {
     import(downloaderModule)
-    import(stateModule)
     bind<Database>() with singleton { randomInMemoryDatabase() }
 
     val engine = FakeDownloadEngine()

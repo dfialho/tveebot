@@ -1,39 +1,11 @@
 package dfialho.tveebot.app.repositories
 
 import dfialho.tveebot.app.api.models.*
-import dfialho.tveebot.app.repositories.DatabaseTVeebotRepository.TVShows.ID
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
 
 class DatabaseTVeebotRepository(private val db: Database) : TVeebotRepository {
-
-    private object TVShows : Table() {
-        val ID = varchar("ID", length = 256).primaryKey()
-        val TITLE = varchar("TITLE", length = 256)
-        val TRACKED = bool("TRACKED").default(false)
-        val VIDEO_QUALITY = enumeration("VIDEO_QUALITY", VideoQuality::class.java).default(VideoQuality.default())
-    }
-
-    private object Episodes : Table() {
-        val ID = varchar("ID", length = 256).primaryKey()
-        val TVSHOW_ID = reference("TVSHOW_ID", TVShows.ID)
-        val SEASON = integer("SEASON")
-        val NUMBER = integer("NUMBER")
-        val TITLE = varchar("TITLE", length = 256)
-        val STATE = enumeration("STATE", State::class.java).default(State.FOUND)
-    }
-
-    private object Files : Table() {
-        val LINK = varchar("LINK", length = 2048).primaryKey()
-        val QUALITY = enumeration("QUALITY", VideoQuality::class.java).default(VideoQuality.default())
-        val PUBLISHED_DATE = datetime("PUBLISHED_DATE")
-    }
-
-    private object EpisodeFiles : Table() {
-        val EPISODE_ID = reference("EPISODE_ID", Episodes.ID).primaryKey()
-        val FILE_ID = reference("FILE_ID", Files.LINK).primaryKey()
-    }
 
     init {
         transaction {
@@ -46,13 +18,13 @@ class DatabaseTVeebotRepository(private val db: Database) : TVeebotRepository {
         return transaction {
             TVShows.select {
                 if (tracked == null) {
-                    (ID eq tvShowId)
+                    (TVShows.ID eq tvShowId)
                 } else {
-                    (ID eq tvShowId) and (TVShows.TRACKED eq tracked)
+                    (TVShows.ID eq tvShowId) and (TVShows.TRACKED eq tracked)
                 }
             }.map {
                 TVShowEntity(
-                    TVShow(it[ID], it[TVShows.TITLE]),
+                    TVShow(it[TVShows.ID], it[TVShows.TITLE]),
                     it[TVShows.TRACKED],
                     it[TVShows.VIDEO_QUALITY]
                 )
@@ -70,7 +42,7 @@ class DatabaseTVeebotRepository(private val db: Database) : TVeebotRepository {
                 TVShows.selectAll()
             }.map {
                 TVShowEntity(
-                    TVShow(it[ID], it[TVShows.TITLE]),
+                    TVShow(it[TVShows.ID], it[TVShows.TITLE]),
                     it[TVShows.TRACKED],
                     it[TVShows.VIDEO_QUALITY]
                 )
@@ -90,7 +62,7 @@ class DatabaseTVeebotRepository(private val db: Database) : TVeebotRepository {
 
 
             if (alreadyExists) {
-                TVShows.update({ ID eq tvShow.tvShow.id }) {
+                TVShows.update({ TVShows.ID eq tvShow.tvShow.id }) {
                     it[TITLE] = tvShow.tvShow.title
                     it[TRACKED] = tvShow.tracked
                     it[VIDEO_QUALITY] = tvShow.videoQuality
@@ -134,7 +106,7 @@ class DatabaseTVeebotRepository(private val db: Database) : TVeebotRepository {
                     EpisodeEntity(
                         Episode(
                             TVShow(
-                                it[ID],
+                                it[TVShows.ID],
                                 it[TVShows.TITLE]
                             ),
                             it[Episodes.SEASON],
@@ -158,7 +130,7 @@ class DatabaseTVeebotRepository(private val db: Database) : TVeebotRepository {
 
             (Episodes innerJoin TVShows)
                 .join(EpisodeFiles.innerJoin(Files), JoinType.INNER, Episodes.ID, EpisodeFiles.EPISODE_ID)
-                .select { (ID eq tvShowId) and (Episodes.STATE eq state) and (Files.QUALITY eq videoQuality) }
+                .select { (TVShows.ID eq tvShowId) and (Episodes.STATE eq state) and (Files.QUALITY eq videoQuality) }
                 .map {
                     EpisodeFile(
                         VideoFile(
@@ -168,7 +140,7 @@ class DatabaseTVeebotRepository(private val db: Database) : TVeebotRepository {
                         ),
                         listOf(
                             Episode(
-                                TVShow(it[ID], it[TVShows.TITLE]),
+                                TVShow(it[TVShows.ID], it[TVShows.TITLE]),
                                 it[Episodes.SEASON],
                                 it[Episodes.NUMBER],
                                 it[Episodes.TITLE]
@@ -180,6 +152,26 @@ class DatabaseTVeebotRepository(private val db: Database) : TVeebotRepository {
                 .values
                 .map {
                     it[0].copy(episodes = it.map { it.episodes[0] })
+                }
+        }
+    }
+
+    override fun findEpisodesByFile(fileId: String): List<EpisodeEntity> {
+
+        return transaction {
+
+            Episodes.innerJoin(TVShows).innerJoin(EpisodeFiles)
+                .select { EpisodeFiles.FILE_ID eq fileId }
+                .map {
+                    EpisodeEntity(
+                        Episode(
+                            TVShow(it[TVShows.ID], it[TVShows.TITLE]),
+                            it[Episodes.SEASON],
+                            it[Episodes.NUMBER],
+                            it[Episodes.TITLE]
+                        ),
+                        it[Episodes.STATE]
+                    )
                 }
         }
     }
