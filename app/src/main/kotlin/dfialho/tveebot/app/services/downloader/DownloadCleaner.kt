@@ -10,11 +10,16 @@ class DownloadCleaner(private val scanner: DownloadScanner) {
 
     fun cleanUp(downloadPath: Path): CleanupResult {
 
-        return when {
-            Files.isRegularFile(downloadPath) -> extractVideoFile(downloadPath)
-            Files.isDirectory(downloadPath) -> extractVideoFileFromDirectory(downloadPath)
-            Files.notExists(downloadPath) -> CleanupResult.PathNotExists
-            else -> CleanupResult.UnsupportedFileType
+        return try {
+            when {
+                Files.isRegularFile(downloadPath) -> extractVideoFile(downloadPath)
+                Files.isDirectory(downloadPath) -> extractVideoFileFromDirectory(downloadPath)
+                Files.notExists(downloadPath) -> CleanupResult.PathNotExists
+                else -> CleanupResult.UnsupportedFileType
+            }
+
+        } catch (e: Exception) {
+            CleanupResult.UnexpectedError(e)
         }
     }
 

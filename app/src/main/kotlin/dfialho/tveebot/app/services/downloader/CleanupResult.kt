@@ -7,4 +7,5 @@ sealed class CleanupResult {
     object UnsupportedFileType : CleanupResult()
     object PathNotExists : CleanupResult()
     object VideoFileNotFound : CleanupResult()
+    class UnexpectedError(val exception: Exception) : CleanupResult()
 }

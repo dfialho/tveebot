@@ -2,10 +2,11 @@ package dfialho.tveebot.app
 
 import dfialho.tveebot.app.api.models.EpisodeFile
 import dfialho.tveebot.downloader.api.*
+import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.Paths
+import java.util.*
 
-class FakeDownloadEngine : DownloadEngine {
+class FakeDownloadEngine(private val downloadsDirectory: Path) : DownloadEngine {
 
     class FakeDownloadHandle(
         override val reference: DownloadReference,
@@ -49,7 +50,7 @@ class FakeDownloadEngine : DownloadEngine {
         val handle = FakeDownloadHandle(
             DownloadReference(magnetLink),
             isValid = true,
-            savePath = Paths.get("/download/$magnetLink")
+            savePath = downloadsDirectory.resolve(UUID.randomUUID().toString() + ".mkv")
         )
 
         downloads.putIfAbsent(magnetLink, handle)
@@ -60,6 +61,7 @@ class FakeDownloadEngine : DownloadEngine {
     fun finish(episodeFile: EpisodeFile) {
         downloads[episodeFile.file.link]?.let { handle ->
             handle.stop()
+            Files.createFile(handle.savePath)
             listeners.forEach { it.onFinishedDownload(handle) }
         }
     }

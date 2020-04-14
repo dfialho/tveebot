@@ -5,11 +5,13 @@ import dfialho.tveebot.app.events.Event
 import dfialho.tveebot.app.events.EventBus
 import dfialho.tveebot.app.events.subscribe
 import dfialho.tveebot.app.events.unsubscribe
+import dfialho.tveebot.app.services.downloader.CleanupResult
 import dfialho.tveebot.app.services.downloader.DownloadCleaner
 import dfialho.tveebot.app.services.downloader.DownloadTracker
 import dfialho.tveebot.downloader.api.DownloadEngine
 import dfialho.tveebot.downloader.api.DownloadHandle
 import dfialho.tveebot.downloader.api.DownloadListener
+import dfialho.tveebot.downloader.api.DownloadStatus
 import mu.KLogging
 
 class DownloaderService(
@@ -74,13 +76,19 @@ class DownloaderService(
             }
 
             downloads.remove(handle.reference)
+            engine.remove(handle.reference)
             logger.info { "Finished downloading: ${episodeFile.episodes}" }
 
-            val downloadPath = handle.savePath
-            cleaner.cleanUp(downloadPath)
-            eventBus.fire(Event.DownloadFinished(episodeFile, downloadPath))
-
-            engine.remove(handle.reference)
+            when(val result = cleaner.cleanUp(handle.savePath)) {
+                is CleanupResult.Success -> eventBus.fire(Event.DownloadFinished(episodeFile, result.path))
+                is CleanupResult.VideoFileNotFound -> logger.error { "Couldn't find any video file in: ${handle.savePath}" }
+                is CleanupResult.PathNotExists -> logger.error { "Save path does not exist: ${handle.savePath}" }
+                is CleanupResult.UnsupportedFileType -> logger.error { "Unexpected file type at: : ${handle.savePath}" }
+                is CleanupResult.UnexpectedError -> logger.error(result.exception) {
+                    "Unexpected error while cleaning up: : ${handle.savePath}"
+                }
+            }
         }
+
     }
 }

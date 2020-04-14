@@ -12,6 +12,7 @@ import dfialho.tveebot.app.api.models.anyTVShow
 import dfialho.tveebot.app.events.Event
 import dfialho.tveebot.app.events.EventBus
 import dfialho.tveebot.app.events.fire
+import dfialho.tveebot.commons.temporaryDirectory
 import dfialho.tveebot.downloader.api.DownloadEngine
 import io.kotest.core.spec.style.FunSpec
 import org.jetbrains.exposed.sql.Database
@@ -19,12 +20,14 @@ import org.kodein.di.Kodein
 import org.kodein.di.generic.bind
 import org.kodein.di.generic.instance
 import org.kodein.di.generic.singleton
+import java.nio.file.Path
 import java.time.Duration
 
 @Suppress("BlockingMethodInNonBlockingContext")
 class DownloaderServiceTest : FunSpec({
 
-    val services by beforeTestSetup { services() }
+    val downloadsDirectory by temporaryDirectory()
+    val services by beforeTestSetup { services(downloadsDirectory) }
     val service by beforeTestSetup { start<DownloaderService>(services) }
 
     fun submitNewEpisodeFile(episodeFile: EpisodeFile) {
@@ -121,11 +124,11 @@ class DownloaderServiceTest : FunSpec({
     }
 })
 
-private fun services() = Kodein {
+private fun services(downloadsDirectory: Path) = Kodein {
     import(downloaderModule)
     bind<Database>() with singleton { randomInMemoryDatabase() }
 
-    val engine = FakeDownloadEngine()
+    val engine = FakeDownloadEngine(downloadsDirectory)
     bind<DownloadEngine>(overrides = true) with singleton { engine }
     bind<FakeDownloadEngine>() with singleton { engine }
 }
