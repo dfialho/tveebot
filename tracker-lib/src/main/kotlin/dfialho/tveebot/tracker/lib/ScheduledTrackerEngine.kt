@@ -6,7 +6,6 @@ import dfialho.tveebot.tracker.api.EpisodeLedger
 import dfialho.tveebot.tracker.api.TVShowProvider
 import dfialho.tveebot.tracker.api.TrackerEngine
 import dfialho.tveebot.tracker.api.TrackingListener
-import dfialho.tveebot.utils.succeeded
 import mu.KLogging
 import java.io.IOException
 import java.time.Duration
@@ -80,7 +79,7 @@ class ScheduledTrackerEngine(
                 logger.trace { "Episodes available from TV Show '${tvShow.title}': $episodes" }
 
                 for (episode in episodes) {
-                    if (episodeLedger.appendOrUpdate(episode).succeeded) {
+                    if (episodeLedger.appendOrUpdate(episode)) {
                         logger.debug { "New episode file: $episode" }
                         listeners.forEach { it.onNewEpisode(episode) }
                     } else {

@@ -84,10 +84,10 @@ class DatabaseTVeebotRepository(private val db: Database) : TVeebotRepository {
         }
     }
 
-    override fun findEpisodeLatestFile(id: String): VideoFile? {
+    override fun findEpisodeLatestFile(episodeId: String, quality: VideoQuality): VideoFile? {
 
         return EpisodeFiles.innerJoin(Files)
-            .select { EpisodeFiles.EPISODE_ID eq id }
+            .select { (EpisodeFiles.EPISODE_ID eq episodeId) and (Files.QUALITY eq quality) }
             .map {
                 VideoFile(
                     it[Files.LINK],

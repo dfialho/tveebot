@@ -13,8 +13,8 @@ interface TVeebotRepository {
     fun insert(episodeFile: EpisodeFile)
     fun findEpisodeFiles(tvShowId: String, state: State, videoQuality: VideoQuality): List<EpisodeFile>
     fun findEpisode(id: String): EpisodeEntity?
-    fun findEpisodeLatestFile(id: String): VideoFile?
-    fun findEpisodesByFile(fileId: String): List<EpisodeEntity>
+    fun findEpisodeLatestFile(episodeId: String, quality: VideoQuality): VideoFile?
 
+    fun findEpisodesByFile(fileId: String): List<EpisodeEntity>
     fun <T> transaction(block: TVeebotRepository.() -> T): T
 }
