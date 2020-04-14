@@ -10,7 +10,6 @@ import dfialho.tveebot.utils.rssfeed.RSSFeedException
 import dfialho.tveebot.utils.rssfeed.RSSFeedItem
 import dfialho.tveebot.utils.rssfeed.RSSFeedReader
 import mu.KLogging
-import org.jsoup.Jsoup
 import java.net.URL
 
 /**
@@ -18,9 +17,7 @@ import java.net.URL
  */
 class ShowRSSProvider(private val matcher: EpisodeFileMatcher) : TVShowProvider {
 
-    companion object : KLogging() {
-        private const val SHOWRSS_URL = "https://showrss.info/browse"
-    }
+    companion object : KLogging()
 
     /**
      * Reader used to read the feed obtained from showRSS and find the episodes available.
@@ -29,23 +26,21 @@ class ShowRSSProvider(private val matcher: EpisodeFileMatcher) : TVShowProvider 
 
     override fun fetchTVShow(tvShowId: String): TVShow? {
 
-        return Jsoup.connect("$SHOWRSS_URL/$tvShowId").get()
-            .select("option")
-            .map {
-                TVShow(
-                    id = it.attr("value"),
-                    title = it.text()
-                )
-            }
-            .firstOrNull()
+        val title = feedReader.read(tvShowURL(tvShowId))
+            .title
+            .replaceFirst("showRSS feed: ", "")
+
+        return TVShow(tvShowId, title)
     }
 
     override fun fetchEpisodes(tvShow: TVShow): List<EpisodeFile> {
-        val showURL = URL("https://showrss.info/show/${tvShow.id}.rss")
 
-        val rssFeed = feedReader.read(showURL)
-        return rssFeed.items.mapNotNull { parseEpisodeOrNull(it, tvShow) }
+        return feedReader.read(tvShowURL(tvShow.id))
+            .items
+            .mapNotNull { parseEpisodeOrNull(it, tvShow) }
     }
+
+    private fun tvShowURL(tvShowId: String) = URL("https://showrss.info/show/${tvShowId}.rss")
 
     private fun parseEpisodeOrNull(item: RSSFeedItem, tvShow: TVShow): EpisodeFile? {
 
