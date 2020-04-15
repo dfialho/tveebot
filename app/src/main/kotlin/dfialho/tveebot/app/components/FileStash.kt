@@ -16,6 +16,7 @@ class FileStash(
 
     fun put(fileId: String, videoFile: Path): Path {
 
+        Files.createDirectories(stashDirectory)
         val path = Files.move(videoFile, stashDirectory.resolve(videoFile.fileName), StandardCopyOption.REPLACE_EXISTING)
         repository.insert(StashedFile(videoFile.fileName.toString(), fileId))
 

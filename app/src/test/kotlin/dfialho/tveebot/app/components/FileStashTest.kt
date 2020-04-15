@@ -46,4 +46,16 @@ class FileStashTest : FunSpec({
                 .isEqualTo(fileId)
         }
     }
+
+    test("when stash directory does not exist it is created") {
+
+        val fileId = "file-id"
+        val file = Files.createFile(otherDirectory.resolve("video.mkv"))
+        val stash = FileStash(stashDirectory.resolve("stash"), DatabaseFileStashRepository(randomInMemoryDatabase()))
+
+        val stashPath = stash.put(fileId, file)
+
+        assert(Files.exists(stashPath))
+            .isTrue()
+    }
 })
