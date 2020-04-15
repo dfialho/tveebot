@@ -38,7 +38,7 @@ class FileStashService(
     }
 
     private fun stash(filePath: Path, episodeFile: EpisodeFile) {
-        stash.put(episodeFile.file.id, filePath)
-        fire(eventBus, Event.FileStashed(episodeFile, filePath))
+        val stashedPath = stash.put(episodeFile.file.id, filePath)
+        fire(eventBus, Event.FileStashed(episodeFile, stashedPath))
     }
 }
