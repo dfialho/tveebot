@@ -6,7 +6,8 @@ import java.time.Duration
 
 fun appConfig(
     checkPeriod: Duration = Duration.ofSeconds(1),
-    downloadDirectory: Path = Paths.get("/downloads"),
+    downloadingDirectory: Path = Paths.get("/downloading"),
+    downloadedDirectory: Path = Paths.get("/downloaded"),
     libraryDirectory: Path = Paths.get("/library"),
     databasePath: Path = Paths.get("/tveebot.db")
-) = AppConfig(checkPeriod, downloadDirectory, libraryDirectory, databasePath)
+) = AppConfig(checkPeriod, downloadingDirectory, downloadedDirectory, libraryDirectory, databasePath)

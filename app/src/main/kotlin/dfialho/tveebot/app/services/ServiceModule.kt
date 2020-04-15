@@ -4,11 +4,9 @@ import dfialho.tveebot.app.AppConfig
 import dfialho.tveebot.app.components.DownloadCleaner
 import dfialho.tveebot.app.components.DownloadScanner
 import dfialho.tveebot.app.components.DownloadTracker
+import dfialho.tveebot.app.components.FileStash
 import dfialho.tveebot.app.events.EventBus
-import dfialho.tveebot.app.repositories.DatabaseTVeebotRepository
-import dfialho.tveebot.app.repositories.DownloadTrackerRepository
-import dfialho.tveebot.app.repositories.EpisodeLedgerRepository
-import dfialho.tveebot.app.repositories.TVeebotRepository
+import dfialho.tveebot.app.repositories.*
 import dfialho.tveebot.downloader.api.DownloadEngine
 import dfialho.tveebot.downloader.libtorrent.LibTorrentDownloadEngine
 import dfialho.tveebot.downloader.libtorrent.threadSafe
@@ -30,10 +28,11 @@ import org.kodein.di.generic.singleton
 val servicesModule = Kodein.Module(name = "Services") {
     importOnce(trackerModule)
     importOnce(downloaderModule)
-    importOnce(organizerModule)
+    importOnce(libraryModule)
     importOnce(stateModule)
     bind<ServiceManager>() with singleton {
         ServiceManager(
+            instance(),
             instance(),
             instance(),
             instance(),
@@ -59,7 +58,7 @@ val trackerModule = Kodein.Module(name = "Tracker Service") {
 
 val downloaderModule = Kodein.Module(name = "Downloader Service") {
     importOnce(baseModule)
-    bind<DownloadEngine>() with singleton { threadSafe { LibTorrentDownloadEngine(instance<AppConfig>().downloadsDirectory) } }
+    bind<DownloadEngine>() with singleton { threadSafe { LibTorrentDownloadEngine(instance<AppConfig>().downloadingDirectory) } }
     bind<DownloadTracker>() with singleton { DownloadTrackerRepository(instance(), instance()) }
     bind<DownloadCleaner>() with singleton {
         DownloadCleaner(
@@ -70,7 +69,7 @@ val downloaderModule = Kodein.Module(name = "Downloader Service") {
     bind<DownloaderService>() with singleton { DownloaderService(instance(), instance(), instance(), instance()) }
 }
 
-val organizerModule = Kodein.Module(name = "Organizer Service") {
+val libraryModule = Kodein.Module(name = "Library Service") {
     importOnce(baseModule)
     bind<TVShowOrganizer>() with singleton { PlexTVShowOrganizer() }
     bind<TVShowLibrary>() with singleton { FileSystemTVShowLibrary(instance<AppConfig>().libraryDirectory, instance()) }
@@ -80,4 +79,11 @@ val organizerModule = Kodein.Module(name = "Organizer Service") {
 val stateModule = Kodein.Module(name = "State Service") {
     importOnce(baseModule)
     bind<StateService>() with singleton { StateService(instance(), instance()) }
+}
+
+val stashModule = Kodein.Module(name = "File Stash Service") {
+    importOnce(baseModule)
+    bind<FileStashRepository>() with singleton { DatabaseFileStashRepository(instance()) }
+    bind<FileStash>() with singleton { FileStash(instance<AppConfig>().downloadedDirectory, instance()) }
+    bind<FileStashService>() with singleton { FileStashService(instance(), instance(), instance()) }
 }

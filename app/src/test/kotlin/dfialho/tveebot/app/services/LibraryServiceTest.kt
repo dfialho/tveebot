@@ -31,7 +31,7 @@ class LibraryServiceTest : FunSpec({
     fun submitDownloadedEpisodeFile(episodeFile: EpisodeFile, downloadPath: Path) {
 
         val eventBus by services.instance<EventBus>()
-        fire(eventBus, Event.DownloadFinished(episodeFile, downloadPath))
+        fire(eventBus, Event.FileStashed(episodeFile, downloadPath))
     }
 
     test("when an episode file is downloaded then a stored event is fired") {
@@ -77,7 +77,7 @@ class LibraryServiceTest : FunSpec({
 })
 
 private fun services() = Kodein {
-    import(organizerModule)
+    import(libraryModule)
     bind<TVShowLibrary>(overrides = true) with singleton {
         mockk<TVShowLibrary> {
             every { store(any(), any()) } returns Paths.get("library/video.mkv")

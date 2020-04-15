@@ -7,5 +7,6 @@ sealed class Event {
     data class EpisodeFileFound(val episode: EpisodeFile) : Event()
     data class DownloadStarted(val episode: EpisodeFile) : Event()
     data class DownloadFinished(val episode: EpisodeFile, val savePath: Path) : Event()
+    data class FileStashed(val episode: EpisodeFile, val savePath: Path) : Event()
     data class FileStored(val episode: EpisodeFile, val savePath: Path) : Event()
 }

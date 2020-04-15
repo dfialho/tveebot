@@ -38,5 +38,5 @@ internal object Downloads : Table() {
 
 internal object StashFiles : Table() {
     val NAME = varchar("NAME", 128).primaryKey()
-    val FILE_ID = reference("FILE_ID", Files.LINK)
+    val FILE_ID = varchar("FILE_ID", length = 2048)
 }

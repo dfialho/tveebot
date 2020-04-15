@@ -69,7 +69,8 @@ fun Application.loadConfig(): AppConfig {
         return with(environment.config.config("tveebot")) {
             AppConfig(
                 checkPeriod = Duration.ofSeconds(property("checkPeriodSeconds").getString().toLong()),
-                downloadsDirectory = Paths.get(property("downloadsDirectory").getString()),
+                downloadingDirectory = Paths.get(property("downloadingDirectory").getString()),
+                downloadedDirectory = Paths.get(property("downloadedDirectory").getString()),
                 libraryDirectory = Paths.get(property("libraryDirectory").getString()),
                 databasePath = Paths.get(property("databasePath").getString())
             )

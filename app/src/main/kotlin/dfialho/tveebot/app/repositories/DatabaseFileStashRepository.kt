@@ -4,10 +4,7 @@ import dfialho.tveebot.app.components.FileStash
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 
-class DatabaseFileStashRepository(
-    private val db: Database,
-    private val repository: TVeebotRepository
-) : FileStashRepository {
+class DatabaseFileStashRepository(private val db: Database) : FileStashRepository {
 
     init {
         transaction {
@@ -20,7 +17,7 @@ class DatabaseFileStashRepository(
         transaction {
             StashFiles.insertIgnore {
                 it[NAME] = stashedFile.name
-                it[FILE_ID] = stashedFile.episodeFile.file.id
+                it[FILE_ID] = stashedFile.fileId
             }
         }
     }
@@ -59,13 +56,6 @@ class DatabaseFileStashRepository(
 
     private fun Query.mapToStashedFile(): List<FileStash.StashedFile> {
 
-        return map {
-            val name = it[StashFiles.NAME]
-
-            val episodeFile = repository.findEpisodeFile(it[StashFiles.FILE_ID])
-                ?: throw IllegalStateException("Episode file for stash file not found: $name")
-
-            FileStash.StashedFile(name, episodeFile)
-        }
+        return map { FileStash.StashedFile(it[StashFiles.NAME], it[StashFiles.FILE_ID]) }
     }
 }

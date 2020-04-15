@@ -21,7 +21,7 @@ class LibraryService(
     private val executor = Executors.newSingleThreadExecutor()
 
     override fun start() {
-        subscribe<Event.DownloadFinished>(eventBus) {
+        subscribe<Event.FileStashed>(eventBus) {
             store(it.episode, it.savePath)
         }
     }

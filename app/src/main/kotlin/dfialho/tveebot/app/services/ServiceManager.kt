@@ -9,6 +9,7 @@ import mu.KLogging
  */
 class ServiceManager(
     stateService: StateService,
+    fileStashService: FileStashService,
     trackerService: TrackerService,
     downloaderService: DownloaderService,
     libraryService: LibraryService
@@ -17,6 +18,7 @@ class ServiceManager(
 
     private val startOrder = listOf(
         stateService,
+        fileStashService,
         libraryService,
         downloaderService,
         trackerService
