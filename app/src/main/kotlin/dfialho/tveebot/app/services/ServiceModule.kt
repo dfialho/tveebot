@@ -30,6 +30,7 @@ val servicesModule = Kodein.Module(name = "Services") {
     importOnce(downloaderModule)
     importOnce(libraryModule)
     importOnce(stateModule)
+    importOnce(stashModule)
     bind<ServiceManager>() with singleton {
         ServiceManager(
             instance(),
