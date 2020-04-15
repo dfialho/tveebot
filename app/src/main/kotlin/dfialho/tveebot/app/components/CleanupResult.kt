@@ -1,4 +1,4 @@
-package dfialho.tveebot.app.services.downloader
+package dfialho.tveebot.app.components
 
 import java.nio.file.Path
 

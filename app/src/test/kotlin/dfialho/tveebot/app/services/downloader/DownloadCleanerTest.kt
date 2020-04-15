@@ -5,6 +5,9 @@ import assertk.assertAll
 import assertk.assertions.isEqualTo
 import assertk.assertions.isFalse
 import assertk.assertions.isInstanceOf
+import dfialho.tveebot.app.components.CleanupResult
+import dfialho.tveebot.app.components.DownloadCleaner
+import dfialho.tveebot.app.components.DownloadScanner
 import dfialho.tveebot.commons.temporaryDirectory
 import io.kotest.core.spec.style.FunSpec
 import java.nio.file.Files

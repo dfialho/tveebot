@@ -1,4 +1,4 @@
-package dfialho.tveebot.app.services.downloader
+package dfialho.tveebot.app.components
 
 import dfialho.tveebot.app.api.models.EpisodeFile
 import dfialho.tveebot.downloader.api.DownloadReference

@@ -1,17 +1,16 @@
 package dfialho.tveebot.app.services
 
 import dfialho.tveebot.app.api.models.EpisodeFile
+import dfialho.tveebot.app.components.CleanupResult
+import dfialho.tveebot.app.components.DownloadCleaner
+import dfialho.tveebot.app.components.DownloadTracker
 import dfialho.tveebot.app.events.Event
 import dfialho.tveebot.app.events.EventBus
 import dfialho.tveebot.app.events.subscribe
 import dfialho.tveebot.app.events.unsubscribe
-import dfialho.tveebot.app.services.downloader.CleanupResult
-import dfialho.tveebot.app.services.downloader.DownloadCleaner
-import dfialho.tveebot.app.services.downloader.DownloadTracker
 import dfialho.tveebot.downloader.api.DownloadEngine
 import dfialho.tveebot.downloader.api.DownloadHandle
 import dfialho.tveebot.downloader.api.DownloadListener
-import dfialho.tveebot.downloader.api.DownloadStatus
 import mu.KLogging
 
 class DownloaderService(

@@ -2,7 +2,7 @@ package dfialho.tveebot.app.repositories
 
 import dfialho.tveebot.app.api.models.EpisodeFile
 import dfialho.tveebot.app.api.models.VideoFile
-import dfialho.tveebot.app.services.downloader.DownloadTracker
+import dfialho.tveebot.app.components.DownloadTracker
 import dfialho.tveebot.downloader.api.DownloadReference
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
