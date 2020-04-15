@@ -89,7 +89,7 @@ class TrackerService(
 
     private fun fetchTVShow(tvShowId: String): TVShowEntity? {
 
-        logger.debug { "Fetching TV show with id '$tvShowId' from provider" }
+        logger.info { "Fetching TV show with id '$tvShowId' from provider" }
         return engine.provider.fetchTVShow(tvShowId)?.let {
             TVShowEntity(it, tracked = false, videoQuality = VideoQuality.default())
         }

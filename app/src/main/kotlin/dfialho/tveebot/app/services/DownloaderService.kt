@@ -11,6 +11,7 @@ import dfialho.tveebot.app.events.unsubscribe
 import dfialho.tveebot.downloader.api.DownloadEngine
 import dfialho.tveebot.downloader.api.DownloadHandle
 import dfialho.tveebot.downloader.api.DownloadListener
+import dfialho.tveebot.downloader.api.DownloadStatus
 import mu.KLogging
 
 class DownloaderService(
@@ -89,5 +90,11 @@ class DownloaderService(
             }
         }
 
+    }
+
+    fun getStatus(): List<DownloadStatus> {
+
+        return engine.getAllHandles()
+            .map { it.getStatus() }
     }
 }

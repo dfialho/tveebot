@@ -7,6 +7,7 @@ import dfialho.tveebot.app.components.DownloadTracker
 import dfialho.tveebot.app.components.FileStash
 import dfialho.tveebot.app.events.EventBus
 import dfialho.tveebot.app.repositories.*
+import dfialho.tveebot.app.rest.RestManager
 import dfialho.tveebot.downloader.api.DownloadEngine
 import dfialho.tveebot.downloader.libtorrent.LibTorrentDownloadEngine
 import dfialho.tveebot.downloader.libtorrent.threadSafe
@@ -40,6 +41,7 @@ val servicesModule = Kodein.Module(name = "Services") {
             instance()
         )
     }
+    bind<RestManager>() with singleton { RestManager(instance(), instance(), instance()) }
 }
 
 val baseModule = Kodein.Module(name = "Base Module") {
@@ -53,7 +55,13 @@ val trackerModule = Kodein.Module(name = "Tracker Service") {
     bind<EpisodeFileMatcher>() with singleton { PatternEpisodeFileMatcher(instance()) }
     bind<TVShowProvider>() with singleton { ShowRSSProvider(instance()) }
     bind<EpisodeLedger>() with singleton { EpisodeLedgerRepository(instance()) }
-    bind<TrackerEngine>() with singleton { ScheduledTrackerEngine(instance(), instance(), instance<AppConfig>().checkPeriod) }
+    bind<TrackerEngine>() with singleton {
+        ScheduledTrackerEngine(
+            instance(),
+            instance(),
+            instance<AppConfig>().checkPeriod
+        )
+    }
     bind<TrackerService>() with singleton { TrackerService(instance(), instance(), instance()) }
 }
 

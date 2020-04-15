@@ -70,13 +70,14 @@ class ScheduledTrackerEngine(
             for (tvShow in trackingList.values) {
 
                 val episodes: List<EpisodeFile> = try {
+                    logger.debug { "Fetching episodes for tv show: $tvShow" }
                     provider.fetchEpisodes(tvShow)
                 } catch (e: IOException) {
                     logger.error(e) { "Failed to fetch episodes for '${tvShow.title}' from the provider" }
                     continue
                 }
 
-                logger.trace { "Episodes available from TV Show '${tvShow.title}': $episodes" }
+                logger.debug { "Episodes available from TV Show '${tvShow.title}': $episodes" }
 
                 for (episode in episodes) {
                     if (episodeLedger.appendOrUpdate(episode)) {

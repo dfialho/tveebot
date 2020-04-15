@@ -102,6 +102,7 @@ class DatabaseTVeebotRepository(private val db: Database) : TVeebotRepository {
         return transaction {
             Episodes.innerJoin(TVShows)
                 .select { Episodes.ID eq id }
+                .limit(1)
                 .map {
                     EpisodeEntity(
                         Episode(
@@ -151,6 +152,28 @@ class DatabaseTVeebotRepository(private val db: Database) : TVeebotRepository {
                     it[0].copy(episodes = it.map { it.episodes[0] })
                 }
                 .firstOrNull()
+        }
+    }
+
+    override fun findEpisodes(): List<EpisodeEntity> {
+
+        return transaction {
+            Episodes.innerJoin(TVShows)
+                .selectAll()
+                .map {
+                    EpisodeEntity(
+                        Episode(
+                            TVShow(
+                                it[TVShows.ID],
+                                it[TVShows.TITLE]
+                            ),
+                            it[Episodes.SEASON],
+                            it[Episodes.NUMBER],
+                            it[Episodes.TITLE]
+                        ),
+                        it[Episodes.STATE]
+                    )
+                }
         }
     }
 
