@@ -6,4 +6,6 @@ data class VideoFile(
     val link: String,
     val quality: VideoQuality,
     val publishDate: Instant
-)
+) {
+    val id: String get() = link
+}

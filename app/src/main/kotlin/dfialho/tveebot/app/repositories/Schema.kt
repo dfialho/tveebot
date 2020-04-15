@@ -35,3 +35,8 @@ internal object Downloads : Table() {
     val ID = varchar("ID", 512).primaryKey()
     val FILE_ID = reference("FILE_ID", Files.LINK)
 }
+
+internal object StashFiles : Table() {
+    val NAME = varchar("NAME", 128).primaryKey()
+    val FILE_ID = reference("FILE_ID", Files.LINK)
+}

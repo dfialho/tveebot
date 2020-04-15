@@ -120,6 +120,40 @@ class DatabaseTVeebotRepository(private val db: Database) : TVeebotRepository {
         }
     }
 
+    override fun findEpisodeFile(fileId: String): EpisodeFile? {
+
+        return transaction {
+
+            (Episodes innerJoin TVShows)
+                .join(EpisodeFiles.innerJoin(Files), JoinType.INNER, Episodes.ID, EpisodeFiles.EPISODE_ID)
+                .select { Files.LINK eq fileId }
+                .limit(1)
+                .map {
+                    EpisodeFile(
+                        VideoFile(
+                            it[Files.LINK],
+                            it[Files.QUALITY],
+                            it[Files.PUBLISHED_DATE].toDate().toInstant()
+                        ),
+                        listOf(
+                            Episode(
+                                TVShow(it[TVShows.ID], it[TVShows.TITLE]),
+                                it[Episodes.SEASON],
+                                it[Episodes.NUMBER],
+                                it[Episodes.TITLE]
+                            )
+                        )
+                    )
+                }
+                .groupBy { it.file }
+                .values
+                .map {
+                    it[0].copy(episodes = it.map { it.episodes[0] })
+                }
+                .firstOrNull()
+        }
+    }
+
     override fun findEpisodeFiles(
         tvShowId: String,
         state: State,
