@@ -2,6 +2,7 @@ package dfialho.tveebot.app.repositories
 
 import dfialho.tveebot.app.api.models.*
 import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
 
@@ -179,15 +180,23 @@ class DatabaseTVeebotRepository(private val db: Database) : TVeebotRepository {
 
     override fun findEpisodeFiles(
         tvShowId: String,
-        state: State,
-        videoQuality: VideoQuality
+        state: State?,
+        videoQuality: VideoQuality?
     ): List<EpisodeFile> {
+
+        var where = TVShows.ID eq tvShowId
+        if (state != null) {
+            where = where and (Episodes.STATE eq state)
+        }
+        if (videoQuality != null) {
+            where = where and (Files.QUALITY eq videoQuality)
+        }
 
         return transaction {
 
             (Episodes innerJoin TVShows)
                 .join(EpisodeFiles.innerJoin(Files), JoinType.INNER, Episodes.ID, EpisodeFiles.EPISODE_ID)
-                .select { (TVShows.ID eq tvShowId) and (Episodes.STATE eq state) and (Files.QUALITY eq videoQuality) }
+                .select { where }
                 .map {
                     EpisodeFile(
                         VideoFile(

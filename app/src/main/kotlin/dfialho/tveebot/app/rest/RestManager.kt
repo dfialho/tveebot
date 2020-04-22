@@ -43,6 +43,19 @@ class RestManager(
         }
     }
 
+    fun getFiles(): List<TVShowFiles> {
+
+        return repository.transaction {
+            findTVShows()
+                .map {
+                    TVShowFiles(
+                        it.tvShow,
+                        episodeFiles = findEpisodeFiles(tvShowId = it.tvShow.id)
+                    )
+                }
+        }
+    }
+
     fun getDownloadStatus(): List<DownloadStatus> {
         return downloader.getStatus().sortedByDescending { it.progress }
     }

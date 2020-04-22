@@ -11,7 +11,7 @@ interface TVeebotRepository {
     fun update(episode: EpisodeEntity)
 
     fun insert(episodeFile: EpisodeFile)
-    fun findEpisodeFiles(tvShowId: String, state: State, videoQuality: VideoQuality): List<EpisodeFile>
+    fun findEpisodeFiles(tvShowId: String, state: State? = null, videoQuality: VideoQuality? = null): List<EpisodeFile>
     fun findEpisode(id: String): EpisodeEntity?
     fun findEpisodes(): List<EpisodeEntity>
     fun findEpisodeFile(fileId: String): EpisodeFile?

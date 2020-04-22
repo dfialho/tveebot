@@ -11,7 +11,6 @@ import io.ktor.routing.post
 
 fun Route.routes(manager: RestManager) {
 
-
     post {
         val registration = call.receive<Registration>()
         manager.register(registration)
@@ -24,13 +23,12 @@ fun Route.routes(manager: RestManager) {
         call.respond(HttpStatusCode.Accepted, "Un-registered")
     }
 
-    // tracked tv shows
-    // episodes per tv show with state
-    // downloading
-
-    // All tv shows being tracked and episodes
     get("status") {
         call.respond(manager.getStatus())
+    }
+
+    get("status/all") {
+        call.respond(manager.getFiles())
     }
 
     get("downloads") {
