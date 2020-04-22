@@ -7,13 +7,13 @@ WORKDIR $APP_HOME
 VOLUME /downloads
 VOLUME /library
 
-RUN mkdir -p /config
-COPY docker/resources/* /config/
-
 COPY app/build/distributions/$APP-*.zip .
 RUN unzip $APP-*.zip \
     && rm $APP-*.zip \
-    && mv $APP-*/* .
+    && mv $APP-*/* . \
+    && rm -rf $APP-*/
+
+COPY docker/resources/conf/* conf/
 
 EXPOSE 8080
-CMD $APP_HOME/bin/$APP -c /config/application.conf
+CMD $APP_HOME/bin/$APP
