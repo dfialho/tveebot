@@ -6,6 +6,7 @@ WORKDIR $APP_HOME
 
 VOLUME /downloads
 VOLUME /library
+VOLUME /config
 
 COPY app/build/distributions/$APP-*.zip .
 RUN unzip $APP-*.zip \
