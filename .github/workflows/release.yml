@@ -6,7 +6,7 @@ on:
       - "[0-9]+.[0-9]+.[0-9]+"
 
 jobs:
-  tagged-release:
+  release:
     runs-on: ubuntu-latest
 
     steps:
@@ -20,11 +20,29 @@ jobs:
       - name: Build
         run: ./gradlew build
 
+      - name: Build & push Docker image
+        uses: mr-smithers-excellent/docker-build-push@v3
+        with:
+          image: dfialho14/tveebot
+          registry: docker.io
+          dockerfile: docker/Dockerfile
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+
+      - name: Push latest Docker tag
+        uses: mr-smithers-excellent/docker-build-push@v3
+        with:
+          image: dfialho14/tveebot
+          tag: latest
+          registry: docker.io
+          dockerfile: docker/Dockerfile
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           prerelease: false
           files: |
             LICENSE
-            application/build/distributions/*.zip
-
+            app/build/distributions/*.zip
