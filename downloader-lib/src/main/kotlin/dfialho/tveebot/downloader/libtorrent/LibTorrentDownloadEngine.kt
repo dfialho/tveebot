@@ -11,6 +11,7 @@ import com.frostwire.jlibtorrent.alerts.TorrentFinishedAlert
 import dfialho.tveebot.downloader.api.*
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.util.concurrent.Executors
 import javax.annotation.concurrent.NotThreadSafe
 
 /**
@@ -132,6 +133,8 @@ class LibTorrentDownloadEngine(private val savePath: Path) : DownloadEngine {
      */
     private inner class NativeListener : AlertListener {
 
+        private val executor = Executors.newSingleThreadExecutor()
+
         override fun types(): IntArray? {
             // Listen for alerts indicating a download has finished
             return intArrayOf(AlertType.TORRENT_FINISHED.swig())
@@ -142,9 +145,11 @@ class LibTorrentDownloadEngine(private val savePath: Path) : DownloadEngine {
             if (alert is TorrentFinishedAlert) {
                 val handle = alert.handle()
                 val download = handle.toDownload()
-
                 remove(download.reference, handle)
-                listeners.forEach { it.onFinishedDownload(download) }
+
+                for (listener in listeners) {
+                    executor.submit { listener.onFinishedDownload(download) }
+                }
             }
         }
     }
