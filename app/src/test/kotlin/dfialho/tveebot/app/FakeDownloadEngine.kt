@@ -41,10 +41,6 @@ class FakeDownloadEngine(private val downloadsDirectory: Path) : DownloadEngine 
         listeners.clear()
     }
 
-    override fun add(torrentFile: Path): DownloadHandle {
-        notNecessary()
-    }
-
     override fun add(magnetLink: String): DownloadHandle {
 
         val handle = FakeDownloadHandle(
@@ -69,10 +65,6 @@ class FakeDownloadEngine(private val downloadsDirectory: Path) : DownloadEngine 
     override fun remove(reference: DownloadReference): Boolean {
         downloads.remove(reference.value)
         return true
-    }
-
-    override fun getHandle(reference: DownloadReference): DownloadHandle? {
-        return downloads[reference.value]
     }
 
     override fun getAllHandles(): List<DownloadHandle> {

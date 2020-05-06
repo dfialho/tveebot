@@ -27,20 +27,12 @@ private class ThreadSafeDownloadEngine(private val engine: DownloadEngine) : Dow
         engine.stop()
     }
 
-    override fun add(torrentFile: Path): DownloadHandle = lock.write {
-        engine.add(torrentFile)
-    }
-
     override fun add(magnetLink: String): DownloadHandle = lock.write {
         engine.add(magnetLink)
     }
 
     override fun remove(reference: DownloadReference) = lock.write {
         engine.remove(reference)
-    }
-
-    override fun getHandle(reference: DownloadReference): DownloadHandle? = lock.read {
-        engine.getHandle(reference)
     }
 
     override fun getAllHandles(): List<DownloadHandle> = lock.read {

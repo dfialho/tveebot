@@ -20,7 +20,7 @@ import javax.annotation.concurrent.NotThreadSafe
  * @author David Fialho (dfialho@protonmail.com)
  */
 @NotThreadSafe
-class LibTorrentDownloadEngine(private val savePath: Path) : AbstractIdleService(), DownloadEngine {
+class LibTorrentDownloadEngine(private val savePath: Path) : DownloadEngine {
 
     /**
      * Internal session which manages the downloads.
@@ -42,14 +42,6 @@ class LibTorrentDownloadEngine(private val savePath: Path) : AbstractIdleService
         session.addListener(NativeListener())
     }
 
-    override fun startUp() {
-        start()
-    }
-
-    override fun shutDown() {
-        stop()
-    }
-
     override fun start() {
         session.start()
     }
@@ -62,14 +54,6 @@ class LibTorrentDownloadEngine(private val savePath: Path) : AbstractIdleService
         if (!session.isRunning) {
             throw IllegalStateException("cannot perform this action while the download engine is not running")
         }
-    }
-
-    override fun add(torrentFile: Path): DownloadHandle {
-        requireRunning()
-
-        val torrentInfo = TorrentInfo(torrentFile.toFile())
-        session.download(torrentInfo, savePath.toFile())
-        return resumeDownload(torrentInfo.infoHash())
     }
 
     override fun add(magnetLink: String): DownloadHandle {
@@ -91,17 +75,16 @@ class LibTorrentDownloadEngine(private val savePath: Path) : AbstractIdleService
         return false
     }
 
-    override fun getHandle(reference: DownloadReference): DownloadHandle? {
+    override fun getAllHandles(): List<DownloadHandle> {
         requireRunning()
+        return references.mapNotNull { getHandle(it) }
+    }
+
+    private fun getHandle(reference: DownloadReference): DownloadHandle? {
 
         return getNativeHandle(reference)?.let {
             LibTorrentDownloadHandle(engine = this, nativeHandle = it)
         }
-    }
-
-    override fun getAllHandles(): List<DownloadHandle> {
-        requireRunning()
-        return references.mapNotNull { getHandle(it) }
     }
 
     override fun addListener(listener: DownloadListener) {
