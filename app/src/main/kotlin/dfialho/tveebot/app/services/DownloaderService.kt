@@ -8,10 +8,7 @@ import dfialho.tveebot.app.events.Event
 import dfialho.tveebot.app.events.EventBus
 import dfialho.tveebot.app.events.subscribe
 import dfialho.tveebot.app.events.unsubscribe
-import dfialho.tveebot.downloader.api.DownloadEngine
-import dfialho.tveebot.downloader.api.DownloadHandle
-import dfialho.tveebot.downloader.api.DownloadListener
-import dfialho.tveebot.downloader.api.DownloadStatus
+import dfialho.tveebot.downloader.api.*
 import mu.KLogging
 
 class DownloaderService(
@@ -48,8 +45,8 @@ class DownloaderService(
 
     private fun download(episodeFile: EpisodeFile) {
 
-        val handle = engine.add(episodeFile.file.link)
-        downloads[handle.reference] = episodeFile
+        val download = engine.add(episodeFile.file.link)
+        downloads[download.reference] = episodeFile
 
         logger.info { "Started downloading: ${episodeFile.episodes}" }
         eventBus.fire(Event.DownloadStarted(episodeFile))
@@ -65,27 +62,27 @@ class DownloaderService(
 
     private inner class EngineListener : DownloadListener {
 
-        override fun onFinishedDownload(handle: DownloadHandle) {
+        override fun onFinishedDownload(download: Download) {
 
-            val episodeFile = downloads[handle.reference]
+            val episodeFile = downloads[download.reference]
 
             if (episodeFile == null) {
-                logger.warn { "Received an handle for an download that was not being tracked: " +
-                        "reference=${handle.reference} and savePath=${handle.savePath}" }
+                logger.warn { "Finished download corresponds to an episode that is not being tracked: " +
+                        "reference=${download.reference} and savePath=${download.savePath}" }
                 return
             }
 
-            downloads.remove(handle.reference)
-            engine.remove(handle.reference)
+            downloads.remove(download.reference)
+            engine.remove(download.reference)
             logger.info { "Finished downloading: ${episodeFile.episodes}" }
 
-            when(val result = cleaner.cleanUp(handle.savePath)) {
+            when(val result = cleaner.cleanUp(download.savePath)) {
                 is CleanupResult.Success -> eventBus.fire(Event.DownloadFinished(episodeFile, result.path))
-                is CleanupResult.VideoFileNotFound -> logger.error { "Couldn't find any video file in: ${handle.savePath}" }
-                is CleanupResult.PathNotExists -> logger.error { "Save path does not exist: ${handle.savePath}" }
-                is CleanupResult.UnsupportedFileType -> logger.error { "Unexpected file type at: : ${handle.savePath}" }
+                is CleanupResult.VideoFileNotFound -> logger.error { "Couldn't find any video file in: ${download.savePath}" }
+                is CleanupResult.PathNotExists -> logger.error { "Save path does not exist: ${download.savePath}" }
+                is CleanupResult.UnsupportedFileType -> logger.error { "Unexpected file type at: : ${download.savePath}" }
                 is CleanupResult.UnexpectedError -> logger.error(result.exception) {
-                    "Unexpected error while cleaning up: : ${handle.savePath}"
+                    "Unexpected error while cleaning up: : ${download.savePath}"
                 }
             }
         }
@@ -94,7 +91,7 @@ class DownloaderService(
 
     fun getStatus(): List<DownloadStatus> {
 
-        return engine.getAllHandles()
-            .map { it.getStatus() }
+        return engine.getDownloads()
+            .map { it.status }
     }
 }

@@ -7,7 +7,7 @@ package dfialho.tveebot.downloader.api
 interface DownloadListener {
 
     /**
-     * Invoked with the [handle] of a download when that download has finished downloading.
+     * Invoked with the [download] that has finished downloading.
      */
-    fun onFinishedDownload(handle: DownloadHandle)
+    fun onFinishedDownload(download: Download)
 }

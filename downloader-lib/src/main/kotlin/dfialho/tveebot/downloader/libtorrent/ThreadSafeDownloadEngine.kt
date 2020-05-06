@@ -1,16 +1,15 @@
 package dfialho.tveebot.downloader.libtorrent
 
+import dfialho.tveebot.downloader.api.Download
 import dfialho.tveebot.downloader.api.DownloadEngine
-import dfialho.tveebot.downloader.api.DownloadHandle
 import dfialho.tveebot.downloader.api.DownloadListener
 import dfialho.tveebot.downloader.api.DownloadReference
-import java.nio.file.Path
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.read
 import kotlin.concurrent.write
 
 /**
- * Download engine that ensure thread-safeness for each individual method.
+ * Download engine tha t ensure thread-safeness for each individual method.
  */
 private class ThreadSafeDownloadEngine(private val engine: DownloadEngine) : DownloadEngine {
 
@@ -27,7 +26,7 @@ private class ThreadSafeDownloadEngine(private val engine: DownloadEngine) : Dow
         engine.stop()
     }
 
-    override fun add(magnetLink: String): DownloadHandle = lock.write {
+    override fun add(magnetLink: String): Download = lock.write {
         engine.add(magnetLink)
     }
 
@@ -35,8 +34,8 @@ private class ThreadSafeDownloadEngine(private val engine: DownloadEngine) : Dow
         engine.remove(reference)
     }
 
-    override fun getAllHandles(): List<DownloadHandle> = lock.read {
-        engine.getAllHandles()
+    override fun getDownloads(): List<Download> = lock.read {
+        engine.getDownloads()
     }
 
     override fun addListener(listener: DownloadListener) = lock.write {

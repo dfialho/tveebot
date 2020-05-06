@@ -8,30 +8,7 @@ import java.util.*
 
 class FakeDownloadEngine(private val downloadsDirectory: Path) : DownloadEngine {
 
-    class FakeDownloadHandle(
-        override val reference: DownloadReference,
-        override var isValid: Boolean,
-        override var savePath: Path
-    ) : DownloadHandle {
-
-        override fun getStatus(): DownloadStatus {
-            notNecessary()
-        }
-
-        override fun stop() {
-            isValid = false
-        }
-
-        override fun pause() {
-            notNecessary()
-        }
-
-        override fun resume() {
-            notNecessary()
-        }
-    }
-
-    private val downloads = mutableMapOf<String, DownloadHandle>()
+    private val downloads = mutableMapOf<String, Download>()
     private val listeners = mutableListOf<DownloadListener>()
 
     override fun start() {}
@@ -41,33 +18,36 @@ class FakeDownloadEngine(private val downloadsDirectory: Path) : DownloadEngine 
         listeners.clear()
     }
 
-    override fun add(magnetLink: String): DownloadHandle {
+    override fun add(magnetLink: String): Download {
 
-        val handle = FakeDownloadHandle(
+        val download = Download(
             DownloadReference(magnetLink),
-            isValid = true,
-            savePath = downloadsDirectory.resolve(UUID.randomUUID().toString() + ".mkv")
+            name = magnetLink,
+            savePath = downloadsDirectory.resolve(UUID.randomUUID().toString() + ".mkv"),
+            status = DownloadStatus(
+                DownloadState.DOWNLOADING,
+                progress = 0.0f,
+                rate = 0
+            )
         )
 
-        downloads.putIfAbsent(magnetLink, handle)
+        downloads.putIfAbsent(magnetLink, download)
 
-        return handle
+        return download
     }
 
     fun finish(episodeFile: EpisodeFile) {
-        downloads[episodeFile.file.link]?.let { handle ->
-            handle.stop()
-            Files.createFile(handle.savePath)
-            listeners.forEach { it.onFinishedDownload(handle) }
+        downloads[episodeFile.file.link]?.let { download ->
+            Files.createFile(download.savePath)
+            listeners.forEach { it.onFinishedDownload(download) }
         }
     }
 
-    override fun remove(reference: DownloadReference): Boolean {
+    override fun remove(reference: DownloadReference) {
         downloads.remove(reference.value)
-        return true
     }
 
-    override fun getAllHandles(): List<DownloadHandle> {
+    override fun getDownloads(): List<Download> {
         return downloads.values.toList()
     }
 

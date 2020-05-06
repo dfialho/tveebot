@@ -1,16 +1,16 @@
 package dfialho.tveebot.downloader.libtorrent
 
-import com.frostwire.jlibtorrent.*
 import com.frostwire.jlibtorrent.AddTorrentParams.parseMagnetUri
+import com.frostwire.jlibtorrent.AlertListener
+import com.frostwire.jlibtorrent.SessionManager
+import com.frostwire.jlibtorrent.Sha1Hash
+import com.frostwire.jlibtorrent.TorrentHandle
 import com.frostwire.jlibtorrent.alerts.Alert
 import com.frostwire.jlibtorrent.alerts.AlertType
 import com.frostwire.jlibtorrent.alerts.TorrentFinishedAlert
-import com.google.common.util.concurrent.AbstractIdleService
-import dfialho.tveebot.downloader.api.DownloadEngine
-import dfialho.tveebot.downloader.api.DownloadHandle
-import dfialho.tveebot.downloader.api.DownloadListener
-import dfialho.tveebot.downloader.api.DownloadReference
+import dfialho.tveebot.downloader.api.*
 import java.nio.file.Path
+import java.nio.file.Paths
 import javax.annotation.concurrent.NotThreadSafe
 
 /**
@@ -56,7 +56,7 @@ class LibTorrentDownloadEngine(private val savePath: Path) : DownloadEngine {
         }
     }
 
-    override fun add(magnetLink: String): DownloadHandle {
+    override fun add(magnetLink: String): Download {
         requireRunning()
         require(magnetLink.startsWith("magnet")) { "the magnet link's scheme must be 'magnet'" }
 
@@ -64,27 +64,19 @@ class LibTorrentDownloadEngine(private val savePath: Path) : DownloadEngine {
         return resumeDownload(parseMagnetUri(magnetLink).infoHash())
     }
 
-    override fun remove(reference: DownloadReference): Boolean {
+    override fun remove(reference: DownloadReference) {
         requireRunning()
 
         getNativeHandle(reference)?.let {
             remove(reference, it)
-            return true
         }
-
-        return false
     }
 
-    override fun getAllHandles(): List<DownloadHandle> {
+    override fun getDownloads(): List<Download> {
         requireRunning()
-        return references.mapNotNull { getHandle(it) }
-    }
-
-    private fun getHandle(reference: DownloadReference): DownloadHandle? {
-
-        return getNativeHandle(reference)?.let {
-            LibTorrentDownloadHandle(engine = this, nativeHandle = it)
-        }
+        return references
+            .mapNotNull { getNativeHandle(it) }
+            .map { it.toDownload() }
     }
 
     override fun addListener(listener: DownloadListener) {
@@ -98,7 +90,7 @@ class LibTorrentDownloadEngine(private val savePath: Path) : DownloadEngine {
     /**
      * Takes the reference and the native handle for a download and removes it from this engine.
      */
-    internal fun remove(reference: DownloadReference, nativeHandle: TorrentHandle) {
+    private fun remove(reference: DownloadReference, nativeHandle: TorrentHandle) {
         requireRunning()
 
         session.remove(nativeHandle)
@@ -116,14 +108,30 @@ class LibTorrentDownloadEngine(private val savePath: Path) : DownloadEngine {
     /**
      * Resumes a download from its [infoHash].
      */
-    private fun resumeDownload(infoHash: Sha1Hash): DownloadHandle {
-        val torrentHandle: TorrentHandle = session.find(infoHash)
-        torrentHandle.resume()
+    private fun resumeDownload(infoHash: Sha1Hash): Download {
+        val handle: TorrentHandle = session.find(infoHash)
+        handle.resume()
 
-        val handle = LibTorrentDownloadHandle(this, torrentHandle)
-        references.add(handle.reference)
+        val download = handle.toDownload()
+        references.add(download.reference)
+        return download
+    }
 
-        return handle
+    private fun TorrentHandle.toDownload(): Download {
+
+        val reference = infoHash().toDownloadReference()
+        return Download(
+            reference,
+            name = name(),
+            savePath = Paths.get(savePath(), name()),
+            status = status().let {
+                DownloadStatus(
+                    it.state().toDownloadState(),
+                    it.progress(),
+                    it.downloadRate()
+                )
+            }
+        )
     }
 
     /**
@@ -139,10 +147,9 @@ class LibTorrentDownloadEngine(private val savePath: Path) : DownloadEngine {
 
         override fun alert(alert: Alert<*>?) {
 
-            // Monitoring only finished downloads
             if (alert is TorrentFinishedAlert) {
-                // Notify every listener registered with the engine
-                listeners.forEach { it.onFinishedDownload(LibTorrentDownloadHandle(this@LibTorrentDownloadEngine, alert.handle())) }
+                val download = alert.handle().toDownload()
+                listeners.forEach { it.onFinishedDownload(download) }
             }
         }
     }

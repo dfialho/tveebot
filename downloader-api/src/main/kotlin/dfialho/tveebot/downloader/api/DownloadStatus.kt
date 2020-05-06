@@ -6,16 +6,6 @@ package dfialho.tveebot.downloader.api
 data class DownloadStatus(
 
     /**
-     * The name of the download.
-     */
-    val name: String,
-
-    /**
-     * Reference for the download.
-     */
-    val reference: String,
-
-    /**
      * The current state of the download.
      */
     val state: DownloadState,
@@ -29,5 +19,4 @@ data class DownloadStatus(
      * The download rate in bytes per second.
      */
     val rate: Int
-
 )
