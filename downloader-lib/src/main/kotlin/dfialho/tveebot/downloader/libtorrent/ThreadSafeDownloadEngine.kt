@@ -3,7 +3,6 @@ package dfialho.tveebot.downloader.libtorrent
 import dfialho.tveebot.downloader.api.Download
 import dfialho.tveebot.downloader.api.DownloadEngine
 import dfialho.tveebot.downloader.api.DownloadListener
-import dfialho.tveebot.downloader.api.DownloadReference
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.read
 import kotlin.concurrent.write
@@ -28,10 +27,6 @@ private class ThreadSafeDownloadEngine(private val engine: DownloadEngine) : Dow
 
     override fun add(magnetLink: String): Download = lock.write {
         engine.add(magnetLink)
-    }
-
-    override fun remove(reference: DownloadReference) = lock.write {
-        engine.remove(reference)
     }
 
     override fun getDownloads(): List<Download> = lock.read {

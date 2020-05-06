@@ -25,12 +25,6 @@ interface DownloadEngine {
     fun add(magnetLink: String): Download
 
     /**
-     * Removes the download referenced by [reference] from this engine. If [reference] does not map to any download
-     * managed by this engine, then this method will have no effect.
-     */
-    fun remove(reference: DownloadReference)
-
-    /**
      * Retrieves all [Download]s currently being managed by the engine.
      */
     fun getDownloads(): List<Download>

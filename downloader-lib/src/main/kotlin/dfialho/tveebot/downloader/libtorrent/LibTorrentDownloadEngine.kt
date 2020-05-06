@@ -64,14 +64,6 @@ class LibTorrentDownloadEngine(private val savePath: Path) : DownloadEngine {
         return resumeDownload(parseMagnetUri(magnetLink).infoHash())
     }
 
-    override fun remove(reference: DownloadReference) {
-        requireRunning()
-
-        getNativeHandle(reference)?.let {
-            remove(reference, it)
-        }
-    }
-
     override fun getDownloads(): List<Download> {
         requireRunning()
         return references
@@ -90,10 +82,10 @@ class LibTorrentDownloadEngine(private val savePath: Path) : DownloadEngine {
     /**
      * Takes the reference and the native handle for a download and removes it from this engine.
      */
-    private fun remove(reference: DownloadReference, nativeHandle: TorrentHandle) {
+    private fun remove(reference: DownloadReference, handle: TorrentHandle) {
         requireRunning()
 
-        session.remove(nativeHandle)
+        session.remove(handle)
         references.remove(reference)
     }
 
@@ -148,7 +140,10 @@ class LibTorrentDownloadEngine(private val savePath: Path) : DownloadEngine {
         override fun alert(alert: Alert<*>?) {
 
             if (alert is TorrentFinishedAlert) {
-                val download = alert.handle().toDownload()
+                val handle = alert.handle()
+                val download = handle.toDownload()
+
+                remove(download.reference, handle)
                 listeners.forEach { it.onFinishedDownload(download) }
             }
         }

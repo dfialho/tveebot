@@ -73,7 +73,6 @@ class DownloaderService(
             }
 
             downloads.remove(download.reference)
-            engine.remove(download.reference)
             logger.info { "Finished downloading: ${episodeFile.episodes}" }
 
             when(val result = cleaner.cleanUp(download.savePath)) {

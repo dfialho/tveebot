@@ -43,10 +43,6 @@ class FakeDownloadEngine(private val downloadsDirectory: Path) : DownloadEngine 
         }
     }
 
-    override fun remove(reference: DownloadReference) {
-        downloads.remove(reference.value)
-    }
-
     override fun getDownloads(): List<Download> {
         return downloads.values.toList()
     }
