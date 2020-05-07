@@ -1,9 +1,9 @@
-FROM openjdk:8-jdk AS BUILDER
+FROM gradle:6.4.0-jdk8 AS BUILDER
 ENV APP=tveebot
 ENV APP_HOME=/usr/app
 WORKDIR $APP_HOME
 COPY . .
-RUN ./gradlew build --no-daemon
+RUN gradle build --no-daemon
 
 FROM openjdk:8-jre
 ENV APP=tveebot
