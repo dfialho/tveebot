@@ -1,0 +1,11 @@
+README.md
+LICENSE
+.gitignore
+gradlew*
+gradle
+docker/Dockerfile
+build/
+out/
+.github/
+.gradle/
+.idea/
