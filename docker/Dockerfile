@@ -1,5 +1,11 @@
-FROM openjdk:8-jre
+FROM openjdk:8-jdk AS BUILDER
+ENV APP=tveebot
+ENV APP_HOME=/usr/app
+WORKDIR $APP_HOME
+COPY . .
+RUN ./gradlew build --no-daemon
 
+FROM openjdk:8-jre
 ENV APP=tveebot
 ENV APP_HOME=/usr/app
 WORKDIR $APP_HOME
@@ -8,7 +14,7 @@ VOLUME /downloads
 VOLUME /library
 VOLUME /config
 
-COPY app/build/distributions/$APP-*.zip .
+COPY --from=BUILDER $APP_HOME/app/build/distributions/$APP-*.zip .
 RUN unzip $APP-*.zip \
     && rm $APP-*.zip \
     && mv $APP-*/* . \
