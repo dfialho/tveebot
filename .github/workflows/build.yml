@@ -11,22 +11,29 @@ jobs:
     steps:
       - uses: actions/checkout@v1
 
-      - name: Set up JDK 1.8
-        uses: actions/setup-java@v1
+      - name: Dockerhub login
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: echo "${DOCKER_PASSWORD}" | docker login --username ${DOCKER_USERNAME} --password-stdin
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: crazy-max/ghaction-docker-buildx@v1
         with:
-          java-version: 1.8
+          buildx-version: latest
 
-      - name: Make gradle wrapper executable
-        run: chmod +x ./gradlew
+      - name: Prepare
+        id: prepare
+        run: |
+          echo ::set-output name=build_date::$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+          echo ::set-output name=docker_username::dfialho14
+          echo ::set-output name=docker_image::dfialho14/${{ github.event.repository.name }}
 
-      - name: Build
-        run: ./gradlew build
-
-      - name: Build & push Docker image
-        uses: mr-smithers-excellent/docker-build-push@v3
-        with:
-          image: dfialho14/tveebot
-          registry: docker.io
-          dockerfile: docker/Dockerfile
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+      - name: Build dockerfile (with push)
+        run: |
+          docker buildx build \
+          --platform=linux/amd64,linux/arm64 \
+          --output "type=image,push=true" \
+          --tag "${{ steps.prepare.outputs.docker_image }}:latest" \
+          --file docker/Dockerfile .
